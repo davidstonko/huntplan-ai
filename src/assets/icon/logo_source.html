@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HuntMaryland Logo — Option A v4</title>
+<style>
+  body { background: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  canvas { border-radius: 16px; }
+</style>
+</head>
+<body>
+<canvas id="logo" width="1024" height="1024"></canvas>
+<script>
+// Real Maryland GIS boundary
+const MD_GIS = [[-79.477979,39.722302],[-75.786521,39.722302],[-75.693413,38.462606],[-75.047134,38.451652],[-75.244304,38.029928],[-75.397659,38.013497],[-75.671506,37.95325],[-75.885106,37.909435],[-75.879629,38.073743],[-75.961783,38.139466],[-75.846768,38.210667],[-76.000122,38.374975],[-76.049415,38.303775],[-76.257538,38.320205],[-76.328738,38.500944],[-76.263015,38.500944],[-76.257538,38.736453],[-76.191815,38.829561],[-76.279446,39.147223],[-76.169907,39.333439],[-76.000122,39.366301],[-75.972737,39.557994],[-76.098707,39.536086],[-76.104184,39.437501],[-76.367077,39.311532],[-76.443754,39.196516],[-76.460185,38.906238],[-76.55877,38.769315],[-76.514954,38.539283],[-76.383508,38.380452],[-76.399939,38.259959],[-76.317785,38.139466],[-76.3616,38.057312],[-76.591632,38.216144],[-76.920248,38.292821],[-77.018833,38.446175],[-77.205049,38.358544],[-77.276249,38.479037],[-77.128372,38.632391],[-77.040741,38.791222],[-76.909294,38.895284],[-77.035264,38.993869],[-77.117418,38.933623],[-77.248864,39.026731],[-77.456988,39.076023],[-77.456988,39.223901],[-77.566527,39.306055],[-77.719881,39.322485],[-77.834897,39.601809],[-78.004682,39.601809],[-78.174467,39.694917],[-78.267575,39.61824],[-78.431884,39.623717],[-78.470222,39.514178],[-78.765977,39.585379],[-78.963147,39.437501],[-79.094593,39.470363],[-79.291763,39.300578],[-79.488933,39.20747],[-79.477979,39.722302]];
+
+function drawMDPath(ctx, offsetX, offsetY, scale) {
+  const minLon = -79.55, maxLon = -74.95, minLat = 37.88, maxLat = 39.78;
+  const w = (maxLon - minLon);
+  const h = (maxLat - minLat);
+  ctx.beginPath();
+  MD_GIS.forEach((c, i) => {
+    const x = ((c[0] - minLon) / w) * scale + offsetX;
+    const y = ((maxLat - c[1]) / h) * (scale * 0.48) + offsetY;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+}
+
+// Front-facing whitetail buck silhouette — based on the user's photo
+// Buck facing viewer, wide symmetrical rack, broad chest, alert stance
+function drawFrontBuck(ctx, cx, cy, size) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 200;
+  ctx.scale(s, s);
+
+  // === ANTLERS (wide whitetail rack, 4 tines each side) ===
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 5;
+
+  // Left main beam — curves out and up
+  ctx.beginPath();
+  ctx.moveTo(-18, -62);
+  ctx.bezierCurveTo(-30, -72, -55, -95, -60, -120);
+  ctx.bezierCurveTo(-62, -135, -55, -148, -45, -155);
+  ctx.stroke();
+  // Left tines
+  ctx.beginPath(); ctx.moveTo(-42, -88); ctx.bezierCurveTo(-52, -95, -62, -100, -68, -95); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-55, -110); ctx.bezierCurveTo(-68, -115, -78, -118, -82, -112); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-58, -128); ctx.bezierCurveTo(-70, -135, -78, -142, -75, -150); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-50, -145); ctx.bezierCurveTo(-55, -158, -48, -168, -40, -172); ctx.stroke();
+  // Brow tine left
+  ctx.beginPath(); ctx.moveTo(-25, -70); ctx.bezierCurveTo(-30, -78, -28, -88, -22, -92); ctx.stroke();
+
+  // Right main beam — mirror
+  ctx.beginPath();
+  ctx.moveTo(18, -62);
+  ctx.bezierCurveTo(30, -72, 55, -95, 60, -120);
+  ctx.bezierCurveTo(62, -135, 55, -148, 45, -155);
+  ctx.stroke();
+  // Right tines
+  ctx.beginPath(); ctx.moveTo(42, -88); ctx.bezierCurveTo(52, -95, 62, -100, 68, -95); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(55, -110); ctx.bezierCurveTo(68, -115, 78, -118, 82, -112); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(58, -128); ctx.bezierCurveTo(70, -135, 78, -142, 75, -150); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(50, -145); ctx.bezierCurveTo(55, -158, 48, -168, 40, -172); ctx.stroke();
+  // Brow tine right
+  ctx.beginPath(); ctx.moveTo(25, -70); ctx.bezierCurveTo(30, -78, 28, -88, 22, -92); ctx.stroke();
+
+  // === HEAD (front-facing, like the photo) ===
+  ctx.beginPath();
+  // Forehead
+  ctx.moveTo(-22, -58);
+  ctx.bezierCurveTo(-20, -52, -15, -45, 0, -42);
+  ctx.bezierCurveTo(15, -45, 20, -52, 22, -58);
+  // Right side of face
+  ctx.bezierCurveTo(25, -50, 22, -38, 18, -30);
+  // Right jaw
+  ctx.bezierCurveTo(14, -22, 10, -18, 8, -12);
+  // Muzzle
+  ctx.bezierCurveTo(5, -6, 3, -2, 0, 0);
+  ctx.bezierCurveTo(-3, -2, -5, -6, -8, -12);
+  // Left jaw
+  ctx.bezierCurveTo(-10, -18, -14, -22, -18, -30);
+  // Left side of face
+  ctx.bezierCurveTo(-22, -38, -25, -50, -22, -58);
+  ctx.fill();
+
+  // Nose/muzzle detail — slightly lighter
+  ctx.beginPath();
+  ctx.ellipse(0, -5, 6, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ears
+  ctx.beginPath();
+  ctx.moveTo(-20, -55);
+  ctx.bezierCurveTo(-28, -62, -38, -65, -42, -58);
+  ctx.bezierCurveTo(-40, -52, -32, -50, -22, -52);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(20, -55);
+  ctx.bezierCurveTo(28, -62, 38, -65, 42, -58);
+  ctx.bezierCurveTo(40, -52, 32, -50, 22, -52);
+  ctx.fill();
+
+  // === NECK & CHEST (broad, front-facing) ===
+  ctx.beginPath();
+  ctx.moveTo(-12, -8);
+  // Neck widens to shoulders
+  ctx.bezierCurveTo(-18, 10, -28, 25, -35, 40);
+  // Shoulder
+  ctx.bezierCurveTo(-42, 55, -45, 70, -42, 85);
+  // Side/belly
+  ctx.bezierCurveTo(-40, 100, -38, 110, -35, 120);
+  // Left front leg
+  ctx.lineTo(-32, 140);
+  ctx.lineTo(-28, 160);
+  ctx.lineTo(-25, 175);
+  // Hoof
+  ctx.lineTo(-30, 178);
+  ctx.lineTo(-18, 178);
+  ctx.lineTo(-18, 170);
+  // Inner left leg
+  ctx.lineTo(-15, 150);
+  ctx.lineTo(-10, 130);
+  // Belly center
+  ctx.bezierCurveTo(-5, 120, 5, 120, 10, 130);
+  // Inner right leg
+  ctx.lineTo(15, 150);
+  ctx.lineTo(18, 170);
+  // Hoof
+  ctx.lineTo(18, 178);
+  ctx.lineTo(30, 178);
+  ctx.lineTo(25, 175);
+  ctx.lineTo(28, 160);
+  ctx.lineTo(32, 140);
+  // Right side
+  ctx.lineTo(35, 120);
+  ctx.bezierCurveTo(38, 110, 40, 100, 42, 85);
+  ctx.bezierCurveTo(45, 70, 42, 55, 35, 40);
+  ctx.bezierCurveTo(28, 25, 18, 10, 12, -8);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// === Turkey gobbler silhouette (profile) ===
+function drawTurkey(ctx, cx, cy, size) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 100;
+  ctx.scale(s, s);
+
+  // Fan tail (displayed)
+  ctx.beginPath();
+  ctx.moveTo(15, 5);
+  for (let a = -1.1; a <= 1.1; a += 0.03) {
+    const r = 38;
+    const x = 16 + Math.cos(Math.PI + a) * r;
+    const y = -5 + Math.sin(Math.PI + a) * r * 0.7;
+    ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  // Body (round)
+  ctx.beginPath();
+  ctx.ellipse(0, 8, 20, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Neck
+  ctx.beginPath();
+  ctx.moveTo(-14, 0);
+  ctx.quadraticCurveTo(-20, -18, -17, -32);
+  ctx.quadraticCurveTo(-12, -32, -8, -18);
+  ctx.quadraticCurveTo(-8, 0, -10, 4);
+  ctx.fill();
+
+  // Head
+  ctx.beginPath();
+  ctx.arc(-15, -34, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Beak
+  ctx.beginPath();
+  ctx.moveTo(-20, -35);
+  ctx.lineTo(-27, -33);
+  ctx.lineTo(-20, -32);
+  ctx.fill();
+
+  // Snood
+  ctx.beginPath();
+  ctx.moveTo(-20, -32);
+  ctx.quadraticCurveTo(-22, -27, -20, -24);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.stroke();
+
+  // Legs
+  ctx.fillRect(-5, 20, 3, 16);
+  ctx.fillRect(5, 20, 3, 16);
+  // Feet
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-8, 36); ctx.lineTo(-3, 36); ctx.lineTo(-4, 33);
+  ctx.moveTo(3, 36); ctx.lineTo(9, 36); ctx.lineTo(7, 33);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// === Blue crab ===
+function drawCrab(ctx, cx, cy, size) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 100;
+  ctx.scale(s, s);
+
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 32, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.lineCap = 'round';
+
+  // Left claw
+  ctx.beginPath();
+  ctx.moveTo(-30, -6);
+  ctx.quadraticCurveTo(-44, -20, -40, -30);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-40, -30); ctx.lineTo(-47, -36);
+  ctx.moveTo(-40, -30); ctx.lineTo(-33, -36);
+  ctx.stroke();
+
+  // Right claw
+  ctx.beginPath();
+  ctx.moveTo(30, -6);
+  ctx.quadraticCurveTo(44, -20, 40, -30);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(40, -30); ctx.lineTo(47, -36);
+  ctx.moveTo(40, -30); ctx.lineTo(33, -36);
+  ctx.stroke();
+
+  // Legs
+  ctx.lineWidth = 2.5;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-26 + i*4, 6 + i*3);
+    ctx.lineTo(-42 + i*3, 16 + i*5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(26 - i*4, 6 + i*3);
+    ctx.lineTo(42 - i*3, 16 + i*5);
+    ctx.stroke();
+  }
+
+  // Eyes
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-8, -16); ctx.lineTo(-10, -22);
+  ctx.moveTo(8, -16); ctx.lineTo(10, -22);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(-10, -23, 2.5, 0, Math.PI*2);
+  ctx.arc(10, -23, 2.5, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+const c = document.getElementById('logo');
+const ctx = c.getContext('2d');
+const W = 1024;
+
+// === BACKGROUND ===
+ctx.fillStyle = '#0D1A0D';
+ctx.fillRect(0, 0, W, W);
+
+// Subtle radial glow
+const bgGlow = ctx.createRadialGradient(W/2, 340, 50, W/2, 340, 500);
+bgGlow.addColorStop(0, 'rgba(20,35,15,0.3)');
+bgGlow.addColorStop(1, 'rgba(13,26,13,0)');
+ctx.fillStyle = bgGlow;
+ctx.fillRect(0, 0, W, W);
+
+// === MARYLAND OUTLINE with sunset fill ===
+ctx.save();
+drawMDPath(ctx, 55, 150, 920);
+ctx.clip();
+
+// Sunset gradient inside MD
+const sunGrad = ctx.createLinearGradient(0, 150, 0, 620);
+sunGrad.addColorStop(0, '#0a0520');
+sunGrad.addColorStop(0.2, '#1a0533');
+sunGrad.addColorStop(0.35, '#6B1D4A');
+sunGrad.addColorStop(0.5, '#C83E2D');
+sunGrad.addColorStop(0.65, '#E8742B');
+sunGrad.addColorStop(0.8, '#F4A623');
+sunGrad.addColorStop(1, '#F7D94C');
+ctx.fillStyle = sunGrad;
+ctx.fillRect(0, 0, W, W);
+
+// Sun disc
+ctx.fillStyle = '#FFD700';
+ctx.globalAlpha = 0.7;
+ctx.beginPath();
+ctx.arc(480, 380, 65, 0, Math.PI * 2);
+ctx.fill();
+ctx.globalAlpha = 0.4;
+ctx.beginPath();
+ctx.arc(480, 380, 85, 0, Math.PI * 2);
+ctx.fill();
+ctx.globalAlpha = 1;
+
+// Tree line
+ctx.fillStyle = 'rgba(8,12,5,0.75)';
+ctx.beginPath();
+ctx.moveTo(0, 460);
+for (let x = 0; x <= W; x += 6) {
+  const h = 440 + Math.sin(x*0.015)*18 + Math.sin(x*0.04)*12 + Math.sin(x*0.08)*6;
+  ctx.lineTo(x, h);
+}
+ctx.lineTo(W, W);
+ctx.lineTo(0, W);
+ctx.fill();
+
+// Ground
+ctx.fillStyle = 'rgba(5,8,3,0.5)';
+ctx.fillRect(0, 520, W, W);
+
+// === DEER SILHOUETTE (front-facing buck from user's photo) ===
+ctx.fillStyle = 'rgba(5,10,3,0.9)';
+drawFrontBuck(ctx, 400, 520, 250);
+
+// === TURKEY silhouette (smaller, to the right) ===
+ctx.fillStyle = 'rgba(5,10,3,0.85)';
+drawTurkey(ctx, 680, 500, 80);
+
+ctx.restore();
+
+// === MD OUTLINE STROKE (gold border) ===
+ctx.strokeStyle = '#D4A840';
+ctx.lineWidth = 4;
+drawMDPath(ctx, 55, 150, 920);
+ctx.stroke();
+
+// Second thinner stroke for depth
+ctx.strokeStyle = 'rgba(212,168,64,0.3)';
+ctx.lineWidth = 8;
+drawMDPath(ctx, 55, 150, 920);
+ctx.stroke();
+ctx.strokeStyle = '#D4A840';
+ctx.lineWidth = 4;
+drawMDPath(ctx, 55, 150, 920);
+ctx.stroke();
+
+// === CRAB below MD outline ===
+ctx.fillStyle = '#C0392B';
+drawCrab(ctx, W/2, 720, 80);
+
+// === TEXT ===
+ctx.textAlign = 'center';
+
+// Main title
+ctx.fillStyle = '#F0C040';
+ctx.font = 'bold 72px Georgia, serif';
+ctx.fillText('HuntMaryland', W/2, 830);
+
+// Tagline
+ctx.fillStyle = '#8B7355';
+ctx.font = '24px Georgia, serif';
+ctx.letterSpacing = '4px';
+ctx.fillText('HUNT  \u2022  FISH  \u2022  EXPLORE', W/2, 870);
+
+// Subtle MD flag accent line
+ctx.strokeStyle = '#C41E3A';
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(W/2 - 180, 890);
+ctx.lineTo(W/2 - 60, 890);
+ctx.stroke();
+ctx.strokeStyle = '#F0C040';
+ctx.beginPath();
+ctx.moveTo(W/2 - 55, 890);
+ctx.lineTo(W/2 + 55, 890);
+ctx.stroke();
+ctx.strokeStyle = '#000';
+ctx.beginPath();
+ctx.moveTo(W/2 + 60, 890);
+ctx.lineTo(W/2 + 180, 890);
+ctx.stroke();
+
+// Small "EST. 2026"
+ctx.fillStyle = 'rgba(212,168,64,0.5)';
+ctx.font = '16px "Courier New", monospace';
+ctx.fillText('EST. 2026', W/2, 920);
+</script>
+</body>
+</html>

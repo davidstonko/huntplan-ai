@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HuntMaryland Logo Options</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1A1E16; color: #E8DFD0; font-family: -apple-system, system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; color: #C4A882; margin-bottom: 10px; font-size: 28px; }
+  .subtitle { text-align: center; color: #6B6358; margin-bottom: 40px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+  .card { background: #2A2F22; border-radius: 16px; padding: 24px; border: 1px solid #3D3428; }
+  .card h2 { color: #C4A882; font-size: 16px; margin-bottom: 4px; }
+  .card .desc { color: #6B6358; font-size: 12px; margin-bottom: 16px; }
+  .icon-preview { display: flex; gap: 16px; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .icon-frame { border-radius: 22%; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  .icon-frame.large { width: 200px; height: 200px; }
+  .icon-frame.small { width: 80px; height: 80px; }
+  .icon-frame.tiny { width: 50px; height: 50px; }
+  canvas { display: block; }
+  .note { color: #A89B8C; font-size: 11px; text-align: center; margin-top: 8px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<h1>HuntMaryland — Logo Options</h1>
+<p class="subtitle">App Store icon must be 1024×1024 PNG. Previewed at multiple sizes below.</p>
+
+<div class="grid">
+
+  <!-- OPTION A -->
+  <div class="card">
+    <h2>Option A: "The Maryland Buck"</h2>
+    <p class="desc">MD state silhouette filled with forest green, buck antlers rising from the top, turkey gobbler below. Bold OMD text.</p>
+    <div class="icon-preview">
+      <div class="icon-frame large"><canvas id="logoA" width="200" height="200"></canvas></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="icon-frame small"><canvas id="logoA_sm" width="80" height="80"></canvas></div>
+        <div class="icon-frame tiny"><canvas id="logoA_xs" width="50" height="50"></canvas></div>
+      </div>
+    </div>
+    <p class="note">Clean hunting focus. Antlers are instantly recognizable at small sizes.</p>
+  </div>
+
+  <!-- OPTION B -->
+  <div class="card">
+    <h2>Option B: "Chesapeake Outdoors"</h2>
+    <p class="desc">MD silhouette with Chesapeake Bay waterway in blue. Crab at bottom, striped bass leaping, antler accent at top.</p>
+    <div class="icon-preview">
+      <div class="icon-frame large"><canvas id="logoB" width="200" height="200"></canvas></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="icon-frame small"><canvas id="logoB_sm" width="80" height="80"></canvas></div>
+        <div class="icon-frame tiny"><canvas id="logoB_xs" width="50" height="50"></canvas></div>
+      </div>
+    </div>
+    <p class="note">Multi-activity branding. Shows the full OutdoorsMaryland vision.</p>
+  </div>
+
+  <!-- OPTION C -->
+  <div class="card">
+    <h2>Option C: "Shield & Antlers"</h2>
+    <p class="desc">Classic badge/shield shape with MD flag colors. Antlers frame the top, deer head center, "OMD" below. No state outline.</p>
+    <div class="icon-preview">
+      <div class="icon-frame large"><canvas id="logoC" width="200" height="200"></canvas></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="icon-frame small"><canvas id="logoC_sm" width="80" height="80"></canvas></div>
+        <div class="icon-frame tiny"><canvas id="logoC_xs" width="50" height="50"></canvas></div>
+      </div>
+    </div>
+    <p class="note">Bold and iconic. Reads well at every size. Classic outdoor brand feel.</p>
+  </div>
+
+  <!-- OPTION D -->
+  <div class="card">
+    <h2>Option D: "Maryland Wild"</h2>
+    <p class="desc">MD state outline as a frame. Deer + turkey silhouettes against a sunset gradient. River flowing through. Crab accent at base.</p>
+    <div class="icon-preview">
+      <div class="icon-frame large"><canvas id="logoD" width="200" height="200"></canvas></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="icon-frame small"><canvas id="logoD_sm" width="80" height="80"></canvas></div>
+        <div class="icon-frame tiny"><canvas id="logoD_xs" width="50" height="50"></canvas></div>
+      </div>
+    </div>
+    <p class="note">Scenic and warm. Captures Maryland outdoor lifestyle. Eye-catching in the App Store.</p>
+  </div>
+
+</div>
+
+<script>
+// ── Maryland state outline (simplified path, normalized 0-1) ──
+function drawMDOutline(ctx, x, y, w, h) {
+  ctx.beginPath();
+  // Simplified MD shape - wider than tall, jagged western border, bay indent on east
+  ctx.moveTo(x + w*0.02, y + h*0.05);
+  ctx.lineTo(x + w*0.35, y + h*0.0);
+  ctx.lineTo(x + w*0.98, y + h*0.02);
+  ctx.lineTo(x + w*0.95, y + h*0.25);
+  ctx.lineTo(x + w*0.82, y + h*0.30);
+  // Chesapeake Bay indent
+  ctx.lineTo(x + w*0.78, y + h*0.45);
+  ctx.lineTo(x + w*0.72, y + h*0.38);
+  ctx.lineTo(x + w*0.68, y + h*0.50);
+  ctx.lineTo(x + w*0.73, y + h*0.62);
+  ctx.lineTo(x + w*0.65, y + h*0.70);
+  ctx.lineTo(x + w*0.60, y + h*0.65);
+  ctx.lineTo(x + w*0.55, y + h*0.75);
+  // Southern border (Potomac)
+  ctx.lineTo(x + w*0.50, y + h*0.85);
+  ctx.lineTo(x + w*0.42, y + h*0.80);
+  ctx.lineTo(x + w*0.35, y + h*0.90);
+  ctx.lineTo(x + w*0.28, y + h*0.85);
+  ctx.lineTo(x + w*0.18, y + h*0.95);
+  ctx.lineTo(x + w*0.10, y + h*1.0);
+  // Western panhandle
+  ctx.lineTo(x + w*0.0, y + h*0.72);
+  ctx.lineTo(x + w*0.05, y + h*0.55);
+  ctx.lineTo(x + w*0.0, y + h*0.35);
+  ctx.lineTo(x + w*0.03, y + h*0.18);
+  ctx.closePath();
+}
+
+function drawAntlers(ctx, cx, cy, size, color) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = size * 0.08;
+  ctx.lineCap = 'round';
+
+  // Left antler
+  ctx.beginPath();
+  ctx.moveTo(cx - size*0.05, cy + size*0.15);
+  ctx.quadraticCurveTo(cx - size*0.35, cy - size*0.1, cx - size*0.5, cy - size*0.45);
+  ctx.stroke();
+  // Left tines
+  ctx.beginPath();
+  ctx.moveTo(cx - size*0.25, cy - size*0.05);
+  ctx.lineTo(cx - size*0.35, cy - size*0.25);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - size*0.38, cy - size*0.2);
+  ctx.lineTo(cx - size*0.5, cy - size*0.15);
+  ctx.stroke();
+
+  // Right antler (mirror)
+  ctx.beginPath();
+  ctx.moveTo(cx + size*0.05, cy + size*0.15);
+  ctx.quadraticCurveTo(cx + size*0.35, cy - size*0.1, cx + size*0.5, cy - size*0.45);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + size*0.25, cy - size*0.05);
+  ctx.lineTo(cx + size*0.35, cy - size*0.25);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + size*0.38, cy - size*0.2);
+  ctx.lineTo(cx + size*0.5, cy - size*0.15);
+  ctx.stroke();
+}
+
+function drawDeerHead(ctx, cx, cy, size, color) {
+  ctx.fillStyle = color;
+  // Head oval
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + size*0.12, size*0.13, size*0.18, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Snout
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + size*0.32, size*0.08, size*0.08, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Ears
+  ctx.beginPath();
+  ctx.ellipse(cx - size*0.15, cy - size*0.02, size*0.04, size*0.1, -0.4, 0, Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + size*0.15, cy - size*0.02, size*0.04, size*0.1, 0.4, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawTurkey(ctx, cx, cy, size, color) {
+  ctx.fillStyle = color;
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, size*0.15, size*0.12, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Tail fan
+  ctx.beginPath();
+  ctx.moveTo(cx - size*0.15, cy);
+  for(let a = -0.8; a <= 0.8; a += 0.15) {
+    ctx.lineTo(cx - size*0.15 - Math.cos(a)*size*0.2, cy + Math.sin(a)*size*0.2);
+    ctx.lineTo(cx - size*0.15, cy);
+  }
+  ctx.fill();
+  // Head/neck
+  ctx.beginPath();
+  ctx.moveTo(cx + size*0.12, cy - size*0.02);
+  ctx.quadraticCurveTo(cx + size*0.2, cy - size*0.15, cx + size*0.18, cy - size*0.2);
+  ctx.arc(cx + size*0.18, cy - size*0.22, size*0.03, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawCrab(ctx, cx, cy, size, color) {
+  ctx.fillStyle = color;
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, size*0.14, size*0.09, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Claws
+  ctx.strokeStyle = color;
+  ctx.lineWidth = size*0.03;
+  ctx.lineCap = 'round';
+  [-1, 1].forEach(dir => {
+    ctx.beginPath();
+    ctx.moveTo(cx + dir*size*0.12, cy - size*0.04);
+    ctx.lineTo(cx + dir*size*0.22, cy - size*0.12);
+    ctx.stroke();
+    // Pincer
+    ctx.beginPath();
+    ctx.arc(cx + dir*size*0.24, cy - size*0.14, size*0.03, 0, Math.PI*2);
+    ctx.fill();
+  });
+  // Legs
+  [-1, 1].forEach(dir => {
+    for(let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx + dir*size*(0.08 + i*0.03), cy + size*0.06);
+      ctx.lineTo(cx + dir*size*(0.16 + i*0.04), cy + size*0.14);
+      ctx.stroke();
+    }
+  });
+}
+
+function drawFish(ctx, cx, cy, size, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  // Body
+  ctx.moveTo(cx + size*0.2, cy);
+  ctx.quadraticCurveTo(cx + size*0.05, cy - size*0.1, cx - size*0.1, cy - size*0.08);
+  ctx.quadraticCurveTo(cx - size*0.18, cy - size*0.04, cx - size*0.18, cy);
+  ctx.quadraticCurveTo(cx - size*0.18, cy + size*0.04, cx - size*0.1, cy + size*0.08);
+  ctx.quadraticCurveTo(cx + size*0.05, cy + size*0.1, cx + size*0.2, cy);
+  ctx.fill();
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(cx - size*0.16, cy);
+  ctx.lineTo(cx - size*0.25, cy - size*0.07);
+  ctx.lineTo(cx - size*0.25, cy + size*0.07);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// ── OPTION A: The Maryland Buck ──
+function drawLogoA(canvasId, sz) {
+  const c = document.getElementById(canvasId);
+  c.width = sz; c.height = sz;
+  const ctx = c.getContext('2d');
+  const s = sz / 200;
+
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, 0, sz);
+  bg.addColorStop(0, '#1E3A2B');
+  bg.addColorStop(1, '#0D1A0D');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, sz, sz);
+
+  // MD state fill
+  ctx.save();
+  drawMDOutline(ctx, sz*0.1, sz*0.28, sz*0.8, sz*0.5);
+  ctx.fillStyle = '#2D5A3A';
+  ctx.fill();
+  ctx.strokeStyle = '#4A8A5A';
+  ctx.lineWidth = 1.5*s;
+  ctx.stroke();
+  ctx.restore();
+
+  // Antlers from top
+  drawAntlers(ctx, sz*0.5, sz*0.22, sz*0.5, '#C4A882');
+
+  // Deer head
+  drawDeerHead(ctx, sz*0.5, sz*0.28, sz*0.6, '#C4A882');
+
+  // Turkey silhouette bottom right
+  drawTurkey(ctx, sz*0.72, sz*0.68, sz*0.5, 'rgba(196,168,130,0.6)');
+
+  // Text
+  ctx.fillStyle = '#C4A882';
+  ctx.font = `bold ${22*s}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('OMD', sz*0.5, sz*0.92);
+
+  // MD flag bar at bottom
+  const barH = 4*s;
+  const barY = sz - barH;
+  ['#E03C31','#FFD700','#1C1C1C','#F5F5DC'].forEach((col,i) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(i*sz/4, barY, sz/4, barH);
+  });
+}
+
+// ── OPTION B: Chesapeake Outdoors ──
+function drawLogoB(canvasId, sz) {
+  const c = document.getElementById(canvasId);
+  c.width = sz; c.height = sz;
+  const ctx = c.getContext('2d');
+  const s = sz / 200;
+
+  // Background - deep navy/forest
+  const bg = ctx.createLinearGradient(0, 0, 0, sz);
+  bg.addColorStop(0, '#1A2A1A');
+  bg.addColorStop(1, '#0D1520');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, sz, sz);
+
+  // MD state fill
+  ctx.save();
+  drawMDOutline(ctx, sz*0.08, sz*0.2, sz*0.84, sz*0.48);
+  ctx.fillStyle = '#2A4A35';
+  ctx.fill();
+  ctx.strokeStyle = '#5A8A6A';
+  ctx.lineWidth = 1.5*s;
+  ctx.stroke();
+
+  // Bay water inside state (clip to state)
+  ctx.clip();
+  ctx.fillStyle = 'rgba(30,80,120,0.5)';
+  ctx.beginPath();
+  ctx.moveTo(sz*0.62, sz*0.2);
+  ctx.quadraticCurveTo(sz*0.58, sz*0.4, sz*0.65, sz*0.55);
+  ctx.quadraticCurveTo(sz*0.70, sz*0.65, sz*0.60, sz*0.72);
+  ctx.lineTo(sz*0.75, sz*0.72);
+  ctx.lineTo(sz*0.78, sz*0.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // Antler accent at top
+  drawAntlers(ctx, sz*0.5, sz*0.14, sz*0.35, '#C4A882');
+
+  // Leaping striped bass
+  ctx.save();
+  ctx.translate(sz*0.55, sz*0.55);
+  ctx.rotate(-0.3);
+  drawFish(ctx, 0, 0, sz*0.6, 'rgba(196,168,130,0.7)');
+  // Stripes
+  ctx.strokeStyle = 'rgba(42,79,53,0.6)';
+  ctx.lineWidth = 1.2*s;
+  for(let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-sz*0.06, -sz*0.03 + i*sz*0.025);
+    ctx.lineTo(sz*0.08, -sz*0.03 + i*sz*0.025);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Crab at bottom
+  drawCrab(ctx, sz*0.5, sz*0.8, sz*0.6, '#D4913D');
+
+  // Text
+  ctx.fillStyle = '#C4A882';
+  ctx.font = `bold ${14*s}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('OUTDOORS', sz*0.5, sz*0.95);
+  ctx.font = `bold ${8*s}px -apple-system, system-ui, sans-serif`;
+  ctx.fillStyle = '#6B7F5E';
+  ctx.fillText('MARYLAND', sz*0.5, sz*0.99);
+
+  // MD flag bar
+  const barH = 4*s;
+  ['#E03C31','#FFD700','#1C1C1C','#F5F5DC'].forEach((col,i) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(i*sz/4, sz-barH, sz/4, barH);
+  });
+}
+
+// ── OPTION C: Shield & Antlers ──
+function drawLogoC(canvasId, sz) {
+  const c = document.getElementById(canvasId);
+  c.width = sz; c.height = sz;
+  const ctx = c.getContext('2d');
+  const s = sz / 200;
+
+  // Background
+  const bg = ctx.createRadialGradient(sz*0.5, sz*0.45, 0, sz*0.5, sz*0.45, sz*0.7);
+  bg.addColorStop(0, '#2A3A22');
+  bg.addColorStop(1, '#141A10');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, sz, sz);
+
+  // Shield shape
+  ctx.beginPath();
+  ctx.moveTo(sz*0.15, sz*0.18);
+  ctx.lineTo(sz*0.85, sz*0.18);
+  ctx.lineTo(sz*0.85, sz*0.6);
+  ctx.quadraticCurveTo(sz*0.85, sz*0.82, sz*0.5, sz*0.92);
+  ctx.quadraticCurveTo(sz*0.15, sz*0.82, sz*0.15, sz*0.6);
+  ctx.closePath();
+
+  // Shield fill with MD flag-inspired pattern
+  const shieldGrad = ctx.createLinearGradient(0, sz*0.18, 0, sz*0.92);
+  shieldGrad.addColorStop(0, '#3A5A3A');
+  shieldGrad.addColorStop(0.5, '#2A4A2A');
+  shieldGrad.addColorStop(1, '#1A3A1A');
+  ctx.fillStyle = shieldGrad;
+  ctx.fill();
+  ctx.strokeStyle = '#8B7355';
+  ctx.lineWidth = 3*s;
+  ctx.stroke();
+
+  // Inner gold border
+  ctx.beginPath();
+  ctx.moveTo(sz*0.19, sz*0.22);
+  ctx.lineTo(sz*0.81, sz*0.22);
+  ctx.lineTo(sz*0.81, sz*0.58);
+  ctx.quadraticCurveTo(sz*0.81, sz*0.78, sz*0.5, sz*0.88);
+  ctx.quadraticCurveTo(sz*0.19, sz*0.78, sz*0.19, sz*0.58);
+  ctx.closePath();
+  ctx.strokeStyle = 'rgba(196,168,130,0.3)';
+  ctx.lineWidth = 1*s;
+  ctx.stroke();
+
+  // Antlers framing the shield top
+  drawAntlers(ctx, sz*0.5, sz*0.15, sz*0.55, '#C4A882');
+
+  // Deer head center
+  drawDeerHead(ctx, sz*0.5, sz*0.38, sz*0.65, '#C4A882');
+
+  // MD flag stripe across shield
+  const stripeY = sz*0.57;
+  const stripeH = 5*s;
+  ctx.save();
+  // Clip to shield
+  ctx.beginPath();
+  ctx.moveTo(sz*0.15, sz*0.18);
+  ctx.lineTo(sz*0.85, sz*0.18);
+  ctx.lineTo(sz*0.85, sz*0.6);
+  ctx.quadraticCurveTo(sz*0.85, sz*0.82, sz*0.5, sz*0.92);
+  ctx.quadraticCurveTo(sz*0.15, sz*0.82, sz*0.15, sz*0.6);
+  ctx.closePath();
+  ctx.clip();
+  ['#E03C31','#FFD700','#1C1C1C','#F5F5DC'].forEach((col,i) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(sz*0.15 + i*(sz*0.7/4), stripeY, sz*0.7/4, stripeH);
+  });
+  ctx.restore();
+
+  // OMD text
+  ctx.fillStyle = '#C4A882';
+  ctx.font = `900 ${24*s}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('OMD', sz*0.5, sz*0.78);
+
+  ctx.font = `600 ${7*s}px -apple-system, system-ui, sans-serif`;
+  ctx.fillStyle = '#6B7F5E';
+  ctx.fillText('OUTDOORS MARYLAND', sz*0.5, sz*0.85);
+}
+
+// ── OPTION D: Maryland Wild (Sunset Scene) ──
+function drawLogoD(canvasId, sz) {
+  const c = document.getElementById(canvasId);
+  c.width = sz; c.height = sz;
+  const ctx = c.getContext('2d');
+  const s = sz / 200;
+
+  // Sunset gradient background
+  const bg = ctx.createLinearGradient(0, 0, 0, sz);
+  bg.addColorStop(0, '#4A2A15');
+  bg.addColorStop(0.3, '#8A4A20');
+  bg.addColorStop(0.5, '#C47030');
+  bg.addColorStop(0.6, '#3A5A35');
+  bg.addColorStop(1, '#1A2A15');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, sz, sz);
+
+  // MD state outline as frame
+  ctx.save();
+  drawMDOutline(ctx, sz*0.05, sz*0.15, sz*0.9, sz*0.55);
+  ctx.clip();
+
+  // Sun
+  const sunGrad = ctx.createRadialGradient(sz*0.5, sz*0.32, 0, sz*0.5, sz*0.32, sz*0.15);
+  sunGrad.addColorStop(0, 'rgba(255,200,80,0.8)');
+  sunGrad.addColorStop(1, 'rgba(255,150,50,0)');
+  ctx.fillStyle = sunGrad;
+  ctx.fillRect(0, 0, sz, sz);
+
+  // Tree silhouettes
+  ctx.fillStyle = '#1A2A15';
+  [0.15, 0.28, 0.72, 0.85].forEach(xp => {
+    ctx.beginPath();
+    ctx.moveTo(sz*xp - sz*0.04, sz*0.5);
+    ctx.lineTo(sz*xp, sz*0.28);
+    ctx.lineTo(sz*xp + sz*0.04, sz*0.5);
+    ctx.fill();
+    // Trunk
+    ctx.fillRect(sz*xp - sz*0.008, sz*0.5, sz*0.016, sz*0.12);
+  });
+
+  // Deer silhouette (standing, profile)
+  ctx.fillStyle = '#0D1A0D';
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(sz*0.42, sz*0.48, sz*0.09, sz*0.05, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Head
+  ctx.beginPath();
+  ctx.ellipse(sz*0.5, sz*0.42, sz*0.025, sz*0.03, 0.3, 0, Math.PI*2);
+  ctx.fill();
+  // Neck
+  ctx.beginPath();
+  ctx.moveTo(sz*0.48, sz*0.44);
+  ctx.lineTo(sz*0.46, sz*0.48);
+  ctx.lineTo(sz*0.49, sz*0.47);
+  ctx.fill();
+  // Legs
+  ctx.lineWidth = 2*s;
+  ctx.strokeStyle = '#0D1A0D';
+  [[0.36, 0.38], [0.46, 0.48]].forEach(([x1, x2]) => {
+    ctx.beginPath(); ctx.moveTo(sz*x1, sz*0.52); ctx.lineTo(sz*x1, sz*0.62); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sz*x2, sz*0.52); ctx.lineTo(sz*x2, sz*0.62); ctx.stroke();
+  });
+  // Antlers on deer
+  drawAntlers(ctx, sz*0.5, sz*0.38, sz*0.2, '#0D1A0D');
+
+  // Turkey silhouette
+  ctx.fillStyle = '#0D1A0D';
+  drawTurkey(ctx, sz*0.62, sz*0.55, sz*0.3, '#0D1A0D');
+
+  ctx.restore();
+
+  // State outline stroke
+  drawMDOutline(ctx, sz*0.05, sz*0.15, sz*0.9, sz*0.55);
+  ctx.strokeStyle = '#C4A882';
+  ctx.lineWidth = 2.5*s;
+  ctx.stroke();
+
+  // River flowing through bottom
+  ctx.strokeStyle = 'rgba(100,160,200,0.4)';
+  ctx.lineWidth = 3*s;
+  ctx.beginPath();
+  ctx.moveTo(0, sz*0.78);
+  ctx.quadraticCurveTo(sz*0.25, sz*0.74, sz*0.5, sz*0.78);
+  ctx.quadraticCurveTo(sz*0.75, sz*0.82, sz, sz*0.78);
+  ctx.stroke();
+
+  // Crab accent at base
+  drawCrab(ctx, sz*0.5, sz*0.86, sz*0.35, 'rgba(212,145,61,0.7)');
+
+  // Text
+  ctx.fillStyle = '#C4A882';
+  ctx.font = `900 ${18*s}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 6*s;
+  ctx.fillText('HUNT', sz*0.38, sz*0.97);
+  ctx.fillStyle = '#D4913D';
+  ctx.fillText('MD', sz*0.62, sz*0.97);
+  ctx.shadowBlur = 0;
+
+  // MD flag bar
+  const barH = 4*s;
+  ['#E03C31','#FFD700','#1C1C1C','#F5F5DC'].forEach((col,i) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(i*sz/4, sz-barH, sz/4, barH);
+  });
+}
+
+// Render all logos at all sizes
+['logoA', 'logoB', 'logoC', 'logoD'].forEach(id => {
+  const drawFn = id === 'logoA' ? drawLogoA : id === 'logoB' ? drawLogoB : id === 'logoC' ? drawLogoC : drawLogoD;
+  drawFn(id, 200);
+  drawFn(id + '_sm', 80);
+  drawFn(id + '_xs', 50);
+});
+</script>
+
+</body>
+</html>
