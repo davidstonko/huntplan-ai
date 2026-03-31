@@ -1,0 +1,36 @@
+# Render Blueprint — Infrastructure-as-Code deployment
+# Deploy with: https://render.com/deploy → connect this repo
+# Or create services manually matching this spec
+
+databases:
+  - name: huntplan-db
+    databaseName: huntplan
+    plan: free  # 256 MB, auto-suspend after 90 days inactivity
+    postgresMajorVersion: "16"
+    ipAllowList: []  # Only allow Render internal access
+
+services:
+  - type: web
+    name: huntplan-api
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free  # 512 MB RAM, auto-suspend after 15 min inactivity
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: huntplan-db
+          property: connectionString
+        # Render provides postgres:// — we need postgresql+asyncpg://
+        # Override in Render dashboard or use the transform below
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: MAPBOX_ACCESS_TOKEN
+        sync: false  # Set manually in Render dashboard
+      - key: DEBUG
+        value: "false"
+      - key: REDIS_URL
+        value: "redis://localhost:6379/0"  # Redis not included in free tier

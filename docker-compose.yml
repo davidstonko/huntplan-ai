@@ -1,0 +1,57 @@
+# HuntPlan AI — Docker Compose
+# Runs the backend API, PostgreSQL + PostGIS, and Redis.
+
+services:
+  # --- PostgreSQL with PostGIS + pgvector ---
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: huntplan-db
+    environment:
+      POSTGRES_DB: huntplan
+      POSTGRES_USER: huntplan
+      POSTGRES_PASSWORD: huntplan
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U huntplan"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- Redis (for Celery background tasks) ---
+  redis:
+    image: redis:7-alpine
+    container_name: huntplan-redis
+    ports:
+      - "6379:6379"
+
+  # --- FastAPI Backend ---
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: huntplan-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://huntplan:huntplan@db:5432/huntplan
+      DATABASE_URL_SYNC: postgresql://huntplan:huntplan@db:5432/huntplan
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+      - ./scripts:/app/scripts
+      - ./backend/app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  pgdata:
