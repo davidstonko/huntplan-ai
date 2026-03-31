@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db
+from app.db.database import get_db, engine, async_session, Base
 from app.modules.ai_planner.service import generate_ai_response
 
 router = APIRouter(
@@ -77,3 +77,64 @@ async def query_ai_planner(
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI query failed: {str(e)}")
+
+
+@router.post("/ingest")
+async def trigger_ingestion():
+    """
+    Admin endpoint: Ingest Maryland regulation data into the database.
+    Seeds the regulation_chunks table for RAG queries.
+    """
+    import uuid
+    from sqlalchemy import text
+    from app.models.rag import RegulationChunk
+
+    # Import the ingestion data
+    from scripts.ingest_regulations import (
+        build_season_chunks, build_wma_chunks, build_county_chunks,
+        build_bag_limit_chunks, build_general_chunks,
+    )
+
+    try:
+        all_chunks = []
+        all_chunks.extend(build_season_chunks())
+        all_chunks.extend(build_wma_chunks())
+        all_chunks.extend(build_county_chunks())
+        all_chunks.extend(build_bag_limit_chunks())
+        all_chunks.extend(build_general_chunks())
+
+        async with engine.begin() as conn:
+            await conn.execute(text("DELETE FROM regulation_chunks WHERE state = 'MD'"))
+
+        async with async_session() as session:
+            for chunk_data in all_chunks:
+                chunk = RegulationChunk(
+                    id=str(uuid.uuid4()),
+                    content=chunk_data["content"],
+                    title=chunk_data["title"],
+                    state="MD",
+                    category=chunk_data["category"],
+                    species=chunk_data["species"],
+                    county=chunk_data["county"],
+                    source=chunk_data["source"],
+                    metadata=chunk_data["metadata"],
+                    regulation_year="2025-2026",
+                )
+                session.add(chunk)
+            await session.commit()
+
+        # Update search vectors
+        async with engine.begin() as conn:
+            await conn.execute(text("""
+                UPDATE regulation_chunks
+                SET search_vector = to_tsvector('english', title || ' ' || content)
+                WHERE state = 'MD'
+            """))
+
+        return {
+            "status": "ok",
+            "chunks_ingested": len(all_chunks),
+            "message": f"Successfully ingested {len(all_chunks)} Maryland regulation chunks",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
