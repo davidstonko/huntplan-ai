@@ -28,6 +28,7 @@ router = APIRouter()
 
 
 # ─── Request / Response Models ───────────────────────────────────
+
 class LogHarvestRequest(BaseModel):
     species: str = Field(..., description="deer, turkey, waterfowl, bear, small_game")
     species_detail: Optional[str] = None
@@ -50,6 +51,7 @@ class LogHarvestRequest(BaseModel):
     notes: Optional[str] = None
     is_shared: bool = False
     season_year: str = "2025-2026"
+
 
 class UpdateHarvestRequest(BaseModel):
     species_detail: Optional[str] = None
@@ -81,6 +83,7 @@ class HarvestSummary(BaseModel):
 
 
 # ─── CRUD Endpoints ──────────────────────────────────────────────
+
 @router.post("/log", status_code=201)
 async def log_harvest(
     request: LogHarvestRequest,
@@ -108,7 +111,8 @@ async def log_harvest(
         antler_points=request.antler_points,
         is_antlered=request.is_antlered,
         estimated_weight_lbs=request.estimated_weight_lbs,
-        beard_length_inches=request.beard_length_inches,        spur_length_inches=request.spur_length_inches,
+        beard_length_inches=request.beard_length_inches,
+        spur_length_inches=request.spur_length_inches,
         game_check_number=request.game_check_number,
         game_check_completed=request.game_check_completed,
         photo_key=request.photo_key,
@@ -136,7 +140,8 @@ async def list_harvests(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all harvests for the current user, optionally filtered by season and species."""    query = select(HarvestLog).where(HarvestLog.user_id == user.id)
+    """List all harvests for the current user, optionally filtered by season and species."""
+    query = select(HarvestLog).where(HarvestLog.user_id == user.id)
 
     if season_year:
         query = query.where(HarvestLog.season_year == season_year)
@@ -164,7 +169,8 @@ async def list_harvests(
                 "antler_points": h.antler_points,
                 "is_antlered": h.is_antlered,
                 "estimated_weight_lbs": h.estimated_weight_lbs,
-                "beard_length_inches": h.beard_length_inches,                "spur_length_inches": h.spur_length_inches,
+                "beard_length_inches": h.beard_length_inches,
+                "spur_length_inches": h.spur_length_inches,
                 "game_check_number": h.game_check_number,
                 "game_check_completed": h.game_check_completed,
                 "photo_key": h.photo_key,
@@ -196,7 +202,8 @@ async def season_summary(
         )
         .where(and_(HarvestLog.user_id == user.id, HarvestLog.season_year == season_year))
         .group_by(HarvestLog.species)
-    )    rows = result.all()
+    )
+    rows = result.all()
 
     # Maryland bag limits for reference (2025-2026)
     md_bag_limits = {
@@ -231,6 +238,7 @@ async def season_summary(
             ))
         )
         antlerless_count = antlerless_result.scalar() or 0
+
         deer_detail = {
             "antlered": antlered_count,
             "antlerless": antlerless_count,
@@ -267,7 +275,8 @@ async def _game_check_rate(db: AsyncSession, user_id: uuid.UUID, season_year: st
             HarvestLog.season_year == season_year,
             HarvestLog.game_check_completed == True,
         ))
-    )    checked = checked_result.scalar() or 0
+    )
+    checked = checked_result.scalar() or 0
 
     return {
         "total": total,
@@ -298,7 +307,8 @@ async def get_harvest(
         "harvest_date": h.harvest_date.isoformat(),
         "harvest_time": h.harvest_time,
         "weapon": h.weapon,
-        "weapon_detail": h.weapon_detail,        "county": h.county,
+        "weapon_detail": h.weapon_detail,
+        "county": h.county,
         "land_name": h.land_name,
         "lat": h.lat,
         "lng": h.lng,
@@ -342,6 +352,7 @@ async def update_harvest(
     await db.flush()
 
     return {"message": "Harvest updated", "id": str(h.id)}
+
 
 @router.delete("/{harvest_id}", status_code=204)
 async def delete_harvest(
