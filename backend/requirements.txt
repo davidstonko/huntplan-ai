@@ -24,10 +24,10 @@ pdfplumber>=0.11.0
 
 # AI / LLM
 anthropic>=0.34.0
+google-generativeai>=0.8.0
 
 # Geospatial
-shapely>=2.0.6
-pyproj>=3.7.0
+shapely>=2.0.6pyproj>=3.7.0
 geojson>=3.1.0
 
 # Background tasks
