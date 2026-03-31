@@ -59,6 +59,14 @@ export default function ResourcesHubScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.quickButton}
+          onPress={() => navigation.navigate('Forum')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.quickIcon}>{'💬'}</Text>
+          <Text style={styles.quickLabel}>Forum</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.quickButton}
           onPress={() => navigation.navigate('Settings')}
           activeOpacity={0.7}
         >

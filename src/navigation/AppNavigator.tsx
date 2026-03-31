@@ -18,6 +18,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import HarvestLogScreen from '../screens/HarvestLogScreen';
 import HuntPlanScreen from '../screens/HuntPlanScreen';
 import OfflineMapsScreen from '../screens/OfflineMapsScreen';
+import ForumScreen from '../screens/ForumScreen';
 
 // ── Fish / Coming Soon screens ──
 import FishMapScreen from '../screens/FishMapScreen';
@@ -51,13 +52,14 @@ function AIStack() {
   );
 }
 
-/** Resources tab stack: ResourcesHub → HarvestLog, Settings */
+/** Resources tab stack: ResourcesHub → HarvestLog, Settings, Forum */
 function ResourcesStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ResourcesMain" component={ResourcesHubScreen} />
       <Stack.Screen name="HarvestLog" component={HarvestLogScreen} options={{ headerShown: true, title: 'Harvest Log' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, title: 'Settings' }} />
+      <Stack.Screen name="Forum" component={ForumScreen} options={{ headerShown: true, title: 'Community Forum' }} />
     </Stack.Navigator>
   );
 }

@@ -7,3 +7,5 @@ from app.models.plan import *
 from app.models.social import *
 from app.models.deercamp import *
 from app.models.rag import *
+from app.models.harvest import *
+from app.models.forum import *
