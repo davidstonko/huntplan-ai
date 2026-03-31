@@ -21,6 +21,9 @@ from app.modules.auth.routes import router as auth_router
 from app.modules.deercamp.routes import router as deercamp_router
 from app.modules.export.routes import router as export_router
 from app.modules.notifications.routes import router as notifications_router
+from app.modules.harvest.routes import router as harvest_router
+from app.modules.websocket.routes import router as websocket_router
+from app.modules.photos.routes import router as photos_router
 
 async def auto_ingest_if_empty():
     """Seed regulation chunks on first deploy (if table is empty)."""
@@ -133,6 +136,11 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(deercamp_router, prefix="/api/v1/deercamp", tags=["Deer Camp"])
 app.include_router(export_router, prefix="/api/v1/export", tags=["Export"])
 app.include_router(notifications_router, prefix="/api/v1/notifications", tags=["Notifications"])
+app.include_router(harvest_router, prefix="/api/v1/harvest", tags=["Harvest Log"])
+app.include_router(photos_router, prefix="/api/v1/photos", tags=["Photos"])
+
+# WebSocket routes (no prefix — mounted at /ws/camps/{camp_id})
+app.include_router(websocket_router, tags=["WebSocket"])
 
 
 @app.get("/")

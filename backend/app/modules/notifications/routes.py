@@ -98,14 +98,15 @@ async def send_camp_notification(
 ):
     """
     Send a push notification to all camp members except the actor.
-    This would be called from the Deer Camp routes when someone
-    adds an annotation, joins, etc.
-
-    TODO: Integrate with APNS via PyAPNs2 or firebase-admin.
-    For now, this logs the notification intent.
+    Uses APNS service for real push delivery (or logs in dev mode).
     """
-    # In production:
-    # 1. Query all camp members except exclude_user_id
-    # 2. Get their APNS tokens
-    # 3. Send via APNS
-    print(f"[Notify] Camp {camp_id}: {title} - {body}")
+    from app.modules.notifications.apns_service import notify_camp_members
+
+    await notify_camp_members(
+        db=db,
+        camp_id=camp_id,
+        exclude_user_id=exclude_user_id,
+        title=title,
+        body=body,
+        data=data or {},
+    )

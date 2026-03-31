@@ -34,6 +34,20 @@ class Settings(BaseSettings):
     # External APIs
     openweather_api_key: Optional[str] = None
 
+    # Cloudflare R2 / S3 (photo storage)
+    r2_account_id: Optional[str] = None
+    r2_access_key_id: Optional[str] = None
+    r2_secret_access_key: Optional[str] = None
+    r2_bucket: str = "huntplan-photos"
+    r2_public_url: Optional[str] = None  # Custom domain for public access
+
+    # Push Notifications (APNS)
+    apns_key_id: Optional[str] = None
+    apns_team_id: Optional[str] = None
+    apns_bundle_id: str = "com.davidstonko.huntmaryland"
+    apns_key_path: Optional[str] = None  # Path to .p8 key file
+    apns_use_sandbox: bool = True  # True for dev, False for production
+
     # Auth
     secret_key: str = "CHANGE-ME-IN-PRODUCTION"
     access_token_expire_minutes: int = 60 * 24 * 30  # 30 days

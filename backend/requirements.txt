@@ -31,8 +31,16 @@ shapely>=2.0.6
 pyproj>=3.7.0
 geojson>=3.1.0
 
+# Cloud storage (Cloudflare R2 / S3)
+boto3>=1.35.0
+
+# Push notifications (APNS)
+apns2>=0.7.2
+
 # Background tasks
 celery[redis]>=5.4.0
+
+# WebSocket (included in FastAPI/Starlette, no extra dep needed)
 
 # Utilities
 python-dotenv>=1.0.1
