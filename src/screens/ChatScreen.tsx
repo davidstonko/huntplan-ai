@@ -12,6 +12,11 @@ import {
 } from 'react-native';
 import Colors from '../theme/colors';
 import { getSmartResponse, ChatResponse } from '../data/chatKnowledge';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_BASE_URL = __DEV__
+  ? 'http://localhost:8000'
+  : 'https://huntplan-api.onrender.com';
 
 interface ChatMessage {
   id: string;
@@ -24,9 +29,35 @@ interface ChatMessage {
 
 
 /**
- * AI Chat screen — sends queries to the smart response system.
- * Uses getSmartResponse from chatKnowledge for intelligent, context-aware answers.
- * Once /api/v1/planner/query is live, swap in the real API call.
+ * @file ChatScreen.tsx
+ * @description AI-powered chat assistant for hunting knowledge and regulations.
+ * Provides intelligent Q&A about Maryland hunting seasons, bag limits, public lands,
+ * and hunting rules with follow-up suggestions and source citations.
+ *
+ * @module Screens
+ * @version 2.0.0
+ *
+ * Key features:
+ * - Conversational chat interface with message bubbles and timestamps
+ * - Claude AI-powered answers via backend RAG pipeline (/api/v1/planner/ai/query)
+ * - Offline fallback to local keyword-matching knowledge base
+ * - Citation footer showing sources for regulation answers
+ * - Follow-up suggestion chips for follow-on questions
+ * - Quick-start suggestion chips on fresh chat (When is deer season?, Bear hunting rules?, etc.)
+ * - Animated "Thinking..." indicator during response generation
+ * - Multiline input with send button and keyboard avoidance
+ */
+
+/**
+ * ChatScreen — Interactive AI chat for hunting questions and guidance.
+ *
+ * Main chat interface that sends user queries to the smart response system for
+ * intelligent, context-aware answers about MD hunting regulations, seasons, lands,
+ * and bag limits. Displays AI responses with citations and suggestions for follow-up
+ * questions. Currently uses local getSmartResponse; future versions will call the
+ * FastAPI backend at /api/v1/planner/query.
+ *
+ * @returns {JSX.Element} Full-screen chat UI with message list, input bar, and suggestion chips
  */
 export default function ChatScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -61,6 +92,11 @@ export default function ChatScreen() {
     ]);
   };
 
+  /**
+   * Send query to backend AI endpoint with local fallback.
+   * Tries the Claude-powered RAG API first; if offline or error,
+   * falls back to the local keyword-matching knowledge base.
+   */
   const handleSend = async () => {
     const query = inputText.trim();
     if (!query) return;
@@ -69,12 +105,46 @@ export default function ChatScreen() {
     setInputText('');
     setLoading(true);
 
-    // Use smart response system from chatKnowledge
-    setTimeout(() => {
-      const response = getSmartResponse(query);
-      addMessage(response.text, false, response.citations, response.followUpSuggestions);
-      setLoading(false);
-    }, 800 + Math.random() * 600);
+    try {
+      // Try backend AI (Claude + RAG)
+      const token = await AsyncStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/api/v1/planner/ai/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          query,
+          state: 'MD',
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        addMessage(
+          data.answer,
+          false,
+          data.sources?.length > 0 ? data.sources : undefined,
+          data.follow_up_suggestions?.length > 0 ? data.follow_up_suggestions : undefined,
+        );
+        setLoading(false);
+        return;
+      }
+      // If non-OK response, fall through to local fallback
+    } catch (_err) {
+      // Network error or timeout — use local fallback
+    }
+
+    // Local fallback: keyword-matching knowledge base
+    const localResponse = getSmartResponse(query);
+    addMessage(
+      localResponse.text,
+      false,
+      localResponse.citations,
+      localResponse.followUpSuggestions,
+    );
+    setLoading(false);
   };
 
   const renderMessage = ({ item }: { item: ChatMessage }) => (

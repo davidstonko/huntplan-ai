@@ -10,6 +10,7 @@ import { ActivityModeProvider } from './context/ActivityModeContext';
 import { ScoutDataProvider } from './context/ScoutDataContext';
 import { DeerCampProvider } from './context/DeerCampContext';
 import Colors from './theme/colors';
+import { initAuth } from './services/authService';
 
 const DISCLAIMER_KEY = 'HUNTPLAN_DISCLAIMER_ACCEPTED';
 
@@ -23,6 +24,18 @@ export default function App() {
       try {
         const accepted = await AsyncStorage.getItem(DISCLAIMER_KEY);
         setDisclaimerAccepted(accepted === 'true');
+
+        // Silent auth: register device or restore stored JWT
+        // Runs in background — doesn't block app launch
+        initAuth().then((authState) => {
+          if (authState.isAuthenticated && authState.accessToken) {
+            // Also store under 'auth_token' for simple fetch() calls
+            AsyncStorage.setItem('auth_token', authState.accessToken);
+          }
+          console.log('[Auth]', authState.isAuthenticated ? 'Authenticated' : 'Offline mode');
+        }).catch(() => {
+          console.warn('[Auth] Silent auth failed, running offline');
+        });
       } catch (e) {
         console.error('Error checking disclaimer:', e);
       } finally {

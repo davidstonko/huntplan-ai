@@ -6,3 +6,4 @@ from app.models.user import *
 from app.models.plan import *
 from app.models.social import *
 from app.models.deercamp import *
+from app.models.rag import *

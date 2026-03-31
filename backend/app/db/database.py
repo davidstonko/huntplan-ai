@@ -38,10 +38,14 @@ async def get_db() -> AsyncSession:
 
 
 async def init_db():
-    """Create all tables. Call on startup or via migration."""
+    """Create all tables and enable extensions. Call on startup or via migration."""
     async with engine.begin() as conn:
+        from sqlalchemy import text as sa_text
         # Enable PostGIS extension
-        await conn.execute(
-            __import__("sqlalchemy").text("CREATE EXTENSION IF NOT EXISTS postgis")
-        )
+        await conn.execute(sa_text("CREATE EXTENSION IF NOT EXISTS postgis"))
+        # Enable pgvector if available (for future semantic search)
+        try:
+            await conn.execute(sa_text("CREATE EXTENSION IF NOT EXISTS vector"))
+        except Exception:
+            pass  # pgvector not available on this database tier
         await conn.run_sync(Base.metadata.create_all)
