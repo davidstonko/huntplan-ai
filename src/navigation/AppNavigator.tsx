@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useActivityMode } from '../context/ActivityModeContext';
 import ActivityModePicker from '../components/navigation/ActivityModePicker';
@@ -13,6 +13,12 @@ import ChatScreen from '../screens/ChatScreen';
 import DeerCampScreen from '../screens/DeerCampScreen';
 import ResourcesHubScreen from '../screens/ResourcesHubScreen';
 
+// ── Sub-screens (accessible via stack push within tabs) ──
+import SettingsScreen from '../screens/SettingsScreen';
+import HarvestLogScreen from '../screens/HarvestLogScreen';
+import HuntPlanScreen from '../screens/HuntPlanScreen';
+import OfflineMapsScreen from '../screens/OfflineMapsScreen';
+
 // ── Fish / Coming Soon screens ──
 import FishMapScreen from '../screens/FishMapScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
@@ -20,6 +26,41 @@ import ComingSoonScreen from '../screens/ComingSoonScreen';
 import Colors from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+// ── Stack wrappers for tabs that need sub-screen navigation ──
+
+/** Map tab stack: MapScreen → OfflineMaps, Settings */
+function MapStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MapMain" component={MapScreen} />
+      <Stack.Screen name="OfflineMaps" component={OfflineMapsScreen} options={{ headerShown: true, title: 'Offline Maps' }} />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, title: 'Settings' }} />
+    </Stack.Navigator>
+  );
+}
+
+/** AI tab stack: ChatScreen → HuntPlan */
+function AIStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ChatMain" component={ChatScreen} />
+      <Stack.Screen name="HuntPlan" component={HuntPlanScreen} options={{ headerShown: true, title: 'AI Hunt Plan' }} />
+    </Stack.Navigator>
+  );
+}
+
+/** Resources tab stack: ResourcesHub → HarvestLog, Settings */
+function ResourcesStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ResourcesMain" component={ResourcesHubScreen} />
+      <Stack.Screen name="HarvestLog" component={HarvestLogScreen} options={{ headerShown: true, title: 'Harvest Log' }} />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, title: 'Settings' }} />
+    </Stack.Navigator>
+  );
+}
 
 /**
  * Emoji + text tab icons — themed per activity mode.
@@ -94,7 +135,7 @@ export default function AppNavigator() {
       <Tab.Navigator screenOptions={sharedScreenOptions}>
         <Tab.Screen
           name="MapTab"
-          component={MapScreen}
+          component={MapStack}
           options={{
             tabBarLabel: 'Map',
             tabBarIcon: ({ focused }) => (
@@ -114,7 +155,7 @@ export default function AppNavigator() {
         />
         <Tab.Screen
           name="ChatTab"
-          component={ChatScreen}
+          component={AIStack}
           options={{
             tabBarLabel: 'AI',
             tabBarIcon: ({ focused }) => (
@@ -134,7 +175,7 @@ export default function AppNavigator() {
         />
         <Tab.Screen
           name="ResourcesTab"
-          component={ResourcesHubScreen}
+          component={ResourcesStack}
           options={{
             tabBarLabel: 'Resources',
             tabBarIcon: ({ focused }) => (

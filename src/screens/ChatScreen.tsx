@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Colors from '../theme/colors';
 import { getSmartResponse, ChatResponse } from '../data/chatKnowledge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -60,6 +61,7 @@ interface ChatMessage {
  * @returns {JSX.Element} Full-screen chat UI with message list, input bar, and suggestion chips
  */
 export default function ChatScreen() {
+  const navigation = useNavigation<any>();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '0',
@@ -207,6 +209,20 @@ export default function ChatScreen() {
       style={styles.container}
       keyboardVerticalOffset={100}
     >
+      {/* ── Hunt Plan Generator Banner ── */}
+      <TouchableOpacity
+        style={styles.huntPlanBanner}
+        onPress={() => navigation.navigate('HuntPlan')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.huntPlanBannerIcon}>{'🎯'}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.huntPlanBannerTitle}>AI Hunt Plan Generator</Text>
+          <Text style={styles.huntPlanBannerSub}>Get a custom plan for your next hunt</Text>
+        </View>
+        <Text style={styles.huntPlanBannerArrow}>{'›'}</Text>
+      </TouchableOpacity>
+
       {/* Quick suggestion chips when chat is fresh */}
       {messages.length <= 1 && (
         <View style={styles.suggestionsContainer}>
@@ -278,6 +294,24 @@ export default function ChatScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  huntPlanBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    marginHorizontal: 12,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.moss,
+    gap: 10,
+  },
+  huntPlanBannerIcon: { fontSize: 22 },
+  huntPlanBannerTitle: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
+  huntPlanBannerSub: { fontSize: 10, color: Colors.textSecondary, marginTop: 1 },
+  huntPlanBannerArrow: { fontSize: 22, color: Colors.textMuted, fontWeight: '300' },
   messageList: { paddingHorizontal: 12, paddingVertical: 12, paddingBottom: 4 },
   messageContainer: { marginVertical: 4, flexDirection: 'column' },
   messageContainerUser: { alignItems: 'flex-end' },

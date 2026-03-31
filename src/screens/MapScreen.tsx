@@ -1,3 +1,22 @@
+/**
+ * @file MapScreen.tsx
+ * @description Primary map interface for browsing all 192+ public hunting lands and 14 shooting ranges in Maryland.
+ * Features interactive Mapbox GL map with land filtering, land detail panels, and map controls.
+ *
+ * @module Screens
+ * @version 2.0.0
+ *
+ * Key features:
+ * - Displays polygons and point markers for public lands color-coded by designation
+ * - 9-factor filter system (land type, species, weapons, access methods)
+ * - Polygon rendering for lands with GIS boundaries, point markers for center-only lands
+ * - Shooting range overlay with tap-to-detail
+ * - Map style toggle (satellite vs. topographic), zoom controls, GPS recenter button
+ * - Responsive legend showing land designation types
+ * - Land and range detail panels with full metadata, contact info, parking data
+ * - Disclaimer banner footer reminding users to verify with MD DNR
+ */
+
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -13,6 +32,7 @@ import MapboxGL from '@rnmapbox/maps';
 import { useLocation } from '../hooks/useLocation';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import MapFilterPanel, { FilterState } from '../components/map/MapFilterPanel';
+import WeatherOverlay from '../components/map/WeatherOverlay';
 import Colors from '../theme/colors';
 import {
   marylandPublicLands,
@@ -84,11 +104,26 @@ const DESIGNATION_TO_FILTER: Record<string, keyof FilterState['landTypes']> = {
   Range: 'range',
 };
 
+/**
+ * MapScreen — Main map browse and discovery interface.
+ *
+ * Renders an interactive Mapbox GL map centered on user's GPS location (or MD center on error).
+ * Displays all public hunting lands as polygons or point markers, with color coding by designation type.
+ * Users can filter lands by type, huntable species, allowed weapons, and access methods.
+ * Tap any land or range to view detailed information including regulations, contact, parking, and links.
+ *
+ * Data comes from marylandPublicLands (192 lands + 14 ranges) with full geospatial boundaries
+ * and enriched metadata (access notes, contacts, parking, bag limits, etc.).
+ *
+ * @returns {JSX.Element} Full-screen map UI with filter panel, controls, legend, and detail panels
+ */
 export default function MapScreen() {
   const { location, loading: locationLoading, error: locationError } = useLocation();
   const [selectedLand, setSelectedLand] = useState<MarylandPublicLand | null>(null);
   const [selectedRange, setSelectedRange] = useState<ShootingRange | null>(null);
   const [showTopo, setShowTopo] = useState(false);
+  const [show3D, setShow3D] = useState(false);
+  const [terrainExaggeration, setTerrainExaggeration] = useState(1.5);
   const [currentZoom, setCurrentZoom] = useState(7);
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     landTypes: {
@@ -304,6 +339,51 @@ export default function MapScreen() {
             />
             <MapboxGL.UserLocation visible={true} />
 
+            {/* ── 3D Terrain (DEM source + hillshade) ── */}
+            {show3D && (
+              <>
+                <MapboxGL.RasterDemSource
+                  id="mapboxDem"
+                  url="mapbox://mapbox.mapbox-terrain-dem-v1"
+                  tileSize={514}
+                  maxZoomLevel={14}
+                >
+                  <MapboxGL.Terrain
+                    exaggeration={terrainExaggeration}
+                  />
+                  <MapboxGL.HillshadeLayer
+                    id="hillshade"
+                    sourceID="mapboxDem"
+                    style={{
+                      hillshadeIlluminationDirection: 335,
+                      hillshadeShadowColor: '#000000',
+                      hillshadeHighlightColor: '#ffffff',
+                      hillshadeAccentColor: '#4a6741',
+                      hillshadeExaggeration: 0.5,
+                    }}
+                    belowLayerID="landFill"
+                  />
+                </MapboxGL.RasterDemSource>
+                <MapboxGL.Atmosphere
+                  style={{
+                    color: 'rgb(186, 210, 235)',
+                    highColor: 'rgb(36, 92, 223)',
+                    horizonBlend: 0.02,
+                    spaceColor: 'rgb(11, 11, 25)',
+                    starIntensity: 0.6,
+                  }}
+                />
+                <MapboxGL.SkyLayer
+                  id="sky"
+                  style={{
+                    skyType: 'atmosphere',
+                    skyAtmosphereSun: [0, 0],
+                    skyAtmosphereSunIntensity: 15,
+                  }}
+                />
+              </>
+            )}
+
             {/* ── Polygon layers for lands with GIS geometry ── */}
             {polygonGeoJSON.features.length > 0 && (
               <MapboxGL.ShapeSource
@@ -470,6 +550,29 @@ export default function MapScreen() {
                 {showTopo ? 'MAP' : 'SAT'}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.controlButton, show3D && styles.controlButtonActive]}
+              onPress={() => setShow3D(!show3D)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.controlButtonLabel, show3D && styles.controlButtonLabelActive]}>
+                3D
+              </Text>
+            </TouchableOpacity>
+            {show3D && (
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={() => {
+                  const levels = [0.5, 1.0, 1.5, 2.0, 3.0];
+                  const idx = levels.indexOf(terrainExaggeration);
+                  const next = levels[(idx + 1) % levels.length];
+                  setTerrainExaggeration(next);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.controlButtonLabel}>{terrainExaggeration}x</Text>
+              </TouchableOpacity>
+            )}
             {location && (
               <TouchableOpacity
                 style={styles.controlButton}
@@ -513,6 +616,14 @@ export default function MapScreen() {
               onClose={() => setSelectedRange(null)}
             />
           )}
+          {/* ── Weather overlay (top-right) ── */}
+          {location && (
+            <WeatherOverlay
+              latitude={location.latitude}
+              longitude={location.longitude}
+              visible={!selectedLand && !selectedRange}
+            />
+          )}
         </>
       )}
       <DisclaimerBanner />
@@ -520,7 +631,18 @@ export default function MapScreen() {
   );
 }
 
-// ── Land Detail Panel ──
+/**
+ * LandDetailPanel — Slide-up detail view for a selected public land.
+ *
+ * Displays comprehensive land information: name, designation, county, acreage, tags (Sunday OK,
+ * ADA access, etc.), species/weapons allowed, contact info, parking locations, reservation details,
+ * and action buttons to open DNR website or PDF maps.
+ *
+ * @param {Object} props - Component props
+ * @param {MarylandPublicLand} props.land - Land object with full metadata
+ * @param {Function} props.onClose - Callback to close the detail panel
+ * @returns {JSX.Element} Scrollable detail panel with close button
+ */
 function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose: () => void }) {
   return (
     <View style={detailStyles.panel}>
@@ -612,7 +734,17 @@ function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose:
   );
 }
 
-// ── Range Detail Panel ──
+/**
+ * RangeDetailPanel — Slide-up detail view for a selected shooting range.
+ *
+ * Displays shooting range information: name, county, range types (e.g., Pistol, Rifle),
+ * public/member access, address, hours, fees, phone contact, and website link.
+ *
+ * @param {Object} props - Component props
+ * @param {ShootingRange} props.range - Range object with full metadata
+ * @param {Function} props.onClose - Callback to close the detail panel
+ * @returns {JSX.Element} Detail panel with range info and contact actions
+ */
 function RangeDetailPanel({ range, onClose }: { range: ShootingRange; onClose: () => void }) {
   return (
     <View style={detailStyles.panel}>
@@ -650,7 +782,16 @@ function RangeDetailPanel({ range, onClose }: { range: ShootingRange; onClose: (
   );
 }
 
-// ── Tag component ──
+/**
+ * Tag — Colored badge component for displaying land attributes.
+ *
+ * Renders small colored tags (e.g., "Sunday OK", "ADA Access", "Free Permit") on land detail panels.
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.label - Text label to display
+ * @param {string} props.color - Hex color code for background and text
+ * @returns {JSX.Element} Colored badge with transparent background
+ */
 function Tag({ label, color }: { label: string; color: string }) {
   return (
     <View style={[detailStyles.tag, { backgroundColor: color + '22', borderColor: color }]}>
