@@ -32,7 +32,6 @@ from app.db.database import get_db
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-
 # ─── Request / Response Models ──────────────────────────────────
 
 
@@ -74,7 +73,6 @@ class PhotoResponse(BaseModel):
     uploaded_by: str
     uploaded_at: str
 
-
 # ─── S3/R2 Client ──────────────────────────────────────────────
 
 
@@ -103,7 +101,6 @@ def _get_s3_client():
         logger.warning(f"R2 client init failed: {e}")
         return None
 
-
 def _generate_presigned_url(
     s3_client,
     bucket: str,
@@ -129,7 +126,6 @@ def _get_public_url(key: str) -> str:
         return f"{settings.r2_public_url}/{key}"
     return f"https://{settings.r2_bucket}.r2.cloudflarestorage.com/{key}"
 
-
 # ─── Endpoints ──────────────────────────────────────────────────
 
 
@@ -143,7 +139,6 @@ async def get_upload_url(req: UploadURLRequest):
     """
     s3_client = _get_s3_client()
 
-    # Generate storage keys
     ext = "jpg"
     if req.content_type == "image/png":
         ext = "png"
@@ -155,7 +150,6 @@ async def get_upload_url(req: UploadURLRequest):
     thumbnail_key = f"photos/{req.context}/{req.context_id}/thumb_{photo_id}.{ext}"
 
     if s3_client:
-        # R2/S3 presigned URL
         upload_url = _generate_presigned_url(
             s3_client,
             settings.r2_bucket,
@@ -163,7 +157,6 @@ async def get_upload_url(req: UploadURLRequest):
             req.content_type,
         )
     else:
-        # Development fallback: local upload endpoint
         upload_url = f"/api/v1/photos/upload-local/{photo_id}"
 
     return UploadURLResponse(
@@ -171,7 +164,6 @@ async def get_upload_url(req: UploadURLRequest):
         image_key=image_key,
         thumbnail_key=thumbnail_key,
     )
-
 
 @router.post("/confirm", response_model=PhotoResponse)
 async def confirm_upload(
@@ -186,7 +178,6 @@ async def confirm_upload(
     now = datetime.utcnow().isoformat()
 
     if req.context == "camp":
-        # Insert into camp_photos table
         await db.execute(
             text("""
                 INSERT INTO camp_photos (id, camp_id, uploaded_by, image_key, lat, lng, caption, uploaded_at)
@@ -202,8 +193,6 @@ async def confirm_upload(
                 "caption": req.caption,
             },
         )
-
-        # Log camp activity
         await db.execute(
             text("""
                 INSERT INTO camp_activity (id, camp_id, user_id, username, action, photo_id, timestamp)
@@ -220,7 +209,6 @@ async def confirm_upload(
         )
 
     elif req.context == "harvest":
-        # Update harvest log with photo key
         await db.execute(
             text("UPDATE harvest_logs SET photo_key = :key WHERE id = :id AND user_id = :user_id"),
             {"key": req.image_key, "id": req.context_id, "user_id": req.user_id},
@@ -231,14 +219,13 @@ async def confirm_upload(
     return PhotoResponse(
         id=photo_id,
         image_url=image_url,
-        thumbnail_url=None,  # Generated async later
+        thumbnail_url=None,
         lat=req.lat,
         lng=req.lng,
         caption=req.caption,
         uploaded_by=req.user_id,
         uploaded_at=now,
     )
-
 
 @router.get("/camp/{camp_id}")
 async def list_camp_photos(

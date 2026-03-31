@@ -60,7 +60,6 @@ def get_apns_client():
         logger.error(f"APNS client init failed: {e}")
         return None
 
-
 # ─── Notification Builders ──────────────────────────────────────
 
 
@@ -97,8 +96,7 @@ async def send_push(
     sound: str = "default",
     category: str = "general",
     data: Optional[dict] = None,
-) -> bool:
-    """
+) -> bool:    """
     Send a push notification to a single device.
     Returns True if sent (or logged), False on error.
     """
@@ -106,7 +104,6 @@ async def send_push(
     payload_dict = _build_payload(title, body, badge, sound, category, data)
 
     if client is None:
-        # Dev mode: just log it
         logger.info(f"[APNS-DEV] → {device_token[:12]}...: {title} — {body}")
         return True
 
@@ -121,7 +118,6 @@ async def send_push(
             custom=data or {},
         )
 
-        # apns2 send is synchronous — run in executor
         import asyncio
 
         def _send():
@@ -141,7 +137,6 @@ async def send_push(
     except Exception as e:
         logger.error(f"APNS send error: {e}")
         return False
-
 
 # ─── High-Level Notification Functions ──────────────────────────
 
@@ -189,7 +184,6 @@ async def notify_camp_members(
             sent_count += 1
 
     logger.info(f"Camp {camp_id}: sent {sent_count}/{len(tokens)} push notifications")
-
 
 async def notify_season_alert(
     db,

@@ -39,7 +39,6 @@ from app.modules.websocket.manager import manager
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-
 async def _verify_ws_token(token: str) -> dict | None:
     """
     Verify JWT token from WebSocket query param.
@@ -77,7 +76,6 @@ async def _get_member_info(user_id: str, camp_id: str) -> dict | None:
             return {"username": row.username, "color": row.color, "role": row.role}
         return None
 
-
 @router.websocket("/ws/camps/{camp_id}")
 async def camp_websocket(
     websocket: WebSocket,
@@ -89,7 +87,6 @@ async def camp_websocket(
 
     Connect: ws://host/ws/camps/{camp_id}?token={jwt}
     """
-    # Authenticate
     user_info = await _verify_ws_token(token)
     if not user_info:
         await websocket.close(code=4001, reason="Invalid or expired token")
@@ -97,13 +94,11 @@ async def camp_websocket(
 
     user_id = user_info["user_id"]
 
-    # Verify camp membership
     member_info = await _get_member_info(user_id, camp_id)
     if not member_info:
         await websocket.close(code=4003, reason="Not a member of this camp")
         return
 
-    # Connect
     await manager.connect(
         websocket, camp_id, user_id,
         username=member_info["username"],
@@ -114,7 +109,6 @@ async def camp_websocket(
         while True:
             data = await websocket.receive_json()
             msg_type = data.get("type")
-
             if msg_type == "ping":
                 await manager.send_personal(websocket, {"type": "pong"})
 
@@ -155,7 +149,6 @@ async def camp_websocket(
         logger.error(f"WS error for user {user_id} in camp {camp_id}: {e}")
         manager.disconnect(camp_id, user_id)
 
-
 # ─── Message Handlers ───────────────────────────────────────────
 
 
@@ -167,7 +160,6 @@ async def _handle_annotation_add(camp_id: str, user_id: str, member: dict, data:
     annotation_data = data.get("annotation", {})
     annotation_type = annotation_data.get("type", "waypoint")
 
-    # Persist to database
     annotation_id = str(uuid.uuid4())
     async with async_session() as session:
         await session.execute(
@@ -183,7 +175,6 @@ async def _handle_annotation_add(camp_id: str, user_id: str, member: dict, data:
                 "data": str(annotation_data).replace("'", '"'),
             },
         )
-        # Log activity
         await session.execute(
             text("""
                 INSERT INTO camp_activity (id, camp_id, user_id, username, action, annotation_id, timestamp)
@@ -199,8 +190,6 @@ async def _handle_annotation_add(camp_id: str, user_id: str, member: dict, data:
             },
         )
         await session.commit()
-
-    # Broadcast to camp
     await manager.broadcast_to_camp(
         camp_id,
         {
@@ -238,7 +227,6 @@ async def _handle_annotation_update(camp_id: str, user_id: str, member: dict, da
             },
         )
         await session.commit()
-
     await manager.broadcast_to_camp(
         camp_id,
         {
@@ -278,7 +266,6 @@ async def _handle_annotation_delete(camp_id: str, user_id: str, member: dict, da
             },
         )
         await session.commit()
-
     await manager.broadcast_to_camp(
         camp_id,
         {
@@ -330,7 +317,6 @@ async def _handle_location_update(camp_id: str, user_id: str, member: dict, data
         },
         exclude_user=user_id,
     )
-
 
 # ─── REST Endpoints for WebSocket Status ────────────────────────
 

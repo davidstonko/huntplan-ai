@@ -38,9 +38,7 @@ class ConnectionManager:
     """
 
     def __init__(self):
-        # camp_id -> {user_id -> connection_info}
         self.active_connections: dict[str, dict[str, dict]] = {}
-
     async def connect(
         self,
         websocket: WebSocket,
@@ -64,7 +62,6 @@ class ConnectionManager:
 
         logger.info(f"WS: {username} joined camp {camp_id} ({len(self.active_connections[camp_id])} online)")
 
-        # Broadcast presence update to other members
         await self.broadcast_to_camp(
             camp_id,
             {
@@ -76,8 +73,6 @@ class ConnectionManager:
             },
             exclude_user=user_id,
         )
-
-        # Send current online roster to the joining member
         await self.send_personal(
             websocket,
             {
@@ -116,8 +111,6 @@ class ConnectionManager:
                 await conn["ws"].send_json(message)
             except Exception:
                 disconnected.append(uid)
-
-        # Clean up dead connections
         for uid in disconnected:
             self.active_connections[camp_id].pop(uid, None)
 
