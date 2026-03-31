@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,15 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
+
+const API_BASE_URL = __DEV__
+  ? 'http://localhost:8000'
+  : 'https://huntplan-api.onrender.com';
 
 interface ScoutingReport {
   id: string;
@@ -84,6 +91,75 @@ export default function SocialScreen() {
     },
   ]);
 
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingFeed, setLoadingFeed] = useState(true);
+
+  /** Fetch scouting reports from backend, fallback to local mock data */
+  const fetchReports = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/api/v1/social/social/feed?limit=30`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.reports && data.reports.length > 0) {
+          const mapped: ScoutingReport[] = data.reports.map((r: any) => ({
+            id: r.id,
+            handle: r.handle || 'Anonymous',
+            species: r.species,
+            activityLevel: r.activity_level || 'moderate',
+            county: r.county || '',
+            area: r.public_land_name || r.general_area || '',
+            bodyText: r.body || '',
+            date: r.report_date?.split('T')[0] || '',
+            upvotes: r.upvotes || 0,
+          }));
+          setReports(mapped);
+        }
+      }
+    } catch {
+      // Keep local mock data as fallback
+    } finally {
+      setLoadingFeed(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchReports();
+  }, [fetchReports]);
+
+  /** Submit report to backend, then add locally */
+  const submitToBackend = async (report: ScoutingReport) => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (!token) return;
+      await fetch(`${API_BASE_URL}/api/v1/social/social/reports`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          species: report.species,
+          activity_level: report.activityLevel,
+          report_date: report.date,
+          county: report.county,
+          public_land_name: report.area,
+          body: report.bodyText,
+        }),
+      });
+    } catch {
+      // Report saved locally even if backend fails
+    }
+  };
+
   const [showReportModal, setShowReportModal] = useState(false);
   const [formData, setFormData] = useState({
     species: '',
@@ -138,6 +214,7 @@ export default function SocialScreen() {
       ...formData,
     };
     setReports([report, ...reports]);
+    submitToBackend(report); // Push to backend in background
     setFormData({ species: '', county: '', area: '', bodyText: '', activityLevel: 'moderate' });
     setShowReportModal(false);
   };
@@ -206,6 +283,9 @@ export default function SocialScreen() {
           }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.oak} />
+          }
         />
       )}
 
