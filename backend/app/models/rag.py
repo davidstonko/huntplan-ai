@@ -37,8 +37,9 @@ class RegulationChunk(Base):
     source = Column(String(500), nullable=True)      # "MD DNR Hunter's Guide", "eRegulations", etc.
     source_url = Column(String(1000), nullable=True)  # URL to original source
 
-    # Metadata (flexible JSONB for season dates, weapon types, etc.)
-    metadata = Column(JSONB, nullable=True)
+    # Extra data (flexible JSONB for season dates, weapon types, etc.)
+    # Note: can't use 'metadata' — reserved by SQLAlchemy DeclarativeBase
+    extra_data = Column(JSONB, nullable=True)
 
     # Full-text search vector (auto-populated by trigger or manual update)
     search_vector = Column(TSVECTOR)

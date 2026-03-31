@@ -322,7 +322,7 @@ def build_season_chunks() -> list[dict]:
             "species": s["species"].split("(")[0].strip(),
             "county": s["counties"][0] if s["counties"] else None,
             "source": "MD DNR Hunter's Guide / eRegulations Maryland",
-            "metadata": {
+            "extra_data": {
                 "start_date": s["start_date"],
                 "end_date": s["end_date"],
                 "weapon": s["weapon"],
@@ -351,7 +351,7 @@ def build_wma_chunks() -> list[dict]:
             "species": None,
             "county": w["county"],
             "source": "MD DNR Wildlife Management Areas",
-            "metadata": {
+            "extra_data": {
                 "acres": w["acres"],
                 "species": w["species"],
                 "weapons": w["weapons"],
@@ -379,7 +379,7 @@ def build_county_chunks() -> list[dict]:
             "species": None,
             "county": c["name"],
             "source": "MD DNR County Hunting Regulations",
-            "metadata": {
+            "extra_data": {
                 "region": c["region"],
                 "sunday_hunting": c["sunday"],
                 "antler_restrictions": c["antler"],
@@ -404,7 +404,7 @@ def build_bag_limit_chunks() -> list[dict]:
             "species": b["species"].split("(")[0].strip(),
             "county": None,
             "source": "MD DNR Bag Limits / eRegulations Maryland",
-            "metadata": {
+            "extra_data": {
                 "quantity": b["qty"],
                 "period": b["period"],
                 "weapon": b["weapon"],
@@ -425,7 +425,7 @@ def build_general_chunks() -> list[dict]:
             "species": None,
             "county": None,
             "source": "MD DNR Hunter's Guide",
-            "metadata": {},
+            "extra_data": {},
         })
     return chunks
 
@@ -483,7 +483,7 @@ async def ingest_all():
                 species=chunk_data["species"],
                 county=chunk_data["county"],
                 source=chunk_data["source"],
-                metadata=chunk_data["metadata"],
+                extra_data=chunk_data["extra_data"],
                 regulation_year="2025-2026",
             )
             session.add(chunk)

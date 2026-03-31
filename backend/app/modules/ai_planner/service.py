@@ -61,7 +61,7 @@ async def search_regulation_chunks(
     # Build the search query with plainto_tsquery for natural language
     sql_parts = [
         """
-        SELECT id, title, content, category, species, county, source, metadata,
+        SELECT id, title, content, category, species, county, source, extra_data,
                ts_rank(search_vector, plainto_tsquery('english', :query)) AS rank
         FROM regulation_chunks
         WHERE search_vector @@ plainto_tsquery('english', :query)
@@ -94,7 +94,7 @@ async def search_regulation_chunks(
             "species": row.species,
             "county": row.county,
             "source": row.source,
-            "metadata": row.metadata,
+            "extra_data": row.extra_data if hasattr(row, 'extra_data') else None,
             "rank": float(row.rank),
         }
         for row in rows
@@ -119,7 +119,7 @@ async def fallback_search(
     params["limit"] = limit
 
     sql = text(f"""
-        SELECT id, title, content, category, species, county, source, metadata, 0.1 AS rank
+        SELECT id, title, content, category, species, county, source, extra_data, 0.1 AS rank
         FROM regulation_chunks
         WHERE state = :state AND ({conditions})
         LIMIT :limit
@@ -137,7 +137,7 @@ async def fallback_search(
             "species": row.species,
             "county": row.county,
             "source": row.source,
-            "metadata": row.metadata,
+            "extra_data": row.extra_data if hasattr(row, 'extra_data') else None,
             "rank": float(row.rank),
         }
         for row in rows

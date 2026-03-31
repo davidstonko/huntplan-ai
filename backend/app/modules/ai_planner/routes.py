@@ -117,7 +117,7 @@ async def trigger_ingestion():
                     species=chunk_data["species"],
                     county=chunk_data["county"],
                     source=chunk_data["source"],
-                    metadata=chunk_data["metadata"],
+                    extra_data=chunk_data["extra_data"],
                     regulation_year="2025-2026",
                 )
                 session.add(chunk)
