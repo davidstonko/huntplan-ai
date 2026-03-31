@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = None  # Legacy — kept for optional fallback
     gemini_api_key: Optional[str] = None
     llm_model: str = "gemini-2.0-flash"  # Free tier: 15 RPM, 1M tokens/day
+
     # Mapbox (for tile serving and geocoding)
     mapbox_access_token: Optional[str] = None
 
@@ -53,7 +54,8 @@ class Settings(BaseSettings):
         if self.database_url.startswith("postgres://"):
             self.database_url = self.database_url.replace(
                 "postgres://", "postgresql+asyncpg://", 1
-            )        elif self.database_url.startswith("postgresql://") and "+asyncpg" not in self.database_url:
+            )
+        elif self.database_url.startswith("postgresql://") and "+asyncpg" not in self.database_url:
             self.database_url = self.database_url.replace(
                 "postgresql://", "postgresql+asyncpg://", 1
             )
