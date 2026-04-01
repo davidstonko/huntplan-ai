@@ -158,7 +158,7 @@ async def create_thread(
         view_count=0,
         is_pinned=False,
         is_locked=False,
-        username=user.username,
+        username=user.handle,
         created_at=thread.created_at.isoformat(),
     )
 
@@ -174,7 +174,7 @@ async def list_threads(
     db: AsyncSession = Depends(get_db),
 ):
     """List forum threads with filtering and sorting."""
-    query = select(ForumThread, User.username).join(
+    query = select(ForumThread, User.handle).join(
         User, ForumThread.user_id == User.id, isouter=True
     ).where(
         ForumThread.is_removed == False  # noqa: E712
@@ -250,7 +250,7 @@ async def get_thread(
 ):
     """Get a single thread with full body and increment view count."""
     result = await db.execute(
-        select(ForumThread, User.username).join(
+        select(ForumThread, User.handle).join(
             User, ForumThread.user_id == User.id, isouter=True
         ).where(ForumThread.id == thread_id, ForumThread.is_removed == False)  # noqa: E712
     )
@@ -348,7 +348,7 @@ async def create_reply(
         parent_id=str(reply.parent_id) if reply.parent_id else None,
         photo_urls=reply.photo_urls,
         upvotes=0,
-        username=user.username,
+        username=user.handle,
         created_at=reply.created_at.isoformat(),
     )
 
@@ -363,7 +363,7 @@ async def list_replies(
     """List all replies for a thread."""
     offset = (page - 1) * per_page
     result = await db.execute(
-        select(ForumReply, User.username).join(
+        select(ForumReply, User.handle).join(
             User, ForumReply.user_id == User.id, isouter=True
         ).where(
             ForumReply.thread_id == thread_id,
@@ -429,7 +429,7 @@ async def create_listing(
         status=listing.status,
         message_count=0,
         view_count=0,
-        username=user.username,
+        username=user.handle,
         created_at=listing.created_at.isoformat(),
     )
 
@@ -447,7 +447,7 @@ async def list_marketplace(
     db: AsyncSession = Depends(get_db),
 ):
     """List marketplace items with filtering."""
-    query = select(MarketplaceListing, User.username).join(
+    query = select(MarketplaceListing, User.handle).join(
         User, MarketplaceListing.user_id == User.id, isouter=True
     ).where(
         MarketplaceListing.status == "active",
@@ -510,7 +510,7 @@ async def get_listing(
 ):
     """Get a single marketplace listing."""
     result = await db.execute(
-        select(MarketplaceListing, User.username).join(
+        select(MarketplaceListing, User.handle).join(
             User, MarketplaceListing.user_id == User.id, isouter=True
         ).where(MarketplaceListing.id == listing_id)
     )
@@ -612,7 +612,7 @@ async def list_land_permissions(
     db: AsyncSession = Depends(get_db),
 ):
     """List available land permissions / hunting leases."""
-    query = select(LandPermission, User.username).join(
+    query = select(LandPermission, User.handle).join(
         User, LandPermission.user_id == User.id, isouter=True
     ).where(
         LandPermission.status == "active",
