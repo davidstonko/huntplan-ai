@@ -16,8 +16,8 @@ router = APIRouter()
 
 @router.get("/weather")
 async def get_weather(
-    latitude: float = Query(..., ge=24.0, le=50.0, description="Latitude (US range)"),
-    longitude: float = Query(..., ge=-125.0, le=-66.0, description="Longitude (US range)"),
+    latitude: float = Query(None, ge=24.0, le=50.0, description="Latitude (US range)"),
+    longitude: float = Query(None, ge=-125.0, le=-66.0, description="Longitude (US range)"),
     lat: float = Query(None, description="Alternative param name for latitude"),
     lon: float = Query(None, description="Alternative param name for longitude"),
 ):
@@ -34,7 +34,10 @@ async def get_weather(
     # Accept both parameter names
     query_lat = lat if lat is not None else latitude
     query_lon = lon if lon is not None else longitude
-    
+
+    if query_lat is None or query_lon is None:
+        raise HTTPException(status_code=400, detail="latitude/lat and longitude/lon parameters are required")
+
     try:
         result = await get_forecast(query_lat, query_lon)
         return {
