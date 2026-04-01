@@ -54,7 +54,7 @@ const MODES: ActivityMode[] = ['hunt', 'fish', 'hike', 'crab', 'boat'];
 
 /**
  * ActivityModePicker - Dropdown in the navigation header that lets users
- * switch between HuntMaryland, FishMaryland, HikeMaryland, etc.
+ * switch between MD Hunt, MD Fish, MD Hike, etc.
  */
 export default function ActivityModePicker() {
   const { activeMode, setActiveMode } = useActivityMode();

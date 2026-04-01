@@ -1,5 +1,5 @@
 /**
- * HuntMaryland AI Chat Knowledge Base
+ * MDHuntFishOutdoors AI Chat Knowledge Base
  *
  * This module provides intelligent responses to hunting queries by searching through
  * Maryland hunting data and generating contextual, accurate answers.
@@ -320,7 +320,7 @@ function handleWMAQuery(userQuery: string): ChatResponse {
           (land.accessNotes ? `\nAccess: ${land.accessNotes}\n` : '') +
           (land.websiteUrl ? `\nMore info: ${land.websiteUrl}` : '') +
           (land.dnrMapPdf ? `\nMap PDF: ${land.dnrMapPdf}` : ''),
-        citations: ['HuntMaryland Database (192 lands)', 'MD DNR'],
+        citations: ['MDHuntFishOutdoors Database (192 lands)', 'MD DNR'],
         followUpSuggestions: [
           `Other lands in ${land.county}?`,
           `When is ${land.huntableSpecies[0] || 'deer'} season?`,
@@ -348,7 +348,7 @@ function handleWMAQuery(userQuery: string): ChatResponse {
           `**Public Hunting Lands in ${countyName} County** (${landsInCounty.length} areas)\n\n${landList}\n` +
           (landsInCounty.length > 8 ? `\n...and ${landsInCounty.length - 8} more\n` : '') +
           '\nTap the Map tab to see exact boundaries and locations for each area.',
-        citations: ['HuntMaryland Database (192 lands)', 'MD DNR'],
+        citations: ['MDHuntFishOutdoors Database (192 lands)', 'MD DNR'],
         followUpSuggestions: [
           `Details about ${landsInCounty[0].name}?`,
           'Sunday hunting allowed?',
@@ -363,7 +363,7 @@ function handleWMAQuery(userQuery: string): ChatResponse {
   return {
     text:
       `**Maryland Public Hunting Lands**\n\n` +
-      `HuntMaryland tracks **${stats.totalLands} public hunting areas** across ${stats.countiesWithLands} counties, plus **${stats.totalRanges} shooting ranges**.\n\n` +
+      `MDHuntFishOutdoors tracks **${stats.totalLands} public hunting areas** across ${stats.countiesWithLands} counties, plus **${stats.totalRanges} shooting ranges**.\n\n` +
       `By type:\n` +
       `• WMA (Wildlife Management Area): ${stats.landsByDesignation.WMA}\n` +
       `• State Forest: ${stats.landsByDesignation.SF}\n` +
@@ -374,7 +374,7 @@ function handleWMAQuery(userQuery: string): ChatResponse {
       `• NEA (Natural Environment Area): ${stats.landsByDesignation.NEA}\n` +
       `• FMA (Forest Mgmt Agreement): ${stats.landsByDesignation.FMA}\n\n` +
       'Use the **Map** tab to explore all areas with real GIS boundaries, or tell me your county to see nearby options.',
-    citations: ['HuntMaryland Database', 'MD DNR', 'MD iMap GIS'],
+    citations: ['MDHuntFishOutdoors Database', 'MD DNR', 'MD iMap GIS'],
     followUpSuggestions: [
       'Public lands in my county?',
       'Which WMAs allow deer hunting?',
@@ -530,7 +530,7 @@ function handlePlanningQuery(userQuery: string): ChatResponse {
       '• Best hunting conditions\n' +
       '• License/permit requirements\n\n' +
       'You can also use the **Plan** tab to create and save hunt plans in the app.',
-    citations: ['HuntMaryland Planning Guide'],
+    citations: ['MDHuntFishOutdoors Planning Guide'],
     followUpSuggestions: [
       'I want to hunt deer with a bow in Garrett County next month',
       'Best turkey hunting locations',
@@ -546,7 +546,7 @@ function handlePlanningQuery(userQuery: string): ChatResponse {
 function getDefaultResponse(): ChatResponse {
   return {
     text:
-      '**Welcome to HuntMaryland AI!**\n\n' +
+      '**Welcome to MDHuntFishOutdoors AI!**\n\n' +
       'I can help you with:\n\n' +
       '• **Season dates** — "When is deer archery season?"\n' +
       '• **Bag limits** — "How many deer can I take?"\n' +
@@ -558,7 +558,7 @@ function getDefaultResponse(): ChatResponse {
       '• **Hunt planning** — "Help me plan my next hunt"\n\n' +
       'Try asking any of these questions, or browse the **Regulations** and **Map** tabs for more details.\n\n' +
       '⚠️ Always verify current rules with MD DNR before hunting.',
-    citations: ['MD DNR Hunter\'s Guide', 'HuntMaryland'],
+    citations: ['MD DNR Hunter\'s Guide', 'MDHuntFishOutdoors'],
     followUpSuggestions: [
       'When is deer season?',
       'Where can I hunt?',

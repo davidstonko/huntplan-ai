@@ -39,6 +39,9 @@ async def get_db() -> AsyncSession:
 
 async def init_db():
     """Create all tables and enable extensions. Call on startup or via migration."""
+    # Import all models so Base.metadata knows about every table
+    import app.models  # noqa: F401
+
     async with engine.begin() as conn:
         from sqlalchemy import text as sa_text
         # Enable PostGIS extension

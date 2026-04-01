@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>HuntMaryland</string>
+	<string>MDHuntFishOutdoors</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -36,7 +36,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>MDHuntFishOutdoors uses your location to show nearby public lands, track your routes in the field, and help you navigate to trailheads and parking areas.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>HuntMaryland uses your location to show nearby public hunting lands, center the map on your position, and help you navigate to trailheads and parking areas.</string>
+	<string>MDHuntFishOutdoors uses your location to show nearby public lands, center the map on your position, and help you navigate to trailheads and parking areas.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
