@@ -1,24 +1,25 @@
 """
 External Data Integrations Router
 
-Handles integration with external data sources: weather, sunrise/sunset,
+Handles integration with external data sources: weather, sunrise/sunset, solunar,
 and other third-party APIs for hunting conditions.
 """
 
 from fastapi import APIRouter, HTTPException, Query
+from datetime import datetime, timedelta
 
 from app.modules.integrations.weather_service import get_forecast
+from app.modules.integrations.solunar_service import get_solunar_times
 
-router = APIRouter(
-    prefix="/integrations",
-    tags=["integrations"],
-)
+router = APIRouter()
 
 
 @router.get("/weather")
 async def get_weather(
     latitude: float = Query(..., ge=24.0, le=50.0, description="Latitude (US range)"),
     longitude: float = Query(..., ge=-125.0, le=-66.0, description="Longitude (US range)"),
+    lat: float = Query(None, description="Alternative param name for latitude"),
+    lon: float = Query(None, description="Alternative param name for longitude"),
 ):
     """
     Get weather forecast and hunting conditions for a location.
@@ -28,9 +29,14 @@ async def get_weather(
     assessments (deer activity, wind/scent management, pressure trends).
 
     Example: /weather?latitude=39.5&longitude=-77.5
+    or: /weather?lat=39.5&lon=-77.5
     """
+    # Accept both parameter names
+    query_lat = lat if lat is not None else latitude
+    query_lon = lon if lon is not None else longitude
+    
     try:
-        result = await get_forecast(latitude, longitude)
+        result = await get_forecast(query_lat, query_lon)
         return {
             "status": "ok",
             **result,
@@ -39,6 +45,49 @@ async def get_weather(
         raise HTTPException(
             status_code=502,
             detail=f"Weather service error: {str(e)}",
+        )
+
+
+@router.get("/solunar")
+async def get_solunar(
+    latitude: float = Query(None, description="Latitude"),
+    longitude: float = Query(None, description="Longitude"),
+    lat: float = Query(None, description="Alternative param name for latitude"),
+    lon: float = Query(None, description="Alternative param name for longitude"),
+    lng: float = Query(None, description="Alternative param name for longitude"),
+    date: str = Query(None, description="Date (YYYY-MM-DD), defaults to today"),
+):
+    """
+    Get solunar times for optimal hunting conditions.
+    
+    Solunar tables show peak activity times based on moon phase and position.
+    Highly accurate for predicting deer and fish activity.
+    
+    Example: /solunar?lat=39.045&lng=-76.641&date=2026-04-01
+    """
+    # Accept multiple parameter name variations
+    query_lat = lat if lat is not None else (latitude if latitude is not None else None)
+    query_lon = lng if lng is not None else (lon if lon is not None else longitude)
+    
+    if query_lat is None or query_lon is None:
+        raise HTTPException(
+            status_code=400,
+            detail="latitude/lat and longitude/lon/lng parameters are required"
+        )
+    
+    if not date:
+        date = datetime.now().strftime("%Y-%m-%d")
+    
+    try:
+        result = await get_solunar_times(query_lat, query_lon, date)
+        return {
+            "status": "ok",
+            **result,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Solunar service error: {str(e)}",
         )
 
 
@@ -55,7 +104,6 @@ async def get_sunrise_sunset(
     (migratory birds: 30 min before sunrise to sunset).
     """
     import httpx
-    from datetime import datetime, timedelta
 
     if not date:
         date = datetime.now().strftime("%Y-%m-%d")

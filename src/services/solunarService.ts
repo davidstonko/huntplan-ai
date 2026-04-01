@@ -8,7 +8,9 @@
  * @version 3.0.0
  */
 
-import { API_BASE_URL } from './api';
+const API_BASE_URL = __DEV__
+  ? 'http://localhost:8000'
+  : 'https://huntplan-api.onrender.com';
 
 // ─── Types ──────────────────────────────────────────────────────
 

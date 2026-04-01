@@ -351,6 +351,7 @@ export default function MapScreen() {
                   <MapboxGL.Terrain
                     exaggeration={terrainExaggeration}
                   />
+                  {/* @ts-ignore - HillshadeLayer is a valid Mapbox component not in current type definitions */}
                   <MapboxGL.HillshadeLayer
                     id="hillshade"
                     sourceID="mapboxDem"

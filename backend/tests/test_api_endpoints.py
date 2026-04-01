@@ -119,11 +119,13 @@ def test_can_i_hunt():
 
 def test_get_lands():
     """GET /api/v1/lands returns public land data."""
-    data = _get("/api/v1/lands")
+    data = _get("/api/v1/lands?limit=2")
     if "_error" in data:
         print(f"  SKIP: Lands endpoint returned {data.get('_status', 'error')}")
         return
-    assert isinstance(data, (list, dict))
+    assert isinstance(data, dict), f"Expected dict, got {type(data)}"
+    # Should have lands or count
+    assert "lands" in data or "count" in data or "status" in data
 
 
 # ─── AI Planner ─────────────────────────────────────────────────
@@ -145,11 +147,16 @@ def test_ai_query():
 
 def test_solunar_endpoint():
     """GET /api/v1/integrations/solunar returns solunar data."""
-    data = _get("/api/v1/integrations/solunar?lat=39.045&lng=-76.641")
+    # Try with lat/lng parameters (most common)
+    data = _get("/api/v1/integrations/solunar?lat=39.045&lng=-76.641&date=2026-04-01")
+    if "_error" in data:
+        # Fallback: try with latitude/longitude
+        data = _get("/api/v1/integrations/solunar?latitude=39.045&longitude=-76.641&date=2026-04-01")
     if "_error" in data:
         print(f"  SKIP: Solunar returned {data.get('_status', 'error')}")
         return
-    assert isinstance(data, dict)
+    assert isinstance(data, dict), f"Expected dict, got {type(data)}"
+    assert "status" in data or "error" not in data
 
 
 def test_moon_endpoint():
@@ -163,11 +170,16 @@ def test_moon_endpoint():
 
 def test_weather_endpoint():
     """GET /api/v1/integrations/weather returns weather data."""
-    data = _get("/api/v1/integrations/weather?lat=39.045&lng=-76.641")
+    # Try with lat/lon parameters
+    data = _get("/api/v1/integrations/weather?lat=39.045&lon=-76.641")
+    if "_error" in data:
+        # Fallback: try with latitude/longitude
+        data = _get("/api/v1/integrations/weather?latitude=39.045&longitude=-76.641")
     if "_error" in data:
         print(f"  SKIP: Weather returned {data.get('_status', 'error')}")
         return
-    assert isinstance(data, dict)
+    assert isinstance(data, dict), f"Expected dict, got {type(data)}"
+    assert "status" in data or "error" not in data
 
 
 # ─── Auth ───────────────────────────────────────────────────────

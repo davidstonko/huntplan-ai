@@ -23,7 +23,10 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
-import { API_BASE_URL } from '../services/api';
+
+const API_BASE_URL = __DEV__
+  ? 'http://localhost:8000'
+  : 'https://huntplan-api.onrender.com';
 
 const SPECIES_OPTIONS = [
   { value: 'deer', label: 'Deer', icon: '🦌' },

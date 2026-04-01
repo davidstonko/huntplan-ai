@@ -7,8 +7,10 @@ Integrates with Mapbox and land parcel databases.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.db.database import get_db
+from app.models.land import PublicLand
 from app.modules.lands.queries import (
     find_nearby_public_lands,
     find_lands_open_for_species,
@@ -19,6 +21,62 @@ from app.modules.lands.queries import (
 )
 
 router = APIRouter()
+
+
+@router.get("")
+@router.get("/")
+async def get_all_lands(
+    limit: int = 10,
+    offset: int = 0,
+    state: str = "MD",
+    db: AsyncSession = Depends(get_db),
+):
+    """Get paginated list of public lands."""
+    try:
+        # Simple pagination query
+        query = select(
+            PublicLand.id,
+            PublicLand.name,
+            PublicLand.land_type,
+            PublicLand.managing_agency,
+            PublicLand.centroid_lat,
+            PublicLand.centroid_lon,
+            PublicLand.acreage,
+            PublicLand.huntable_species,
+            PublicLand.county,
+        ).limit(limit).offset(offset)
+        
+        result = await db.execute(query)
+        rows = result.fetchall()
+        
+        lands = [
+            {
+                "id": row[0],
+                "name": row[1],
+                "land_type": row[2],
+                "managing_agency": row[3],
+                "centroid_lat": row[4],
+                "centroid_lon": row[5],
+                "acreage": row[6],
+                "huntable_species": row[7],
+                "county": row[8],
+            }
+            for row in rows
+        ]
+        
+        return {
+            "status": "success",
+            "state": state,
+            "limit": limit,
+            "offset": offset,
+            "lands": lands,
+            "count": len(lands),
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching lands: {str(e)}"
+        )
 
 
 @router.get("/nearby")

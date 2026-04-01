@@ -330,7 +330,7 @@ export default function ForumScreen() {
           <Text style={styles.loadingText}>Loading community posts...</Text>
         </View>
       ) : (
-        <FlatList
+        <FlatList<any>
           data={activeTab === 'discussions' ? threads : listings}
           keyExtractor={(item) => item.id}
           renderItem={activeTab === 'discussions' ? renderThread : renderListing}
