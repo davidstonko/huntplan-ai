@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timedelta
 
 from app.modules.integrations.weather_service import get_forecast
-from app.modules.integrations.solunar_service import get_solunar_times
+from app.modules.integrations.solunar_service import calculate_solunar_periods
 
 router = APIRouter()
 
@@ -79,11 +79,15 @@ async def get_solunar(
         date = datetime.now().strftime("%Y-%m-%d")
     
     try:
-        result = await get_solunar_times(query_lat, query_lon, date)
+        from datetime import date as date_type
+        query_date = datetime.strptime(date, "%Y-%m-%d").date() if isinstance(date, str) else date
+        result = calculate_solunar_periods(query_date, query_lat, query_lon)
         return {
             "status": "ok",
             **result,
         }
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
     except Exception as e:
         raise HTTPException(
             status_code=502,
