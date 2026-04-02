@@ -39,6 +39,8 @@
 #import "react/renderer/components/safeareacontext/States.h"
 #import "rnasyncstorage/rnasyncstorage.h"
 #import "rnasyncstorageJSI.h"
+#import "RNBackgroundGeolocation/RNBackgroundGeolocation.h"
+#import "RNBackgroundGeolocationJSI.h"
 #import "RNCGeolocationSpec/RNCGeolocationSpec.h"
 #import "RNCGeolocationSpecJSI.h"
 #import "RNCNetInfoSpec/RNCNetInfoSpec.h"

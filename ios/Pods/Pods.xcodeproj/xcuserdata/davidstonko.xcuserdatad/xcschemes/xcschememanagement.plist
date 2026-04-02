@@ -4,6 +4,16 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>CocoaLumberjack-CocoaLumberjackPrivacy.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>CocoaLumberjack.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>DoubleConversion.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -65,6 +75,16 @@
 			<false/>
 		</dict>
 		<key>RCTTypeSafety.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>RNBackgroundGeolocation-TSLocationManagerPrivacy.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>RNBackgroundGeolocation.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -369,7 +389,22 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>TSBackgroundFetch.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>TSLocationManager.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Turf.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>WatermelonDB.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -425,6 +460,11 @@
 			<false/>
 		</dict>
 		<key>rnmapbox-maps.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>simdjson.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>

@@ -1,6 +1,8 @@
 ${PODS_ROOT}/Target Support Files/Pods-HuntPlanAI/Pods-HuntPlanAI-resources.sh
+${PODS_CONFIGURATION_BUILD_DIR}/CocoaLumberjack/CocoaLumberjackPrivacy.bundle
 ${PODS_CONFIGURATION_BUILD_DIR}/MapboxMaps/MapboxMapsResources.bundle
 ${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle
+${PODS_CONFIGURATION_BUILD_DIR}/RNBackgroundGeolocation/TSLocationManagerPrivacy.bundle
 ${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle
 ${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf
 ${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf

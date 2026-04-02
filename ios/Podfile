@@ -20,6 +20,9 @@ end
 target 'HuntPlanAI' do
   config = use_native_modules!
 
+  # WatermelonDB requires @nozbe/simdjson from node_modules
+  pod 'simdjson', :path => '../node_modules/@nozbe/simdjson'
+
   # Flipper is not needed for this project
   use_react_native!(
     :path => config[:reactNativePath],
