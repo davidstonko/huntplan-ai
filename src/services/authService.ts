@@ -12,10 +12,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Config from '../config';
 
-const API_BASE = __DEV__
-  ? 'http://localhost:8000/api/v1'
-  : 'https://huntplan-api.onrender.com/api/v1';
+const API_BASE = `${Config.API_BASE_URL}/api/v1`;
 
 const STORAGE_KEYS = {
   accessToken: '@auth_access_token',
@@ -78,7 +77,7 @@ export async function initAuth(): Promise<AuthState> {
     // No stored token — register new device
     return await registerDevice();
   } catch (error) {
-    console.warn('[Auth] Init failed, running offline:', error);
+    if (__DEV__) console.warn('[Auth] Init failed, running offline:', error);
     return {
       isAuthenticated: false,
       userId: null,
@@ -121,7 +120,7 @@ export async function registerDevice(handle?: string): Promise<AuthState> {
       accessToken: access_token,
     };
   } catch (error) {
-    console.warn('[Auth] Registration failed:', error);
+    if (__DEV__) console.warn('[Auth] Registration failed:', error);
     return {
       isAuthenticated: false,
       userId: null,

@@ -18,10 +18,19 @@
  */
 
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Config from '../config';
 
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+/**
+ * Barometric pressure reading with timestamp
+ * @interface PressureReading
+ * @property {number} value - Pressure in mb/hPa
+ * @property {number} timestamp - Unix timestamp (ms)
+ */
+export interface PressureReading {
+  value: number;
+  timestamp: number;
+}
 
 /**
  * Hunting conditions returned by the backend AI analysis
@@ -33,6 +42,12 @@ export interface HuntingConditions {
   pressure_trend?: string;
   short_summary?: string;
 }
+
+/**
+ * Pressure trend type
+ * @typedef PressureTrend
+ */
+export type PressureTrend = 'rising' | 'falling' | 'stable' | 'unknown';
 
 /**
  * Single forecast period from weather.gov API
@@ -61,18 +76,36 @@ export interface WeatherForecast {
 }
 
 /**
- * Hunting-optimized weather analysis including deer activity prediction
+ * Scent condition evaluation for hunters
+ * @typedef ScentCondition
+ */
+export type ScentCondition = 'excellent' | 'good' | 'moderate' | 'poor';
+
+/**
+ * Hunting-optimized weather analysis including deer activity prediction and scent conditions
  * @interface HuntingWeather
  * @property {WeatherForecast[]} forecasts - Array of weather periods
  * @property {number} deerActivityIndex - 1-10 scale; higher = better hunting conditions
  * @property {string} bestTimeToHunt - Text recommendation for optimal hunt timing
  * @property {string[]} alerts - Array of weather alerts (empty in V1, populated in V3+)
+ * @property {number | null} pressureValue - Current barometric pressure in mb/hPa
+ * @property {PressureTrend} pressureTrend - Rising/falling/stable pressure trend
+ * @property {number | null} dewPoint - Dew point temperature in °F
+ * @property {number} scentRisk - 1-10 scale; 1 = excellent (scent dissipates), 10 = poor (scent carries far)
+ * @property {ScentCondition} scentCondition - Categorical assessment: excellent/good/moderate/poor
+ * @property {string} scentTip - Hunting advice based on scent conditions
  */
 export interface HuntingWeather {
   forecasts: WeatherForecast[];
   deerActivityIndex: number; // 1-10 scale based on pressure, temp, wind
   bestTimeToHunt: string;
   alerts: string[];
+  pressureValue: number | null;
+  pressureTrend: PressureTrend;
+  dewPoint: number | null;
+  scentRisk: number; // 1-10 scale
+  scentCondition: ScentCondition;
+  scentTip: string;
 }
 
 const WEATHER_API = 'https://api.weather.gov';
@@ -82,12 +115,15 @@ const WEATHER_API = 'https://api.weather.gov';
  *
  * Provides 7-day forecasts and deer activity predictions for hunt planning.
  * Caches NOAA grid coordinates to reduce API calls for same location.
+ * Tracks barometric pressure history to calculate trend (rising/falling/stable).
  *
  * @class WeatherService
  */
 class WeatherService {
   // Cache grid coordinates (lat,lon) -> (gridId, gridX, gridY) to avoid repeated API calls
   private gridCache: Map<string, { gridId: string; gridX: number; gridY: number }> = new Map();
+  // Pressure history storage key
+  private readonly PRESSURE_HISTORY_KEY = 'weather_pressure_history';
 
   /**
    * Get 7-day weather forecast for a location
@@ -106,7 +142,7 @@ class WeatherService {
       const res = await axios.get(
         `${WEATHER_API}/gridpoints/${grid.gridId}/${grid.gridX},${grid.gridY}/forecast`,
         {
-          headers: { 'User-Agent': 'HuntPlanAI/1.0 (dstonko1@gmail.com)' },
+          headers: { 'User-Agent': 'MDHuntFishOutdoors/2.0 (contact@outdoorsmaryland.com)' },
           timeout: 10000,
         }
       );
@@ -123,26 +159,71 @@ class WeatherService {
         icon: p.icon,
       }));
     } catch (error) {
-      console.error('Weather API error:', error);
+      if (__DEV__) console.error('[Weather] API error:', error);
       return []; // Return empty array on error; AI handles gracefully
     }
   }
 
   /**
-   * Get hunting-optimized weather analysis with deer activity index
-   * Combines weather forecast with hunting condition scoring.
-   * Used by AI to advise on best hunt times.
+   * Get hunting-optimized weather analysis with deer activity index and scent conditions
+   * Combines weather forecast with hunting condition scoring, barometric pressure trends, and dew point analysis.
+   * Used by AI to advise on best hunt times and scent management.
    * @async
    * @param {number} lat - Latitude
    * @param {number} lon - Longitude
-   * @returns {Promise<HuntingWeather>} Forecasts + activity index + hunt time recommendation
+   * @returns {Promise<HuntingWeather>} Forecasts + activity index + scent conditions + hunt time recommendation + pressure data
    */
   async getHuntingWeather(lat: number, lon: number): Promise<HuntingWeather> {
     const forecasts = await this.getForecast(lat, lon);
+    let pressureValue: number | null = null;
+    let pressureTrend: PressureTrend = 'unknown';
+    let dewPoint: number | null = null;
+    let scentRisk = 5;
+    let scentCondition: ScentCondition = 'moderate';
+    let scentTip = 'Moderate scent conditions.';
+
+    // Attempt to get current pressure and dew point from backend weather endpoint
+    try {
+      const result = await this.getBackendWeather(lat, lon);
+      if (result.current) {
+        if (result.current.barometric_pressure_mb) {
+          pressureValue = result.current.barometric_pressure_mb;
+          if (pressureValue !== null) {
+            pressureTrend = await this.calculatePressureTrend(pressureValue);
+          }
+        }
+
+        // Extract dew point if available (may be provided as dewpoint, dew_point, etc.)
+        if (result.current.dew_point_f !== undefined) {
+          dewPoint = result.current.dew_point_f;
+        } else if (result.current.dewpoint_f !== undefined) {
+          dewPoint = result.current.dewpoint_f;
+        } else if (result.current.dewPoint !== undefined) {
+          dewPoint = result.current.dewPoint;
+        }
+      }
+    } catch (error) {
+      if (__DEV__) console.warn('[Weather] Could not fetch current pressure/dew point');
+    }
+
+    // Calculate scent conditions if we have temperature and dew point
+    const today = forecasts[0];
+    if (today && dewPoint !== null) {
+      const scent = this.calculateScentConditions(today.temperature, dewPoint, today.shortForecast);
+      scentRisk = scent.scentRisk;
+      scentCondition = scent.scentCondition;
+      scentTip = scent.scentTip;
+    } else if (today) {
+      // Fallback: calculate scent based on forecast text only
+      const scent = this.calculateScentConditions(today.temperature, null, today.shortForecast);
+      scentRisk = scent.scentRisk;
+      scentCondition = scent.scentCondition;
+      scentTip = scent.scentTip;
+    }
 
     // Calculate hunting suitability (1-10 scale)
-    // Future: integrate barometric pressure trends and moon phase
-    const deerActivityIndex = this.calculateDeerActivity(forecasts);
+    // Incorporates barometric pressure trends, scent conditions, and weather patterns
+    const deerActivityIndex = this.calculateDeerActivity(forecasts, pressureTrend, scentRisk);
     const bestTime = this.suggestBestTime(forecasts);
 
     return {
@@ -150,6 +231,12 @@ class WeatherService {
       deerActivityIndex,
       bestTimeToHunt: bestTime,
       alerts: [], // Populated in V3+ with severe weather alerts
+      pressureValue,
+      pressureTrend,
+      dewPoint,
+      scentRisk,
+      scentCondition,
+      scentTip,
     };
   }
 
@@ -171,7 +258,7 @@ class WeatherService {
 
     // Query weather.gov points endpoint to get grid coordinates
     const res = await axios.get(`${WEATHER_API}/points/${lat},${lon}`, {
-      headers: { 'User-Agent': 'HuntPlanAI/1.0 (dstonko1@gmail.com)' },
+      headers: { 'User-Agent': 'MDHuntFishOutdoors/2.0 (contact@outdoorsmaryland.com)' },
       timeout: 10000,
     });
 
@@ -186,15 +273,151 @@ class WeatherService {
   }
 
   /**
+   * Store barometric pressure reading and keep last 3 readings in AsyncStorage
+   * @private
+   * @async
+   * @param {number} pressure - Pressure in mb/hPa
+   * @returns {Promise<PressureReading[]>} Updated pressure history
+   */
+  private async storePressureReading(pressure: number): Promise<PressureReading[]> {
+    try {
+      const stored = await AsyncStorage.getItem(this.PRESSURE_HISTORY_KEY);
+      let history: PressureReading[] = stored ? JSON.parse(stored) : [];
+
+      // Add new reading
+      history.push({
+        value: pressure,
+        timestamp: Date.now(),
+      });
+
+      // Keep last 3 readings
+      if (history.length > 3) {
+        history = history.slice(-3);
+      }
+
+      await AsyncStorage.setItem(this.PRESSURE_HISTORY_KEY, JSON.stringify(history));
+      return history;
+    } catch (error) {
+      if (__DEV__) console.error('[Weather] Error storing pressure:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Calculate pressure trend based on history
+   * @private
+   * @async
+   * @param {number} currentPressure - Current pressure in mb/hPa
+   * @returns {Promise<PressureTrend>} Trend: rising/falling/stable/unknown
+   */
+  private async calculatePressureTrend(currentPressure: number): Promise<PressureTrend> {
+    try {
+      const history = await this.storePressureReading(currentPressure);
+
+      // Need at least 2 readings to determine trend
+      if (history.length < 2) {
+        return 'unknown';
+      }
+
+      // Compare current to oldest reading in history (roughly 3+ hours apart)
+      const oldest = history[0];
+      const newest = history[history.length - 1];
+      const pressureDelta = newest.value - oldest.value;
+
+      // Thresholds (in mb/hPa)
+      const risingThreshold = 1.0;
+      const fallingThreshold = -1.0;
+
+      if (pressureDelta > risingThreshold) {
+        return 'rising';
+      } else if (pressureDelta < fallingThreshold) {
+        return 'falling';
+      } else {
+        return 'stable';
+      }
+    } catch (error) {
+      if (__DEV__) console.error('[Weather] Error calculating pressure trend:', error);
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Calculate scent risk and conditions based on temperature and dew point
+   * Dew point close to air temp (within 3°F) = high humidity = scent carries far (bad for hunter)
+   * Dew point far below air temp (>15°F spread) = dry air = scent dissipates quickly (good)
+   * Rain/mist suppresses scent (good)
+   * @private
+   * @param {number} temperature - Air temperature in °F
+   * @param {number | null} dewPoint - Dew point temperature in °F (null if unavailable)
+   * @param {string} forecast - Short forecast text (may mention rain/mist)
+   * @returns {Object} { scentRisk: 1-10, scentCondition, scentTip }
+   */
+  private calculateScentConditions(
+    temperature: number,
+    dewPoint: number | null,
+    forecast: string
+  ): {
+    scentRisk: number;
+    scentCondition: ScentCondition;
+    scentTip: string;
+  } {
+    let scentRisk = 5; // Baseline neutral
+
+    // If dew point available, calculate humidity-based scent risk
+    if (dewPoint !== null) {
+      const tempDewpointSpread = temperature - dewPoint;
+
+      // Dew point spread formula: wider spread = drier = better for hunter
+      // Formula: scentRisk = 10 - Math.min(10, Math.floor(spread / 2))
+      scentRisk = 10 - Math.min(10, Math.floor(tempDewpointSpread / 2));
+
+      // Clamp to valid range
+      scentRisk = Math.max(1, Math.min(10, scentRisk));
+    }
+
+    // Rain or mist suppresses scent (bonus for hunter)
+    const forecastLower = forecast.toLowerCase();
+    if (forecastLower.includes('rain') || forecastLower.includes('mist') || forecastLower.includes('drizzle')) {
+      scentRisk = Math.max(1, scentRisk - 2);
+    }
+
+    // Determine categorical condition and tip
+    let scentCondition: ScentCondition;
+    let scentTip: string;
+
+    if (scentRisk <= 2) {
+      scentCondition = 'excellent';
+      scentTip = 'Excellent scent conditions. Dry air and low humidity — scent dissipates quickly. Ideal for a stand hunt.';
+    } else if (scentRisk <= 4) {
+      scentCondition = 'good';
+      scentTip = 'Good scent conditions. Moderate humidity — your scent control efforts will be effective.';
+    } else if (scentRisk <= 7) {
+      scentCondition = 'moderate';
+      scentTip = 'Moderate scent conditions. Higher humidity — be extra careful with wind direction and scent control.';
+    } else {
+      scentCondition = 'poor';
+      scentTip = 'Poor scent conditions. High humidity — your scent will carry far. Hunt with great caution to the wind.';
+    }
+
+    return { scentRisk, scentCondition, scentTip };
+  }
+
+  /**
    * Calculate deer activity index (1-10 scale)
    * Factors: temperature (deer active in cool weather), wind (impacts scent),
-   * weather patterns (deer feed before storms).
+   * barometric pressure (deer feed before storms), weather patterns, scent conditions.
    * Higher scores indicate better hunting conditions.
    * @private
    * @param {WeatherForecast[]} forecasts - Today's forecast periods
+   * @param {PressureTrend} pressureTrend - Current pressure trend
+   * @param {number} scentRisk - Scent risk (1-10); lower is better for deer activity
    * @returns {number} Deer activity index 1-10
    */
-  private calculateDeerActivity(forecasts: WeatherForecast[]): number {
+  private calculateDeerActivity(
+    forecasts: WeatherForecast[],
+    pressureTrend: PressureTrend = 'unknown',
+    scentRisk: number = 5
+  ): number {
     if (forecasts.length === 0) return 5; // Default neutral score
 
     const today = forecasts[0];
@@ -212,11 +435,33 @@ class WeatherService {
     if (windMph < 10) score += 1;
     else if (windMph > 20) score -= 1;
 
+    // Barometric pressure trend: Major factor in deer activity
+    // Rising pressure: +2 activity bonus (stable, active feeding)
+    // Falling pressure: -1 (unsettled, less activity)
+    // Rapidly falling: +3 (pre-storm feeding frenzy!)
+    if (pressureTrend === 'rising') {
+      score += 2;
+    } else if (pressureTrend === 'falling') {
+      score -= 1;
+    }
+
+    // Scent conditions: Excellent/good conditions boost deer activity (hunter has advantage)
+    // Poor conditions reduce activity (hunter at disadvantage, deer spook easier)
+    if (scentRisk <= 3) {
+      score += 1; // Bonus for excellent/good scent dissipation
+    } else if (scentRisk >= 8) {
+      score -= 1; // Penalty for poor scent conditions
+    }
+
     // Weather changes: Deer feed heavily before/during storms
-    // This is a simplified heuristic; real version will use pressure trends
     if (today.shortForecast.toLowerCase().includes('rain') ||
         today.shortForecast.toLowerCase().includes('storm')) {
-      score += 1;
+      // If falling pressure + storm: pre-storm feeding frenzy
+      if (pressureTrend === 'falling') {
+        score += 3;
+      } else {
+        score += 1;
+      }
     }
 
     // Clamp score to valid range
@@ -234,7 +479,7 @@ class WeatherService {
     location: Record<string, any> | null;
   }> {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/v1/integrations/weather`, {
+      const res = await axios.get(`${Config.API_BASE_URL}/api/v1/integrations/weather`, {
         params: { latitude: lat, longitude: lon },
         timeout: 15000,
       });
@@ -261,7 +506,7 @@ class WeatherService {
         };
       }
     } catch (error) {
-      console.warn('[Weather] Backend unavailable, using direct API');
+      if (__DEV__) console.warn('[Weather] Backend unavailable, using direct API');
     }
 
     // Fallback: direct Weather.gov + local analysis

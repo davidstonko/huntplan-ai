@@ -134,7 +134,7 @@ export default function TrackMeBar({ onTrackUpdate, onTrackEnd }: TrackMeBarProp
         pointsRef.current = [...prev, pt];
         onTrackUpdate(pointsRef.current);
       },
-      (err) => console.warn('[TrackMe] GPS error', err),
+      (err) => { if (__DEV__) console.warn('[TrackMe] GPS error', err); },
       {
         enableHighAccuracy: true,
         distanceFilter: 5, // meters

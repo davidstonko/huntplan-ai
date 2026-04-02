@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import Colors from '../../theme/colors';
 import { useLocation } from '../../hooks/useLocation';
 
 interface FieldNote {
@@ -171,7 +172,7 @@ export default function FieldNotes({ onSave }: FieldNotesProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: Colors.background,
   },
   contentContainer: {
     paddingHorizontal: 16,
@@ -183,34 +184,34 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#8B7355',
+    color: Colors.oak,
     textTransform: 'uppercase',
     marginBottom: 12,
     letterSpacing: 0.5,
   },
   titleInput: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#fff',
+    color: Colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: Colors.mud,
   },
   bodyInput: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#fff',
+    color: Colors.textPrimary,
     fontSize: 14,
     height: 120,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: Colors.mud,
   },
   metaInfo: {
     flexDirection: 'row',
@@ -218,21 +219,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 12,
     paddingHorizontal: 8,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
   },
   metaText: {
     fontSize: 11,
-    color: '#888',
+    color: Colors.textSecondary,
   },
   saveButton: {
-    backgroundColor: '#8B7355',
+    backgroundColor: Colors.oak,
     paddingVertical: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
   saveButtonText: {
-    color: '#fff',
+    color: Colors.mdWhite,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -240,12 +241,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   noteCard: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
     padding: 12,
     marginBottom: 10,
     borderLeftWidth: 3,
-    borderLeftColor: '#8B7355',
+    borderLeftColor: Colors.oak,
   },
   noteHeader: {
     flexDirection: 'row',
@@ -259,27 +260,27 @@ const styles = StyleSheet.create({
   noteCardTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#fff',
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   noteTime: {
     fontSize: 11,
-    color: '#666',
+    color: Colors.textMuted,
   },
   deleteButton: {
     fontSize: 18,
-    color: '#ff6666',
+    color: Colors.danger,
     fontWeight: '600',
   },
   noteBody: {
     fontSize: 12,
-    color: '#ddd',
+    color: Colors.textPrimary,
     lineHeight: 18,
     marginBottom: 8,
   },
   noteCoords: {
     fontSize: 10,
-    color: '#8B7355',
+    color: Colors.oak,
     fontStyle: 'italic',
   },
 });

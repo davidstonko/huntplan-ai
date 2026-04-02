@@ -12,11 +12,13 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useScoutData } from '../../context/ScoutDataContext';
 import { useDeerCamp } from '../../context/DeerCampContext';
 import { HuntPlan, RecordedTrack, WAYPOINT_ICONS } from '../../types/scout';
 import Colors from '../../theme/colors';
+import { sharePlan, shareTrack } from '../../services/exportService';
 
 interface PlanSidebarProps {
   onNewPlan: () => void;
@@ -40,6 +42,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
   const { plans, deletePlan, togglePlanVisibility, tracks, deleteTrack, toggleTrackVisibility } = useScoutData();
   const { camps, importPlanToCamp, exportTrackToCamp } = useDeerCamp();
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
+  const [exportingId, setExportingId] = useState<string | null>(null);
 
   const handleExportToCamp = (plan: HuntPlan) => {
     if (camps.length === 0) {
@@ -99,6 +102,37 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
         },
       })).concat([{ text: 'Cancel', onPress: () => {} }])
     );
+  };
+
+  const handleExportPlan = async (plan: HuntPlan, format: 'gpx' | 'kml') => {
+    try {
+      setExportingId(plan.id);
+      await sharePlan(plan, format);
+      Alert.alert('Success', `Plan exported as ${format.toUpperCase()}`);
+    } catch (error: any) {
+      if (error.message && error.message.includes('dismissal')) {
+        // User cancelled
+        return;
+      }
+      Alert.alert('Export Error', `Failed to export plan: ${error.message}`);
+    } finally {
+      setExportingId(null);
+    }
+  };
+
+  const handleExportTrack = async (track: RecordedTrack, format: 'gpx' | 'kml') => {
+    try {
+      setExportingId(track.id);
+      await shareTrack(track, format);
+      Alert.alert('Success', `Track exported as ${format.toUpperCase()}`);
+    } catch (error: any) {
+      if (error.message && error.message.includes('dismissal')) {
+        return;
+      }
+      Alert.alert('Export Error', `Failed to export track: ${error.message}`);
+    } finally {
+      setExportingId(null);
+    }
   };
 
   const toggleExpanded = (planId: string) => {
@@ -227,7 +261,24 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                         style={styles.actionButton}
                         onPress={() => handleExportToCamp(plan)}
                       >
-                        <Text style={styles.actionText}>Export to Camp</Text>
+                        <Text style={styles.actionText}>to Camp</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        disabled={exportingId === plan.id}
+                        onPress={() => {
+                          Alert.alert('Export Plan', 'Choose format:', [
+                            { text: 'GPX', onPress: () => handleExportPlan(plan, 'gpx') },
+                            { text: 'KML', onPress: () => handleExportPlan(plan, 'kml') },
+                            { text: 'Cancel', style: 'cancel' },
+                          ]);
+                        }}
+                      >
+                        {exportingId === plan.id ? (
+                          <ActivityIndicator size="small" color={Colors.sage} />
+                        ) : (
+                          <Text style={styles.actionText}>Export</Text>
+                        )}
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.actionButton, styles.deleteButton]}
@@ -298,7 +349,24 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                   style={styles.actionButton}
                   onPress={() => handleExportTrackToCamp(track)}
                 >
-                  <Text style={styles.actionText}>Export to Camp</Text>
+                  <Text style={styles.actionText}>to Camp</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  disabled={exportingId === track.id}
+                  onPress={() => {
+                    Alert.alert('Export Track', 'Choose format:', [
+                      { text: 'GPX', onPress: () => handleExportTrack(track, 'gpx') },
+                      { text: 'KML', onPress: () => handleExportTrack(track, 'kml') },
+                      { text: 'Cancel', style: 'cancel' },
+                    ]);
+                  }}
+                >
+                  {exportingId === track.id ? (
+                    <ActivityIndicator size="small" color={Colors.sage} />
+                  ) : (
+                    <Text style={styles.actionText}>Export</Text>
+                  )}
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionButton, styles.deleteButton]}

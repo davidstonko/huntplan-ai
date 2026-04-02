@@ -27,13 +27,18 @@ import {
   Alert,
   Linking,
   ScrollView,
+  TextInput,
+  FlatList,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import { useLocation } from '../hooks/useLocation';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import MapFilterPanel, { FilterState } from '../components/map/MapFilterPanel';
 import WeatherOverlay from '../components/map/WeatherOverlay';
+import WindDirectionIndicator from '../components/map/WindDirectionIndicator';
+import HarvestHeatmap from '../components/map/HarvestHeatmap';
 import Colors from '../theme/colors';
+import Config from '../config';
 import {
   marylandPublicLands,
   shootingRanges,
@@ -43,7 +48,7 @@ import {
   DATA_STATS,
 } from '../data/marylandPublicLands';
 
-MapboxGL.setAccessToken('pk.eyJ1IjoiZHN0b25rbzEiLCJhIjoiY21uYXJva3dqMG40MzJycHRreGg0NHp5diJ9.FjYw8WPexpiugKmhZqQiww');
+MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
 
 // ── Color map for land designations ──
 const DESIGNATION_COLORS: Record<string, string> = {
@@ -124,6 +129,7 @@ export default function MapScreen() {
   const [showTopo, setShowTopo] = useState(false);
   const [show3D, setShow3D] = useState(false);
   const [terrainExaggeration, setTerrainExaggeration] = useState(1.5);
+  const [showHarvestHeatmap, setShowHarvestHeatmap] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(7);
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     landTypes: {
@@ -140,6 +146,10 @@ export default function MapScreen() {
       sundayHunting: false, noReservation: false, mobilityAccess: false,
     },
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
+  const [windData, setWindData] = useState<{ direction: string; speed: string } | null>(null);
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const mapRef = useRef<MapboxGL.MapView>(null);
 
@@ -314,6 +324,29 @@ export default function MapScreen() {
     setActiveFilters(newFilters);
   }, []);
 
+  // ── Search filter logic ──
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return marylandPublicLands
+      .filter((land) => land.name.toLowerCase().includes(query))
+      .slice(0, 6); // Limit to 6 results
+  }, [searchQuery]);
+
+  const handleSearchResultSelect = useCallback((land: MarylandPublicLand) => {
+    setSelectedLand(land);
+    setSelectedRange(null);
+    setSearchQuery('');
+    setShowSearchResults(false);
+    if (land.center) {
+      cameraRef.current?.setCamera({
+        centerCoordinate: land.center,
+        zoomLevel: 12,
+        animationDuration: 600,
+      });
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
       {locationLoading && !location ? (
@@ -351,19 +384,19 @@ export default function MapScreen() {
                   <MapboxGL.Terrain
                     exaggeration={terrainExaggeration}
                   />
-                  {/* @ts-ignore - HillshadeLayer is a valid Mapbox component not in current type definitions */}
-                  <MapboxGL.HillshadeLayer
-                    id="hillshade"
-                    sourceID="mapboxDem"
-                    style={{
+                  {/* HillshadeLayer is a valid Mapbox GL component not yet in type definitions */}
+                  {React.createElement((MapboxGL as any).HillshadeLayer, {
+                    id: 'hillshade',
+                    sourceID: 'mapboxDem',
+                    style: {
                       hillshadeIlluminationDirection: 335,
                       hillshadeShadowColor: '#000000',
                       hillshadeHighlightColor: '#ffffff',
                       hillshadeAccentColor: '#4a6741',
                       hillshadeExaggeration: 0.5,
-                    }}
-                    belowLayerID="landFill"
-                  />
+                    },
+                    belowLayerID: 'landFill',
+                  })}
                 </MapboxGL.RasterDemSource>
                 <MapboxGL.Atmosphere
                   style={{
@@ -497,7 +530,98 @@ export default function MapScreen() {
                 />
               </MapboxGL.ShapeSource>
             )}
+
+            {/* ── Community harvest heatmap overlay ── */}
+            <HarvestHeatmap visible={showHarvestHeatmap} />
           </MapboxGL.MapView>
+
+          {/* ── Search Bar ── */}
+          <View style={searchStyles.searchContainer}>
+            <TextInput
+              style={searchStyles.searchInput}
+              placeholder="Search lands by name..."
+              placeholderTextColor={Colors.textMuted}
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                setShowSearchResults(text.trim().length > 0);
+              }}
+              onFocus={() => searchQuery.trim().length > 0 && setShowSearchResults(true)}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                style={searchStyles.clearButton}
+                onPress={() => {
+                  setSearchQuery('');
+                  setShowSearchResults(false);
+                }}
+                accessibilityLabel="Clear search"
+                accessibilityRole="button"
+              >
+                <Text style={searchStyles.clearButtonText}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* ── Search Results Dropdown ── */}
+          {showSearchResults && searchResults.length > 0 && (
+            <View style={searchStyles.resultsContainer}>
+              <FlatList
+                data={searchResults}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={searchResults.length > 5}
+                scrollEventThrottle={16}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={searchStyles.resultItem}
+                    onPress={() => handleSearchResultSelect(item)}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      style={[
+                        searchStyles.resultColorDot,
+                        { backgroundColor: DESIGNATION_COLORS[item.designation] || '#2E7D32' },
+                      ]}
+                    />
+                    <View style={searchStyles.resultTextContainer}>
+                      <Text style={searchStyles.resultName}>{item.name}</Text>
+                      <Text style={searchStyles.resultSubtitle}>
+                        {item.designationFull} · {item.county}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          )}
+
+          {/* ── Collapsible Legend ── */}
+          <View style={legendStyles.legendContainer}>
+            <TouchableOpacity
+              style={legendStyles.legendHeader}
+              onPress={() => setShowLegend(!showLegend)}
+              activeOpacity={0.7}
+              accessibilityLabel={showLegend ? 'Hide legend' : 'Show legend'}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: showLegend }}
+            >
+              <Text style={legendStyles.legendTitle}>Legend</Text>
+              <Text style={legendStyles.legendToggle}>{showLegend ? '−' : '+'}</Text>
+            </TouchableOpacity>
+            {showLegend && (
+              <View style={legendStyles.legendContent}>
+                <LegendItem label="WMA" color={DESIGNATION_COLORS.WMA} />
+                <LegendItem label="CWMA" color={DESIGNATION_COLORS.CWMA} />
+                <LegendItem label="CFL" color={DESIGNATION_COLORS.CFL} />
+                <LegendItem label="SF" color={DESIGNATION_COLORS.SF} />
+                <LegendItem label="SP" color={DESIGNATION_COLORS.SP} />
+                <LegendItem label="NRMA" color={DESIGNATION_COLORS.NRMA} />
+                <LegendItem label="NEA" color={DESIGNATION_COLORS.NEA} />
+                <LegendItem label="FMA" color={DESIGNATION_COLORS.FMA} />
+                <LegendItem label="Range" color={DESIGNATION_COLORS.Range} />
+              </View>
+            )}
+          </View>
 
           {/* ── Filter Panel ── */}
           <MapFilterPanel
@@ -506,46 +630,37 @@ export default function MapScreen() {
             filteredCount={filteredLands.length}
           />
 
-          {/* ── Legend ── */}
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: DESIGNATION_COLORS.WMA }]} />
-              <Text style={styles.legendLabel}>WMA</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: DESIGNATION_COLORS.SF }]} />
-              <Text style={styles.legendLabel}>Forest</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: DESIGNATION_COLORS.SP }]} />
-              <Text style={styles.legendLabel}>Park</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: DESIGNATION_COLORS.CFL }]} />
-              <Text style={styles.legendLabel}>CFL</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: DESIGNATION_COLORS.NEA }]} />
-              <Text style={styles.legendLabel}>NEA</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: DESIGNATION_COLORS.Range, borderRadius: 5 }]} />
-              <Text style={styles.legendLabel}>Range</Text>
-            </View>
-          </View>
 
           {/* ── Map Controls ── */}
           <View style={styles.mapControls}>
-            <TouchableOpacity style={styles.controlButton} onPress={handleZoomIn} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={handleZoomIn}
+              activeOpacity={0.7}
+              accessibilityLabel="Zoom in"
+              accessibilityRole="button"
+              accessibilityHint="Increases map zoom level"
+            >
               <Text style={styles.controlButtonText}>+</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.controlButton} onPress={handleZoomOut} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={handleZoomOut}
+              activeOpacity={0.7}
+              accessibilityLabel="Zoom out"
+              accessibilityRole="button"
+              accessibilityHint="Decreases map zoom level"
+            >
               <Text style={styles.controlButtonText}>−</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.controlButton, showTopo && styles.controlButtonActive]}
               onPress={() => setShowTopo(!showTopo)}
               activeOpacity={0.7}
+              accessibilityLabel={showTopo ? 'Satellite view' : 'Topographic view'}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: showTopo }}
+              accessibilityHint="Toggle between satellite and topographic map styles"
             >
               <Text style={[styles.controlButtonLabel, showTopo && styles.controlButtonLabelActive]}>
                 {showTopo ? 'MAP' : 'SAT'}
@@ -555,6 +670,10 @@ export default function MapScreen() {
               style={[styles.controlButton, show3D && styles.controlButtonActive]}
               onPress={() => setShow3D(!show3D)}
               activeOpacity={0.7}
+              accessibilityLabel={show3D ? '3D terrain enabled' : '3D terrain disabled'}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: show3D }}
+              accessibilityHint="Toggle 3D terrain elevation on the map"
             >
               <Text style={[styles.controlButtonLabel, show3D && styles.controlButtonLabelActive]}>
                 3D
@@ -570,10 +689,26 @@ export default function MapScreen() {
                   setTerrainExaggeration(next);
                 }}
                 activeOpacity={0.7}
+                accessibilityLabel={`Terrain exaggeration ${terrainExaggeration}x`}
+                accessibilityRole="button"
+                accessibilityHint="Cycle through terrain exaggeration levels"
               >
                 <Text style={styles.controlButtonLabel}>{terrainExaggeration}x</Text>
               </TouchableOpacity>
             )}
+            <TouchableOpacity
+              style={[styles.controlButton, showHarvestHeatmap && styles.controlButtonActive]}
+              onPress={() => setShowHarvestHeatmap(!showHarvestHeatmap)}
+              activeOpacity={0.7}
+              accessibilityLabel={showHarvestHeatmap ? 'Hide harvest heatmap' : 'Show harvest heatmap'}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: showHarvestHeatmap }}
+              accessibilityHint="Toggle community harvest density visualization on the map"
+            >
+              <Text style={[styles.controlButtonLabel, showHarvestHeatmap && styles.controlButtonLabelActive]}>
+                🦌
+              </Text>
+            </TouchableOpacity>
             {location && (
               <TouchableOpacity
                 style={styles.controlButton}
@@ -585,6 +720,9 @@ export default function MapScreen() {
                   });
                 }}
                 activeOpacity={0.7}
+                accessibilityLabel="Center on location"
+                accessibilityRole="button"
+                accessibilityHint="Centers map on your current GPS location"
               >
                 <Text style={styles.controlButtonLabel}>GPS</Text>
               </TouchableOpacity>
@@ -619,11 +757,24 @@ export default function MapScreen() {
           )}
           {/* ── Weather overlay (top-right) ── */}
           {location && (
-            <WeatherOverlay
-              latitude={location.latitude}
-              longitude={location.longitude}
-              visible={!selectedLand && !selectedRange}
-            />
+            <>
+              <WeatherOverlay
+                latitude={location.latitude}
+                longitude={location.longitude}
+                visible={!selectedLand && !selectedRange}
+                onWindDataChange={setWindData}
+              />
+              {/* ── Wind direction indicator (below weather overlay) ── */}
+              {windData && !selectedLand && !selectedRange && (
+                <View style={mapStyles.windIndicatorContainer}>
+                  <WindDirectionIndicator
+                    windDirection={windData.direction}
+                    windSpeed={windData.speed}
+                    visible={true}
+                  />
+                </View>
+              )}
+            </>
           )}
         </>
       )}
@@ -647,7 +798,13 @@ export default function MapScreen() {
 function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose: () => void }) {
   return (
     <View style={detailStyles.panel}>
-      <TouchableOpacity style={detailStyles.closeBtn} onPress={onClose}>
+      <TouchableOpacity
+        style={detailStyles.closeBtn}
+        onPress={onClose}
+        accessibilityLabel="Close"
+        accessibilityRole="button"
+        accessibilityHint="Closes the land detail panel"
+      >
         <Text style={detailStyles.closeBtnText}>✕</Text>
       </TouchableOpacity>
       <ScrollView style={detailStyles.scrollArea} showsVerticalScrollIndicator={false}>
@@ -684,7 +841,12 @@ function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose:
         )}
 
         {land.contact && (
-          <TouchableOpacity onPress={() => Linking.openURL(`tel:${land.contact}`)}>
+          <TouchableOpacity
+            onPress={() => Linking.openURL(`tel:${land.contact}`)}
+            accessibilityLabel={`Call land contact ${land.contact}`}
+            accessibilityRole="link"
+            accessibilityHint="Opens phone dialer with land manager contact"
+          >
             <Text style={detailStyles.link}>Call: {land.contact}</Text>
           </TouchableOpacity>
         )}
@@ -713,10 +875,27 @@ function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose:
         )}
 
         <View style={detailStyles.linkRow}>
+          {land.center && (
+            <TouchableOpacity
+              style={detailStyles.linkButton}
+              onPress={() => {
+                const [lng, lat] = land.center!;
+                Linking.openURL(`maps://app?daddr=${lat},${lng}`);
+              }}
+              accessibilityLabel={`Get directions to ${land.name}`}
+              accessibilityRole="link"
+              accessibilityHint="Opens Apple Maps with directions to this land"
+            >
+              <Text style={detailStyles.linkButtonText}>🧭 Directions</Text>
+            </TouchableOpacity>
+          )}
           {land.websiteUrl && (
             <TouchableOpacity
               style={detailStyles.linkButton}
               onPress={() => Linking.openURL(land.websiteUrl!)}
+              accessibilityLabel={`${land.name} DNR page`}
+              accessibilityRole="link"
+              accessibilityHint="Opens land details on Maryland DNR website"
             >
               <Text style={detailStyles.linkButtonText}>DNR Page</Text>
             </TouchableOpacity>
@@ -725,6 +904,9 @@ function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose:
             <TouchableOpacity
               style={detailStyles.linkButton}
               onPress={() => Linking.openURL(land.dnrMapPdf!)}
+              accessibilityLabel={`${land.name} map PDF`}
+              accessibilityRole="link"
+              accessibilityHint="Opens printable map PDF for this land"
             >
               <Text style={detailStyles.linkButtonText}>Map PDF</Text>
             </TouchableOpacity>
@@ -749,7 +931,13 @@ function LandDetailPanel({ land, onClose }: { land: MarylandPublicLand; onClose:
 function RangeDetailPanel({ range, onClose }: { range: ShootingRange; onClose: () => void }) {
   return (
     <View style={detailStyles.panel}>
-      <TouchableOpacity style={detailStyles.closeBtn} onPress={onClose}>
+      <TouchableOpacity
+        style={detailStyles.closeBtn}
+        onPress={onClose}
+        accessibilityLabel="Close"
+        accessibilityRole="button"
+        accessibilityHint="Closes the shooting range detail panel"
+      >
         <Text style={detailStyles.closeBtnText}>✕</Text>
       </TouchableOpacity>
       <Text style={detailStyles.name}>{range.name}</Text>
@@ -766,19 +954,60 @@ function RangeDetailPanel({ range, onClose }: { range: ShootingRange; onClose: (
       {range.hours && <Text style={detailStyles.infoLine}>Hours: {range.hours}</Text>}
       {range.fees && <Text style={detailStyles.infoLine}>Fees: {range.fees}</Text>}
       {range.phone && (
-        <TouchableOpacity onPress={() => Linking.openURL(`tel:${range.phone}`)}>
+        <TouchableOpacity
+          onPress={() => Linking.openURL(`tel:${range.phone}`)}
+          accessibilityLabel={`Call shooting range ${range.phone}`}
+          accessibilityRole="link"
+          accessibilityHint="Opens phone dialer with range contact number"
+        >
           <Text style={detailStyles.link}>Call: {range.phone}</Text>
         </TouchableOpacity>
       )}
       {range.notes && <Text style={detailStyles.notes}>{range.notes}</Text>}
-      {range.websiteUrl && (
-        <TouchableOpacity
-          style={detailStyles.linkButton}
-          onPress={() => Linking.openURL(range.websiteUrl!)}
-        >
-          <Text style={detailStyles.linkButtonText}>Website</Text>
-        </TouchableOpacity>
-      )}
+      <View style={detailStyles.linkRow}>
+        {range.center && (
+          <TouchableOpacity
+            style={detailStyles.linkButton}
+            onPress={() => {
+              const [lng, lat] = range.center!;
+              Linking.openURL(`maps://app?daddr=${lat},${lng}`);
+            }}
+            accessibilityLabel={`Get directions to ${range.name}`}
+            accessibilityRole="link"
+            accessibilityHint="Opens Apple Maps with directions to this shooting range"
+          >
+            <Text style={detailStyles.linkButtonText}>🧭 Directions</Text>
+          </TouchableOpacity>
+        )}
+        {range.websiteUrl && (
+          <TouchableOpacity
+            style={detailStyles.linkButton}
+            onPress={() => Linking.openURL(range.websiteUrl!)}
+            accessibilityLabel={`${range.name} website`}
+            accessibilityRole="link"
+            accessibilityHint="Opens shooting range website"
+          >
+            <Text style={detailStyles.linkButtonText}>Website</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * LegendItem — Individual legend row showing land type color and label.
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.label - Land type label (e.g., "WMA", "SF")
+ * @param {string} props.color - Hex color code for the land type
+ * @returns {JSX.Element} Legend row with colored circle and text label
+ */
+function LegendItem({ label, color }: { label: string; color: string }) {
+  return (
+    <View style={legendStyles.legendRow}>
+      <View style={[legendStyles.legendCircle, { backgroundColor: color }]} />
+      <Text style={legendStyles.legendItemLabel}>{label}</Text>
     </View>
   );
 }
@@ -801,20 +1030,22 @@ function Tag({ label, color }: { label: string; color: string }) {
   );
 }
 
+// ── Map Overlay Styles ──
+const mapStyles = StyleSheet.create({
+  windIndicatorContainer: {
+    position: 'absolute',
+    top: 84, // Below weather overlay
+    right: 8,
+    zIndex: 99,
+  },
+});
+
 // ── Main Styles ──
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   map: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { color: Colors.textSecondary, marginTop: 12, fontSize: 14 },
-  legend: {
-    position: 'absolute', top: 12, left: 12,
-    backgroundColor: Colors.overlay, borderRadius: 8, padding: 6,
-    flexDirection: 'column', gap: 3,
-  },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendSwatch: { width: 12, height: 12, borderRadius: 2, opacity: 0.8 },
-  legendLabel: { fontSize: 9, color: Colors.textPrimary, fontWeight: '600' },
   mapControls: {
     position: 'absolute', right: 12, bottom: 110,
     flexDirection: 'column', gap: 8, alignItems: 'center',
@@ -836,6 +1067,71 @@ const styles = StyleSheet.create({
   },
   countText: { fontSize: 11, color: Colors.sage, fontWeight: '600' },
   countSubtext: { fontSize: 9, color: Colors.textSecondary },
+});
+
+// ── Search Bar Styles ──
+const searchStyles = StyleSheet.create({
+  searchContainer: {
+    position: 'absolute', top: 12, left: 12, right: 12,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: Colors.overlay, borderRadius: 8,
+    paddingRight: 10, zIndex: 5,
+    elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3, shadowRadius: 4,
+  },
+  searchInput: {
+    flex: 1, paddingHorizontal: 12, paddingVertical: 10,
+    color: Colors.textPrimary, fontSize: 13,
+    fontWeight: '500',
+  },
+  clearButton: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: Colors.clay, justifyContent: 'center', alignItems: 'center',
+  },
+  clearButtonText: { color: Colors.textPrimary, fontSize: 12, fontWeight: '700' },
+  resultsContainer: {
+    position: 'absolute', top: 54, left: 12, right: 12,
+    backgroundColor: Colors.surfaceElevated, borderRadius: 8,
+    maxHeight: 240, zIndex: 5,
+    elevation: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4, shadowRadius: 6,
+  },
+  resultItem: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: Colors.mud,
+  },
+  resultColorDot: {
+    width: 10, height: 10, borderRadius: 5, marginRight: 10, opacity: 0.8,
+  },
+  resultTextContainer: { flex: 1 },
+  resultName: { fontSize: 12, color: Colors.textPrimary, fontWeight: '600', marginBottom: 2 },
+  resultSubtitle: { fontSize: 10, color: Colors.textSecondary },
+});
+
+// ── Legend Styles ──
+const legendStyles = StyleSheet.create({
+  legendContainer: {
+    position: 'absolute', bottom: 110, left: 12,
+    backgroundColor: Colors.overlay, borderRadius: 8,
+    zIndex: 4, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3, shadowRadius: 4,
+  },
+  legendHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 10, minWidth: 100,
+  },
+  legendTitle: { fontSize: 12, color: Colors.textPrimary, fontWeight: '700' },
+  legendToggle: { fontSize: 16, color: Colors.oak, fontWeight: '700' },
+  legendContent: {
+    paddingHorizontal: 10, paddingBottom: 8, gap: 4,
+    borderTopWidth: 1, borderTopColor: Colors.mud,
+  },
+  legendRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 4,
+  },
+  legendCircle: { width: 10, height: 10, borderRadius: 5, opacity: 0.85 },
+  legendItemLabel: { fontSize: 10, color: Colors.textPrimary, fontWeight: '600' },
 });
 
 // ── Detail Panel Styles ──

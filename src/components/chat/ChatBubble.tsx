@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import Colors from '../../theme/colors';
 
 interface ChatMessage {
   id: string;
@@ -80,34 +81,34 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   userBubble: {
-    backgroundColor: '#8B7355',
+    backgroundColor: Colors.oak,
     borderBottomRightRadius: 2,
   },
   aiBubble: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderBottomLeftRadius: 2,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: Colors.mud,
   },
   text: {
     fontSize: 14,
     lineHeight: 20,
   },
   userText: {
-    color: '#fff',
+    color: Colors.mdWhite,
   },
   aiText: {
-    color: '#e0e0e0',
+    color: Colors.textPrimary,
   },
   citation: {
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: Colors.overlayLight,
   },
   citationText: {
     fontSize: 11,
-    color: '#8B7355',
+    color: Colors.oak,
     fontStyle: 'italic',
   },
   timestamp: {
@@ -115,10 +116,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   userTimestamp: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: Colors.mdWhite,
     textAlign: 'right',
+    opacity: 0.6,
   },
   aiTimestamp: {
-    color: 'rgba(224, 224, 224, 0.5)',
+    color: Colors.textPrimary,
+    opacity: 0.5,
   },
 });

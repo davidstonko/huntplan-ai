@@ -26,24 +26,42 @@ import {
   MARYLAND_REGIONS,
   OfflineRegion,
   DownloadedPack,
+  DownloadState,
   downloadRegion,
   deleteRegion,
   getDownloadedPacks,
   getTotalDiskUsage,
   deleteAllPacks,
+  retryDownload,
+  cancelDownload,
+  getInterruptedDownloads,
 } from '../services/offlineMaps';
+
+interface DownloadProgress {
+  speedMBps: number;
+  remainingSeconds: number;
+}
 
 export default function OfflineMapsScreen() {
   const [packs, setPacks] = useState<DownloadedPack[]>([]);
   const [totalMB, setTotalMB] = useState(0);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [downloadDetails, setDownloadDetails] = useState<DownloadProgress | null>(null);
+  const [interrupted, setInterrupted] = useState<Record<string, DownloadState>>({});
 
   const refresh = useCallback(async () => {
     const downloaded = await getDownloadedPacks();
     setPacks(downloaded);
     const usage = await getTotalDiskUsage();
     setTotalMB(usage);
+
+    // Check for interrupted downloads
+    const interrupted_downloads = await getInterruptedDownloads();
+    const interruptedMap = Object.fromEntries(
+      interrupted_downloads.map((d) => [d.regionId, d]),
+    );
+    setInterrupted(interruptedMap);
   }, []);
 
   useEffect(() => {
@@ -53,15 +71,64 @@ export default function OfflineMapsScreen() {
   const handleDownload = async (region: OfflineRegion) => {
     setDownloading(region.id);
     setProgress(0);
+    setDownloadDetails(null);
     try {
-      await downloadRegion(region, (p) => setProgress(p));
+      await downloadRegion(region, (p, details) => {
+        setProgress(p);
+        if (details) {
+          setDownloadDetails(details);
+        }
+      });
       await refresh();
     } catch (e: any) {
       Alert.alert('Download Failed', e.message || 'Could not download map pack');
     } finally {
       setDownloading(null);
       setProgress(0);
+      setDownloadDetails(null);
     }
+  };
+
+  const handleResume = async (region: OfflineRegion) => {
+    setDownloading(region.id);
+    setProgress(0);
+    setDownloadDetails(null);
+    try {
+      await retryDownload(region, (p, details) => {
+        setProgress(p);
+        if (details) {
+          setDownloadDetails(details);
+        }
+      });
+      await refresh();
+    } catch (e: any) {
+      Alert.alert('Download Failed', e.message || 'Could not resume download');
+    } finally {
+      setDownloading(null);
+      setProgress(0);
+      setDownloadDetails(null);
+    }
+  };
+
+  const handleCancel = (region: OfflineRegion) => {
+    Alert.alert(
+      'Cancel Download',
+      `Cancel downloading "${region.name}"? Progress will be lost.`,
+      [
+        { text: 'Keep Downloading', style: 'cancel' },
+        {
+          text: 'Cancel',
+          style: 'destructive',
+          onPress: async () => {
+            await cancelDownload(region.id);
+            setDownloading(null);
+            setProgress(0);
+            setDownloadDetails(null);
+            await refresh();
+          },
+        },
+      ],
+    );
   };
 
   const handleDelete = (region: OfflineRegion) => {
@@ -104,6 +171,14 @@ export default function OfflineMapsScreen() {
   const isDownloaded = (regionId: string) =>
     packs.some((p) => p.id === regionId && p.status === 'complete');
 
+  const isInterrupted = (regionId: string) => !!interrupted[regionId];
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.ceil(seconds)}s`;
+    if (seconds < 3600) return `${Math.ceil(seconds / 60)}m`;
+    return `${Math.ceil(seconds / 3600)}h`;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -138,6 +213,7 @@ export default function OfflineMapsScreen() {
         {MARYLAND_REGIONS.map((region) => {
           const downloaded = isDownloaded(region.id);
           const isActive = downloading === region.id;
+          const hasInterrupted = isInterrupted(region.id);
 
           return (
             <View key={region.id} style={styles.regionCard}>
@@ -149,13 +225,36 @@ export default function OfflineMapsScreen() {
                 {downloaded && (
                   <Text style={styles.downloadedBadge}>Downloaded</Text>
                 )}
+                {hasInterrupted && !downloaded && (
+                  <Text style={styles.interruptedBadge}>Download Interrupted</Text>
+                )}
               </View>
 
               <View style={styles.regionActions}>
                 {isActive ? (
-                  <View style={styles.progressContainer}>
-                    <ActivityIndicator color={Colors.moss} size="small" />
-                    <Text style={styles.progressText}>{progress}%</Text>
+                  <View style={styles.progressSection}>
+                    <View style={styles.progressContainer}>
+                      <ActivityIndicator color={Colors.moss} size="small" />
+                      <Text style={styles.progressText}>
+                        {Math.round(progress * 100)}%
+                      </Text>
+                    </View>
+                    {downloadDetails && (
+                      <View style={styles.detailsContainer}>
+                        <Text style={styles.detailsText}>
+                          {downloadDetails.speedMBps.toFixed(1)} MB/s
+                        </Text>
+                        <Text style={styles.detailsText}>
+                          {formatTime(downloadDetails.remainingSeconds)} remaining
+                        </Text>
+                      </View>
+                    )}
+                    <TouchableOpacity
+                      style={styles.cancelBtn}
+                      onPress={() => handleCancel(region)}
+                    >
+                      <Text style={styles.cancelBtnText}>Cancel</Text>
+                    </TouchableOpacity>
                   </View>
                 ) : downloaded ? (
                   <TouchableOpacity
@@ -163,6 +262,14 @@ export default function OfflineMapsScreen() {
                     onPress={() => handleDelete(region)}
                   >
                     <Text style={styles.deleteBtnText}>Remove</Text>
+                  </TouchableOpacity>
+                ) : hasInterrupted ? (
+                  <TouchableOpacity
+                    style={styles.resumeBtn}
+                    onPress={() => handleResume(region)}
+                    disabled={downloading !== null}
+                  >
+                    <Text style={styles.resumeBtnText}>Resume</Text>
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
@@ -250,7 +357,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.rust,
   },
   deleteAllText: {
-    color: '#fff',
+    color: Colors.mdWhite,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -291,8 +398,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 3,
   },
+  interruptedBadge: {
+    fontSize: 11,
+    color: Colors.amber,
+    fontWeight: '600',
+    marginTop: 3,
+  },
   regionActions: {
+    alignItems: 'flex-end',
+    minWidth: 140,
+  },
+  progressSection: {
+    width: '100%',
     alignItems: 'center',
+    gap: 6,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  progressText: {
+    color: Colors.moss,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  detailsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  detailsText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   downloadBtn: {
     backgroundColor: Colors.moss,
@@ -301,8 +440,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   downloadBtnText: {
-    color: '#fff',
+    color: Colors.mdWhite,
     fontSize: 13,
+    fontWeight: '600',
+  },
+  resumeBtn: {
+    backgroundColor: Colors.amber,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  resumeBtnText: {
+    color: Colors.mdBlack,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  cancelBtn: {
+    backgroundColor: Colors.rust,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  cancelBtnText: {
+    color: Colors.mdWhite,
+    fontSize: 12,
     fontWeight: '600',
   },
   deleteBtn: {
@@ -315,16 +476,6 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: {
     color: Colors.rust,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  progressText: {
-    color: Colors.moss,
     fontSize: 13,
     fontWeight: '600',
   },

@@ -20,17 +20,22 @@ import uuid
 import logging
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.database import get_db
+from .storage import PhotoStorageService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Initialize storage service
+storage = PhotoStorageService(settings)
 
 # ─── Request / Response Models ──────────────────────────────────
 
@@ -73,58 +78,14 @@ class PhotoResponse(BaseModel):
     uploaded_by: str
     uploaded_at: str
 
-# ─── S3/R2 Client ──────────────────────────────────────────────
 
+class StorageHealthResponse(BaseModel):
+    """Storage service health check response."""
+    storage_type: str  # "r2" or "local"
+    configured: bool
+    r2_accessible: Optional[bool] = None
+    local_dir_exists: bool
 
-def _get_s3_client():
-    """
-    Get boto3 S3 client configured for Cloudflare R2.
-    Returns None if R2 is not configured (falls back to local storage).
-    """
-    try:
-        import boto3
-
-        if not settings.r2_account_id:
-            return None
-
-        return boto3.client(
-            "s3",
-            endpoint_url=f"https://{settings.r2_account_id}.r2.cloudflarestorage.com",
-            aws_access_key_id=settings.r2_access_key_id,
-            aws_secret_access_key=settings.r2_secret_access_key,
-            region_name="auto",
-        )
-    except ImportError:
-        logger.warning("boto3 not installed — photo uploads disabled")
-        return None
-    except Exception as e:
-        logger.warning(f"R2 client init failed: {e}")
-        return None
-
-def _generate_presigned_url(
-    s3_client,
-    bucket: str,
-    key: str,
-    content_type: str,
-    expires_in: int = 3600,
-) -> str:
-    """Generate a presigned PUT URL for direct upload."""
-    return s3_client.generate_presigned_url(
-        "put_object",
-        Params={
-            "Bucket": bucket,
-            "Key": key,
-            "ContentType": content_type,
-        },
-        ExpiresIn=expires_in,
-    )
-
-
-def _get_public_url(key: str) -> str:
-    """Get the public URL for an uploaded object."""
-    if settings.r2_public_url:
-        return f"{settings.r2_public_url}/{key}"
-    return f"https://{settings.r2_bucket}.r2.cloudflarestorage.com/{key}"
 
 # ─── Endpoints ──────────────────────────────────────────────────
 
@@ -136,34 +97,32 @@ async def get_upload_url(req: UploadURLRequest):
 
     The mobile app uploads the photo directly to storage using this URL,
     then calls /confirm to register the photo in the database.
+
+    Validates content type and provides both upload URL and storage key paths.
     """
-    s3_client = _get_s3_client()
+    # Validate file
+    is_valid, error = storage.validate_file(req.content_type, file_size=0)  # Size checked on upload
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error)
 
-    ext = "jpg"
-    if req.content_type == "image/png":
-        ext = "png"
-    elif req.content_type == "image/heic":
-        ext = "heic"
-
+    ext = storage.get_file_extension(req.content_type)
     photo_id = str(uuid.uuid4())
-    image_key = f"photos/{req.context}/{req.context_id}/{photo_id}.{ext}"
-    thumbnail_key = f"photos/{req.context}/{req.context_id}/thumb_{photo_id}.{ext}"
 
-    if s3_client:
-        upload_url = _generate_presigned_url(
-            s3_client,
-            settings.r2_bucket,
-            image_key,
-            req.content_type,
-        )
-    else:
-        upload_url = f"/api/v1/photos/upload-local/{photo_id}"
+    # Generate presigned URL (or local endpoint)
+    upload_url, image_key = storage.generate_presigned_url(
+        context=req.context,
+        context_id=req.context_id,
+        content_type=req.content_type,
+    )
+
+    thumbnail_key = f"photos/{req.context}/{req.context_id}/thumb_{photo_id}.{ext}"
 
     return UploadURLResponse(
         upload_url=upload_url,
         image_key=image_key,
         thumbnail_key=thumbnail_key,
     )
+
 
 @router.post("/confirm", response_model=PhotoResponse)
 async def confirm_upload(
@@ -173,11 +132,21 @@ async def confirm_upload(
     """
     Confirm a photo upload completed. Registers the photo in the database.
     Called by mobile after direct S3/R2 upload succeeds.
+
+    For camp photos:
+    - Inserts camp_photos record with geotag and caption
+    - Adds activity feed entry ("added_photo")
+
+    For harvest logs:
+    - Updates harvest_logs.photo_key with the image key
+
+    Thumbnail generation happens asynchronously (V3 with Celery).
     """
     photo_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
 
     if req.context == "camp":
+        # Insert camp photo
         await db.execute(
             text("""
                 INSERT INTO camp_photos (id, camp_id, uploaded_by, image_key, lat, lng, caption, uploaded_at)
@@ -188,11 +157,13 @@ async def confirm_upload(
                 "camp_id": req.context_id,
                 "user_id": req.user_id,
                 "image_key": req.image_key,
-                "lat": req.lat or 0,
-                "lng": req.lng or 0,
+                "lat": req.lat or 0.0,
+                "lng": req.lng or 0.0,
                 "caption": req.caption,
             },
         )
+
+        # Add activity feed entry
         await db.execute(
             text("""
                 INSERT INTO camp_activity (id, camp_id, user_id, username, action, photo_id, timestamp)
@@ -209,23 +180,46 @@ async def confirm_upload(
         )
 
     elif req.context == "harvest":
+        # Update harvest log with photo key
         await db.execute(
             text("UPDATE harvest_logs SET photo_key = :key WHERE id = :id AND user_id = :user_id"),
             {"key": req.image_key, "id": req.context_id, "user_id": req.user_id},
         )
 
-    image_url = _get_public_url(req.image_key)
+    elif req.context == "scouting":
+        # Insert scouting report photo
+        await db.execute(
+            text("""
+                INSERT INTO scouting_photos (id, report_id, user_id, image_key, lat, lng, caption, uploaded_at)
+                VALUES (:id, :report_id, :user_id, :image_key, :lat, :lng, :caption, NOW())
+            """),
+            {
+                "id": photo_id,
+                "report_id": req.context_id,
+                "user_id": req.user_id,
+                "image_key": req.image_key,
+                "lat": req.lat,
+                "lng": req.lng,
+                "caption": req.caption,
+            },
+        )
+
+    await db.commit()
+
+    # Get public URL
+    image_url = storage.get_public_url(req.image_key)
 
     return PhotoResponse(
         id=photo_id,
         image_url=image_url,
-        thumbnail_url=None,
+        thumbnail_url=None,  # Thumbnail generated async in V3
         lat=req.lat,
         lng=req.lng,
         caption=req.caption,
         uploaded_by=req.user_id,
         uploaded_at=now,
     )
+
 
 @router.get("/camp/{camp_id}")
 async def list_camp_photos(
@@ -251,8 +245,8 @@ async def list_camp_photos(
     return [
         {
             "id": str(row.id),
-            "image_url": _get_public_url(row.image_key),
-            "thumbnail_url": _get_public_url(row.thumbnail_key) if row.thumbnail_key else None,
+            "image_url": storage.get_public_url(row.image_key),
+            "thumbnail_url": storage.get_public_url(row.thumbnail_key) if row.thumbnail_key else None,
             "lat": row.lat,
             "lng": row.lng,
             "caption": row.caption,
@@ -261,3 +255,72 @@ async def list_camp_photos(
         }
         for row in rows
     ]
+
+
+@router.post("/upload-local/{photo_id}")
+async def upload_local_file(
+    photo_id: str,
+    context: str,
+    context_id: str,
+    file: UploadFile = File(...),
+):
+    """
+    Local file upload endpoint (fallback when R2 is not configured).
+
+    Mobile client calls this endpoint to upload files directly for development/testing.
+
+    Args:
+        photo_id: Unique photo ID from presigned URL request
+        context: "camp", "harvest", or "scouting"
+        context_id: camp_id, harvest_id, or report_id
+        file: Uploaded file
+    """
+    # Read file
+    contents = await file.read()
+
+    # Validate
+    is_valid, error = storage.validate_file(file.content_type or "image/jpeg", len(contents))
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error)
+
+    # Get extension
+    ext = storage.get_file_extension(file.content_type or "image/jpeg")
+
+    # Save locally
+    try:
+        image_key = await storage.save_local_file(photo_id, contents, ext)
+        return {
+            "image_key": image_key,
+            "thumbnail_key": f"photos/{context}/{context_id}/thumb_{photo_id}.{ext}",
+            "success": True,
+        }
+    except Exception as e:
+        logger.error(f"Local file upload failed: {e}")
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+
+@router.get("/file/{file_path:path}")
+async def serve_local_file(file_path: str):
+    """
+    Serve files from local storage.
+
+    Used when R2 is not configured. Maps /api/v1/photos/file/photos/... to local filesystem.
+    """
+    from fastapi.responses import FileResponse
+
+    local_path = Path("./data/photos") / file_path.replace("photos/", "")
+
+    if not local_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(local_path)
+
+
+@router.get("/health", response_model=StorageHealthResponse)
+async def health_check():
+    """
+    Health check for photo storage service.
+
+    Returns storage type, configuration status, and connectivity info.
+    """
+    return storage.health_check()

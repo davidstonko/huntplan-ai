@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import Colors from '../../theme/colors';
 
 interface ReportFormProps {
   onSubmit: (report: {
@@ -189,7 +190,7 @@ export default function ReportForm({ onSubmit, onCancel }: ReportFormProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: Colors.background,
   },
   contentContainer: {
     paddingHorizontal: 16,
@@ -198,20 +199,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   pickerContainer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: Colors.mud,
     overflow: 'hidden',
   },
   picker: {
-    color: '#fff',
-    backgroundColor: '#2a2a2a',
+    color: Colors.textPrimary,
+    backgroundColor: Colors.surface,
     height: 50,
   },
   activityButtons: {
@@ -224,34 +225,34 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 6,
     marginHorizontal: 4,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: Colors.mud,
     alignItems: 'center',
   },
   activityButtonActive: {
-    backgroundColor: '#8B7355',
-    borderColor: '#8B7355',
+    backgroundColor: Colors.oak,
+    borderColor: Colors.oak,
   },
   activityButtonText: {
     fontSize: 11,
-    color: '#aaa',
+    color: Colors.textSecondary,
     fontWeight: '500',
   },
   activityButtonTextActive: {
-    color: '#fff',
+    color: Colors.mdWhite,
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#fff',
+    color: Colors.textPrimary,
     fontSize: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: Colors.mud,
   },
   largeInput: {
     height: 120,
@@ -259,12 +260,12 @@ const styles = StyleSheet.create({
   },
   note: {
     fontSize: 12,
-    color: '#888',
+    color: Colors.textSecondary,
     fontStyle: 'italic',
     marginBottom: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 6,
   },
   buttonContainer: {
@@ -278,23 +279,23 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#8B7355',
+    borderColor: Colors.oak,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#8B7355',
+    color: Colors.oak,
     fontWeight: '600',
     fontSize: 14,
   },
   submitButton: {
     flex: 1,
     paddingVertical: 12,
-    backgroundColor: '#8B7355',
+    backgroundColor: Colors.oak,
     borderRadius: 6,
     alignItems: 'center',
   },
   submitButtonText: {
-    color: '#fff',
+    color: Colors.mdWhite,
     fontWeight: '600',
     fontSize: 14,
   },

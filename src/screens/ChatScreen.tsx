@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Colors from '../theme/colors';
-import { getSmartResponse, ChatResponse } from '../data/chatKnowledge';
+import { getSmartResponse } from '../data/chatKnowledge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+import Config from '../config';
 
 interface ChatMessage {
   id: string;
@@ -58,27 +56,106 @@ interface ChatMessage {
  * questions. Currently uses local getSmartResponse; future versions will call the
  * FastAPI backend at /api/v1/planner/query.
  *
+ * Messages are persisted to AsyncStorage (@chat_messages) — up to 50 messages retained.
+ *
  * @returns {JSX.Element} Full-screen chat UI with message list, input bar, and suggestion chips
  */
 export default function ChatScreen() {
   const navigation = useNavigation<any>();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '0',
-      text: 'Welcome to MDHuntFishOutdoors AI! I know about all 192 public hunting lands, 14 shooting ranges, seasons, bag limits, and regulations across Maryland. What would you like to know?',
-      isUser: false,
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+  const WELCOME_MESSAGE: ChatMessage = {
+    id: '0',
+    text: 'Welcome to MDHuntFishOutdoors AI! I know about all 192 public hunting lands, 14 shooting ranges, seasons, bag limits, and regulations across Maryland. What would you like to know?',
+    isUser: false,
+    timestamp: new Date().toISOString(),
+  };
+
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
+  // Load persisted messages on mount
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@chat_messages');
+        if (saved) {
+          const parsed = JSON.parse(saved) as ChatMessage[];
+          if (parsed.length > 0) {
+            setMessages(parsed);
+            return;
+          }
+        }
+      } catch (err) {
+        if (__DEV__) console.warn('[ChatScreen] Failed to load persisted messages:', err);
+      }
+      // Default to welcome message if no saved messages
+      setMessages([WELCOME_MESSAGE]);
+    };
+
+    loadMessages();
+  }, []);
+
+  // Persist messages whenever they change
+  useEffect(() => {
+    const persistMessages = async () => {
+      try {
+        // Keep only last 50 messages to prevent storage bloat
+        const messagesToPersist = messages.slice(-50);
+        await AsyncStorage.setItem('@chat_messages', JSON.stringify(messagesToPersist));
+      } catch (err) {
+        if (__DEV__) console.warn('[ChatScreen] Failed to persist messages:', err);
+      }
+    };
+
+    persistMessages();
+  }, [messages]);
+
+  // Auto-scroll to end when new messages arrive
   useEffect(() => {
     if (flatListRef.current && messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   }, [messages]);
+
+  const clearChat = async () => {
+    try {
+      await AsyncStorage.removeItem('@chat_messages');
+      setMessages([WELCOME_MESSAGE]);
+    } catch (err) {
+      if (__DEV__) console.warn('[ChatScreen] Failed to clear chat:', err);
+    }
+  };
+
+  const handleClearConfirm = () => {
+    Alert.alert(
+      'Clear Chat History',
+      'This will delete all messages from this conversation. This action cannot be undone.',
+      [
+        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+        {
+          text: 'Clear',
+          onPress: clearChat,
+          style: 'destructive',
+        },
+      ],
+    );
+  };
+
+  // Configure header with clear button
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={handleClearConfirm}
+          activeOpacity={0.6}
+          style={{ paddingRight: 16 }}
+        >
+          <Text style={{ fontSize: 20, color: Colors.rust }}>🗑</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   const addMessage = (text: string, isUser: boolean, citations?: string[], followUpSuggestions?: string[]) => {
     setMessages((prev) => [
@@ -110,7 +187,7 @@ export default function ChatScreen() {
     try {
       // Try backend AI (Claude + RAG)
       const token = await AsyncStorage.getItem('auth_token');
-      const response = await fetch(`${API_BASE_URL}/api/v1/planner/ai/query`, {
+      const response = await fetch(`${Config.API_BASE_URL}/api/v1/planner/ai/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,6 +213,7 @@ export default function ChatScreen() {
       // If non-OK response, fall through to local fallback
     } catch (_err) {
       // Network error or timeout — use local fallback
+      if (__DEV__) console.warn('[ChatScreen] API call failed, using local fallback');
     }
 
     // Local fallback: keyword-matching knowledge base

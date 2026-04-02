@@ -19,8 +19,6 @@ import {
 } from 'react-native';
 import Colors from '../../theme/colors';
 
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiZHN0b25rbzEiLCJhIjoiY21uYXJva3dqMG40MzJycHRreGg0NHp5diJ9.FjYw8WPexpiugKmhZqQiww';
-
 export interface TrackPoint {
   latitude: number;
   longitude: number;

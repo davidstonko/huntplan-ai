@@ -1,0 +1,394 @@
+/**
+ * Camp Intelligence Service — Usage Examples
+ *
+ * This file demonstrates how to integrate campIntelligenceService into components.
+ * It's NOT part of the build — for documentation/reference only.
+ *
+ * Real usage patterns in components:
+ * 1. DeerCampScreen — Show intelligence card when camp is unlocked
+ * 2. DeerCampDetailModal — Show insights panel when tapping camp
+ * 3. CampIntelligenceWidget — Dedicated component for intelligence display
+ */
+
+import { getCampIntelligence, getDataPointCount, TIER_DEFINITIONS } from './campIntelligenceService';
+import { useDeerCamp } from '../context/DeerCampContext';
+
+// ── Example 1: Show intelligence badge in camp list ──
+// Usage in DeerCampScreen camp list cards:
+
+function CampListCard({ campId }: { campId: string }) {
+  const { getCamp } = useDeerCamp();
+  const camp = getCamp(campId);
+
+  if (!camp) return null;
+
+  const pointCount = getDataPointCount(camp);
+  const isNearUnlock = pointCount >= 45 && pointCount < 50;
+  const isUnlocked = pointCount >= 50;
+
+  return (
+    <View style={styles.card}>
+      {/* Camp name and details */}
+      <Text style={styles.campName}>{camp.name}</Text>
+
+      {/* Intelligence indicator */}
+      {isNearUnlock && (
+        <Text style={styles.hint}>
+          {`${50 - pointCount} data points until AI unlocks`}
+        </Text>
+      )}
+
+      {isUnlocked && (
+        <Badge label={`${pointCount} points`} color="#FFD700" />
+      )}
+    </View>
+  );
+}
+
+// ── Example 2: Display full intelligence panel ──
+// Usage in DeerCampDetailModal when expanding camp:
+
+async function displayCampIntelligence(camp: DeerCamp) {
+  // Get intelligence (shows local insights immediately, loads AI async)
+  const intelligence = await getCampIntelligence(camp);
+
+  if (!intelligence.isUnlocked) {
+    // Show lock screen
+    return (
+      <View>
+        <Text style={styles.heading}>AI Camp Intelligence</Text>
+        <Text style={styles.subtitle}>Unlock at {intelligence.nextTierAt} data points</Text>
+        <ProgressBar
+          current={intelligence.dataPointCount}
+          target={intelligence.nextTierAt}
+        />
+        <Text style={styles.benefits}>
+          {intelligence.nextTierBenefits.map((b, i) => (
+            <Text key={i}>{`• ${b}\n`}</Text>
+          ))}
+        </Text>
+      </View>
+    );
+  }
+
+  // Show unlocked intelligence
+  return (
+    <View>
+      <Text style={styles.heading}>
+        {TIER_DEFINITIONS[intelligence.tier].label} Intelligence
+      </Text>
+
+      {/* Tier progress */}
+      <ProgressBar
+        current={intelligence.dataPointCount}
+        target={intelligence.nextTierAt}
+        label={`${intelligence.progressToNextTier}% to next tier`}
+      />
+
+      {/* Local insights (always available) */}
+      <LocalInsightsPanel insights={intelligence.localInsights} />
+
+      {/* AI insights (loaded async if cached or fresh from backend) */}
+      {intelligence.aiInsights ? (
+        <AIInsightsPanel insights={intelligence.aiInsights} />
+      ) : intelligence.isUnlocked ? (
+        <LoadingIndicator label="Analyzing camp data..." />
+      ) : null}
+    </View>
+  );
+}
+
+// ── Example 3: Local insights panel ──
+// Shows harvest locations, time patterns, seasonal activity, etc.
+
+function LocalInsightsPanel({ insights }: { insights: LocalInsights }) {
+  return (
+    <View>
+      {/* Best time of day */}
+      <Section title="Best Time to Hunt">
+        <TimeOfDayChart
+          morning={insights.bestTimeOfDay.morning}
+          midday={insights.bestTimeOfDay.midday}
+          evening={insights.bestTimeOfDay.evening}
+        />
+        <Text style={styles.caption}>
+          {insights.bestTimeOfDay.evening > 50 && 'Evening hunts are most productive'}
+          {insights.bestTimeOfDay.morning > 50 && 'Early morning shows the most action'}
+          {insights.bestTimeOfDay.midday > 30 && 'Midday hunts are viable year-round'}
+        </Text>
+      </Section>
+
+      {/* Species breakdown */}
+      {Object.keys(insights.speciesBreakdown).length > 0 && (
+        <Section title="Species Activity">
+          {Object.entries(insights.speciesBreakdown)
+            .sort(([, a], [, b]) => b - a)
+            .map(([species, count]) => (
+              <Text key={species}>
+                {`${species}: ${count} sightings`}
+              </Text>
+            ))}
+        </Section>
+      )}
+
+      {/* Seasonal patterns */}
+      {insights.seasonalPatterns.length > 0 && (
+        <Section title="Seasonal Activity">
+          <BarChart data={insights.seasonalPatterns} />
+          <Text style={styles.caption}>
+            {insights.seasonalPatterns
+              .filter(p => p.activityLevel > 80)
+              .map(p => p.month)
+              .join(', ')} are peak months
+          </Text>
+        </Section>
+      )}
+
+      {/* Top harvest locations */}
+      {insights.topHarvestLocations.length > 0 && (
+        <Section title="Top Harvest Locations">
+          {insights.topHarvestLocations.slice(0, 3).map((loc, i) => (
+            <Text key={i}>
+              {`${i + 1}. ${loc.name}: ${loc.count} harvests`}
+            </Text>
+          ))}
+        </Section>
+      )}
+
+      {/* Member contributions */}
+      {insights.memberContributions.length > 0 && (
+        <Section title="Team Contributions">
+          {insights.memberContributions
+            .sort((a, b) => b.dataPoints - a.dataPoints)
+            .slice(0, 5)
+            .map((member) => (
+              <Text key={member.name}>
+                {`${member.name}: ${member.dataPoints} data points`}
+              </Text>
+            ))}
+        </Section>
+      )}
+
+      {/* Harvest stats */}
+      {(insights.averageHarvestWeight || insights.averageAntlerPoints) && (
+        <Section title="Harvest Statistics">
+          {insights.averageHarvestWeight && (
+            <Text>
+              {`Average weight: ${insights.averageHarvestWeight.toFixed(0)} lbs`}
+            </Text>
+          )}
+          {insights.averageAntlerPoints && (
+            <Text>
+              {`Average antler points: ${insights.averageAntlerPoints.toFixed(1)}`}
+            </Text>
+          )}
+        </Section>
+      )}
+
+      {/* Most productive stand */}
+      {insights.mostProductiveStand && (
+        <Section title="MVP Stand" color="#FFD700">
+          <Text style={styles.bold}>
+            {insights.mostProductiveStand.name}
+          </Text>
+          <Text>
+            {`${insights.mostProductiveStand.harvests} harvests`}
+          </Text>
+        </Section>
+      )}
+    </View>
+  );
+}
+
+// ── Example 4: AI insights panel ──
+// Shows backend-generated recommendations, patterns, strategy
+
+function AIInsightsPanel({ insights }: { insights: AIInsights }) {
+  return (
+    <View style={styles.aiPanel}>
+      <Text style={styles.heading}>AI Analysis</Text>
+
+      {/* Summary */}
+      <Text style={styles.summary}>{insights.summary}</Text>
+
+      {/* Recommendations */}
+      {insights.recommendations.length > 0 && (
+        <Section title="AI Recommendations">
+          {insights.recommendations.map((rec, i) => (
+            <Text key={i} style={styles.bulletPoint}>
+              {`• ${rec}`}
+            </Text>
+          ))}
+        </Section>
+      )}
+
+      {/* Patterns */}
+      {insights.patterns.length > 0 && (
+        <Section title="Observed Patterns">
+          {insights.patterns.map((pat, i) => (
+            <Text key={i} style={styles.bulletPoint}>
+              {`• ${pat}`}
+            </Text>
+          ))}
+        </Section>
+      )}
+
+      {/* Predicted best days */}
+      {insights.predictedBestDays.length > 0 && (
+        <Section title="Predicted Best Days">
+          <Calendar
+            highlights={insights.predictedBestDays.map(day => ({
+              date: day,
+              color: '#6B9E5B',
+              label: 'Excellent',
+            }))}
+          />
+        </Section>
+      )}
+
+      {/* Strategy suggestion */}
+      {insights.strategySuggestion && (
+        <Section title="Camp Strategy" color="#E03C31">
+          <Text style={styles.italic}>
+            {insights.strategySuggestion}
+          </Text>
+        </Section>
+      )}
+
+      {/* Last analyzed */}
+      <Text style={styles.caption}>
+        {`Last analyzed: ${new Date(insights.lastAnalyzed).toLocaleDateString()}`}
+      </Text>
+    </View>
+  );
+}
+
+// ── Example 5: Hook for easy integration ──
+// Usage: const { intelligence, loading } = useCampIntelligence(campId);
+
+import { useState, useEffect } from 'react';
+import { CampIntelligence } from '../types/intelligence';
+
+export function useCampIntelligence(campId: string) {
+  const [intelligence, setIntelligence] = useState<CampIntelligence | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { getCamp } = useDeerCamp();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const camp = getCamp(campId);
+        if (!camp) {
+          setError('Camp not found');
+          setLoading(false);
+          return;
+        }
+
+        const intel = await getCampIntelligence(camp);
+        setIntelligence(intel);
+        setError(null);
+      } catch (err) {
+        setError(String(err));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [campId, getCamp]);
+
+  return { intelligence, loading, error };
+}
+
+// ── Example 6: Conditional display based on tier ──
+
+function TierBasedDisplay({ intelligence }: { intelligence: CampIntelligence }) {
+  switch (intelligence.tier) {
+    case 'locked':
+      return <LockedView intelligence={intelligence} />;
+    case 'basic':
+      return <BasicView intelligence={intelligence} />;
+    case 'intermediate':
+      return <IntermediateView intelligence={intelligence} />;
+    case 'advanced':
+    case 'expert':
+      return <AdvancedView intelligence={intelligence} />;
+  }
+}
+
+// ── Example 7: Real-time update as data is added ──
+// Component automatically re-renders when camp data changes
+
+import { useEffect } from 'react';
+
+function CampIntelligenceWidget({ campId }: { campId: string }) {
+  const { intelligence, loading } = useCampIntelligence(campId);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Force refresh when camp data changes
+  const { camps } = useDeerCamp();
+  useEffect(() => {
+    setRefreshKey((k) => k + 1);
+  }, [camps]);
+
+  if (loading) return <Text>Loading intelligence...</Text>;
+  if (!intelligence) return <Text>Unable to load intelligence</Text>;
+
+  return (
+    <View key={refreshKey}>
+      {!intelligence.isUnlocked && (
+        <ProgressCard
+          current={intelligence.dataPointCount}
+          target={intelligence.nextTierAt}
+          message={`${intelligence.nextTierAt - intelligence.dataPointCount} points to unlock`}
+        />
+      )}
+
+      {intelligence.isUnlocked && (
+        <IntelligenceCard intelligence={intelligence} />
+      )}
+    </View>
+  );
+}
+
+// ── Example 8: Exporting intelligence as text for sharing ──
+
+export function exportIntelligenceAsText(intelligence: CampIntelligence): string {
+  let text = '';
+
+  text += `Camp Intelligence Report\n`;
+  text += `Tier: ${TIER_DEFINITIONS[intelligence.tier].label}\n`;
+  text += `Data Points: ${intelligence.dataPointCount}\n\n`;
+
+  if (intelligence.localInsights.topHarvestLocations.length > 0) {
+    text += `Top Locations:\n`;
+    intelligence.localInsights.topHarvestLocations.forEach((loc) => {
+      text += `  - ${loc.name}: ${loc.count} harvests\n`;
+    });
+    text += '\n';
+  }
+
+  if (intelligence.aiInsights) {
+    text += `Strategy: ${intelligence.aiInsights.strategySuggestion}\n`;
+    text += `Recommendations:\n`;
+    intelligence.aiInsights.recommendations.forEach((rec) => {
+      text += `  - ${rec}\n`;
+    });
+  }
+
+  return text;
+}
+
+// ── Example 9: Analytics/logging ──
+
+export async function logIntelligenceMetric(
+  campId: string,
+  intelligence: CampIntelligence
+) {
+  // Send to analytics service (Firebase, Amplitude, etc.)
+  analytics.logEvent('camp_intelligence_viewed', {
+    campId,
+    tier: intelligence.tier,
+    dataPointCount: intelligence.dataPointCount,
+    isUnlocked: intelligence.isUnlocked,
+  });
+}

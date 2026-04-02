@@ -18,10 +18,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const WS_BASE_URL = __DEV__
-  ? 'ws://localhost:8000'
-  : 'wss://huntplan-api.onrender.com';
+import Config from '../config';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -113,19 +110,19 @@ export class CampWebSocket {
    */
   connect(): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('[WS] Already connected');
+      if (__DEV__) console.log('[WS] Already connected');
       return;
     }
 
     this.isManualDisconnect = false;
-    const url = `${WS_BASE_URL}/ws/camps/${this.campId}?token=${this.token}`;
+    const url = `${Config.WS_BASE_URL}/ws/camps/${this.campId}?token=${this.token}`;
 
-    console.log(`[WS] Connecting to camp ${this.campId}...`);
+    if (__DEV__) console.log(`[WS] Connecting to camp ${this.campId}...`);
 
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      console.log(`[WS] Connected to camp ${this.campId}`);
+      if (__DEV__) console.log(`[WS] Connected to camp ${this.campId}`);
       this.reconnectAttempts = 0;
       this.startPingInterval();
     };
@@ -135,17 +132,17 @@ export class CampWebSocket {
         const data = JSON.parse(event.data);
         this.handleMessage(data);
       } catch (err) {
-        console.warn('[WS] Failed to parse message:', event.data);
+        if (__DEV__) console.warn('[WS] Failed to parse message:', event.data);
       }
     };
 
     this.ws.onerror = (event) => {
-      console.error('[WS] Error:', event);
+      if (__DEV__) console.error('[WS] Error:', event);
       this.onError?.('WebSocket connection error');
     };
 
     this.ws.onclose = (event) => {
-      console.log(`[WS] Disconnected (code: ${event.code}, reason: ${event.reason})`);
+      if (__DEV__) console.log(`[WS] Disconnected (code: ${event.code}, reason: ${event.reason})`);
       this.stopPingInterval();
       this.onDisconnected?.();
 
@@ -241,7 +238,7 @@ export class CampWebSocket {
 
   private send(data: Record<string, any>): void {
     if (this.ws?.readyState !== WebSocket.OPEN) {
-      console.warn('[WS] Cannot send — not connected');
+      if (__DEV__) console.warn('[WS] Cannot send — not connected');
       return;
     }
     this.ws.send(JSON.stringify(data));
@@ -250,7 +247,7 @@ export class CampWebSocket {
   private handleMessage(data: any): void {
     switch (data.type) {
       case 'connection_established':
-        console.log(`[WS] Connected with ${data.online_members?.length || 0} members online`);
+        if (__DEV__) console.log(`[WS] Connected with ${data.online_members?.length || 0} members online`);
         this.onConnected?.(data.online_members || []);
         break;
 
@@ -287,12 +284,12 @@ export class CampWebSocket {
         break;
 
       case 'error':
-        console.error('[WS] Server error:', data.message);
+        if (__DEV__) console.error('[WS] Server error:', data.message);
         this.onError?.(data.message);
         break;
 
       default:
-        console.log('[WS] Unknown message type:', data.type);
+        if (__DEV__) console.log('[WS] Unknown message type:', data.type);
     }
   }
 
@@ -313,7 +310,7 @@ export class CampWebSocket {
 
   private attemptReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('[WS] Max reconnect attempts reached — falling back to polling');
+      if (__DEV__) console.log('[WS] Max reconnect attempts reached — falling back to polling');
       this.onError?.('Connection lost. Using offline mode.');
       return;
     }
@@ -321,7 +318,7 @@ export class CampWebSocket {
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
     this.reconnectAttempts++;
 
-    console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+    if (__DEV__) console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
 
     setTimeout(() => {
       this.connect();
@@ -339,21 +336,17 @@ export async function createCampWebSocket(campId: string): Promise<CampWebSocket
   try {
     const token = await AsyncStorage.getItem('jwt_token');
     if (!token) {
-      console.warn('[WS] No JWT token found — cannot connect');
+      if (__DEV__) console.warn('[WS] No JWT token found — cannot connect');
       return null;
     }
     return new CampWebSocket(campId, token);
   } catch (err) {
-    console.error('[WS] Error creating WebSocket:', err);
+    if (__DEV__) console.error('[WS] Error creating WebSocket:', err);
     return null;
   }
 }
 
 // ── REST Fallback: Check online members ────────────────────────
-
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
 
 /**
  * REST fallback to check who's online in a camp.
@@ -361,10 +354,11 @@ const API_BASE_URL = __DEV__
  */
 export async function getOnlineMembers(campId: string): Promise<OnlineMember[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/ws/camps/${campId}/online`);
+    const response = await fetch(`${Config.API_BASE_URL}/ws/camps/${campId}/online`);
     const data = await response.json();
     return data.members || [];
-  } catch {
+  } catch (error) {
+    if (__DEV__) console.error('[WS] Failed to fetch online members:', error);
     return [];
   }
 }

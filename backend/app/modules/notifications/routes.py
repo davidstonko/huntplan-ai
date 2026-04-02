@@ -71,8 +71,7 @@ async def unregister_push_token(
 @router.get("/preferences")
 async def get_preferences(user: User = Depends(get_current_user)):
     """Get the user's notification preferences."""
-    # TODO: Store in user profile JSONB field
-    return NotificationPreferences().model_dump()
+    return user.notification_preferences
 
 
 @router.patch("/preferences")
@@ -82,8 +81,10 @@ async def update_preferences(
     db: AsyncSession = Depends(get_db),
 ):
     """Update notification preferences."""
-    # TODO: Persist to user profile JSONB field
-    return prefs.model_dump()
+    user.notification_preferences = prefs.model_dump()
+    db.add(user)
+    await db.flush()
+    return user.notification_preferences
 
 
 # ─── Notification Dispatch (Internal) ────────────────────────────

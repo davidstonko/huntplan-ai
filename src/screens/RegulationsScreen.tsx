@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import Colors from '../theme/colors';
 import { submitFeedback } from '../services/feedbackService';
+import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
+import { SearchableCountyPicker } from '../components/common/SearchableCountyPicker';
 import {
   MD_SEASONS,
   MD_COUNTIES,
@@ -63,7 +65,7 @@ export default function RegulationsScreen() {
   // Can I Hunt form
   const [huntSpecies, setHuntSpecies] = useState('');
   const [huntWeapon, setHuntWeapon] = useState('');
-  const [huntDate, setHuntDate] = useState(new Date().toISOString().split('T')[0]);
+  const [huntDate, setHuntDate] = useState(new Date());
   const [huntCounty, setHuntCounty] = useState('');
   const [huntResult, setHuntResult] = useState<{
     allowed: boolean;
@@ -73,7 +75,6 @@ export default function RegulationsScreen() {
   // Dropdown visibility states
   const [showSpeciesDropdown, setShowSpeciesDropdown] = useState(false);
   const [showWeaponDropdown, setShowWeaponDropdown] = useState(false);
-  const [showCountyDropdown, setShowCountyDropdown] = useState(false);
 
   // Regulation feedback/report states
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -112,18 +113,18 @@ export default function RegulationsScreen() {
       return;
     }
 
-    // Parse the date
-    const dateObj = new Date(huntDate + 'T00:00:00');
+    // Format date to YYYY-MM-DD for comparison
+    const dateStr = huntDate.toISOString().split('T')[0];
 
     // Check if in season using local helper
-    const inSeason = isInSeason(huntSpecies, dateObj, huntWeapon);
+    const inSeason = isInSeason(huntSpecies, huntDate, huntWeapon);
 
     if (inSeason) {
       const matchingSeasons = MD_SEASONS.filter(
         (s) =>
           s.species === huntSpecies &&
-          s.startDate <= huntDate &&
-          huntDate <= s.endDate &&
+          s.startDate <= dateStr &&
+          dateStr <= s.endDate &&
           s.weaponType.toLowerCase().includes(huntWeapon.toLowerCase())
       );
 
@@ -139,7 +140,7 @@ export default function RegulationsScreen() {
     } else {
       setHuntResult({
         allowed: false,
-        reason: `${huntSpecies} is not in season on ${huntDate} with ${huntWeapon} in ${huntCounty} County.`,
+        reason: `${huntSpecies} is not in season on ${dateStr} with ${huntWeapon} in ${huntCounty} County.`,
       });
     }
   };
@@ -284,46 +285,17 @@ export default function RegulationsScreen() {
               </View>
             )}
 
-            <Text style={styles.formLabel}>Date</Text>
-            <View style={styles.dateInputRow}>
-              <Text style={styles.dateDisplay}>{huntDate}</Text>
-            </View>
+            <CalendarDatePicker
+              value={huntDate}
+              onChange={setHuntDate}
+              label="Date"
+            />
 
-            <Text style={styles.formLabel}>County</Text>
-            <TouchableOpacity
-              style={styles.dropdownButton}
-              onPress={() => setShowCountyDropdown(!showCountyDropdown)}
-            >
-              <Text
-                style={[
-                  styles.dropdownButtonText,
-                  !huntCounty && styles.dropdownPlaceholder,
-                ]}
-              >
-                {huntCounty || 'Select a county...'}
-              </Text>
-            </TouchableOpacity>
-            {showCountyDropdown && (
-              <View style={[styles.dropdownMenu, styles.countyDropdownMenu]}>
-                <FlatList
-                  data={getCountyNames()}
-                  keyExtractor={(item) => item}
-                  scrollEnabled={true}
-                  nestedScrollEnabled={true}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setHuntCounty(item);
-                        setShowCountyDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItemText}>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
-            )}
+            <SearchableCountyPicker
+              value={huntCounty}
+              onChange={setHuntCounty}
+              label="County"
+            />
 
             <TouchableOpacity
               style={styles.checkButton}
@@ -591,9 +563,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     maxHeight: 200,
   },
-  countyDropdownMenu: {
-    maxHeight: 250,
-  },
   dropdownItem: {
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -602,19 +571,6 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 13,
-    color: Colors.textPrimary,
-  },
-  dateInputRow: {
-    backgroundColor: Colors.surface,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-    marginBottom: 12,
-  },
-  dateDisplay: {
-    fontSize: 14,
     color: Colors.textPrimary,
   },
   checkButton: {

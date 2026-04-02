@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
+import Colors from '../../theme/colors';
 
 interface QueryInputProps {
   onSend: (query: string) => void;
@@ -58,16 +59,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     alignItems: 'flex-end',
   },
   input: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: Colors.background,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#fff',
+    color: Colors.textPrimary,
     fontSize: 14,
     maxHeight: 100,
     marginRight: 8,
@@ -76,16 +77,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#8B7355',
+    backgroundColor: Colors.oak,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#555',
+    backgroundColor: Colors.mud,
     opacity: 0.5,
   },
   sendButtonText: {
-    color: '#fff',
+    color: Colors.mdWhite,
     fontSize: 18,
     fontWeight: '600',
   },

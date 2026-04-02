@@ -23,13 +23,13 @@ import {
   SafeAreaView,
   RefreshControl,
   Switch,
+  Linking,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
-
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+import Config from '../config';
+import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
+import { SearchableCountyPicker } from '../components/common/SearchableCountyPicker';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -51,6 +51,7 @@ interface HarvestEntry {
   notes?: string;
   is_shared: boolean;
   season_year: string;
+  photo_uri?: string;
 }
 
 interface SeasonSummary {
@@ -71,11 +72,12 @@ export default function HarvestLogScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [view, setView] = useState<'list' | 'summary'>('list');
+  const [editingHarvest, setEditingHarvest] = useState<HarvestEntry | null>(null);
 
   // Form state
   const [formSpecies, setFormSpecies] = useState('deer');
   const [formSpeciesDetail, setFormSpeciesDetail] = useState('');
-  const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
+  const [formDate, setFormDate] = useState(new Date());
   const [formTime, setFormTime] = useState('');
   const [formWeapon, setFormWeapon] = useState('archery');
   const [formWeaponDetail, setFormWeaponDetail] = useState('');
@@ -88,6 +90,7 @@ export default function HarvestLogScreen() {
   const [formGameCheckDone, setFormGameCheckDone] = useState(false);
   const [formNotes, setFormNotes] = useState('');
   const [formShared, setFormShared] = useState(false);
+  const [formPhotoUri, setFormPhotoUri] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -96,14 +99,14 @@ export default function HarvestLogScreen() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       // Fetch harvests
-      const listRes = await fetch(`${API_BASE_URL}/api/v1/harvest/list?season_year=2025-2026`, { headers });
+      const listRes = await fetch(`${Config.API_BASE_URL}/api/v1/harvest/list?season_year=2025-2026`, { headers });
       if (listRes.ok) {
         const data = await listRes.json();
         setHarvests(data.harvests || []);
       }
 
       // Fetch summary
-      const sumRes = await fetch(`${API_BASE_URL}/api/v1/harvest/summary?season_year=2025-2026`, { headers });
+      const sumRes = await fetch(`${Config.API_BASE_URL}/api/v1/harvest/summary?season_year=2025-2026`, { headers });
       if (sumRes.ok) {
         const data = await sumRes.json();
         setSummary(data);
@@ -128,10 +131,11 @@ export default function HarvestLogScreen() {
   };
 
   const submitHarvest = async () => {
+    const dateStr = formDate.toISOString().split('T')[0];
     const entry: any = {
       species: formSpecies,
       species_detail: formSpeciesDetail || undefined,
-      harvest_date: formDate,
+      harvest_date: dateStr,
       harvest_time: formTime || undefined,
       weapon: formWeapon,
       weapon_detail: formWeaponDetail || undefined,
@@ -145,43 +149,81 @@ export default function HarvestLogScreen() {
       notes: formNotes || undefined,
       is_shared: formShared,
       season_year: '2025-2026',
+      photo_uri: formPhotoUri || undefined,
     };
 
     try {
       const token = await AsyncStorage.getItem('@auth_access_token');
-      const res = await fetch(`${API_BASE_URL}/api/v1/harvest/log`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(entry),
-      });
 
-      if (res.ok) {
-        setShowForm(false);
-        resetForm();
-        await fetchData();
+      if (editingHarvest) {
+        // Edit existing harvest
+        const res = await fetch(`${Config.API_BASE_URL}/api/v1/harvest/${editingHarvest.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(entry),
+        });
+
+        if (res.ok) {
+          setShowForm(false);
+          resetForm();
+          setEditingHarvest(null);
+          await fetchData();
+        } else {
+          throw new Error('Server error');
+        }
       } else {
-        throw new Error('Server error');
+        // Create new harvest
+        const res = await fetch(`${Config.API_BASE_URL}/api/v1/harvest/log`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(entry),
+        });
+
+        if (res.ok) {
+          setShowForm(false);
+          resetForm();
+          setEditingHarvest(null);
+          await fetchData();
+        } else {
+          throw new Error('Server error');
+        }
       }
     } catch {
       // Save locally for offline
       const local = await AsyncStorage.getItem('@harvest_log');
       const list = local ? JSON.parse(local) : [];
-      list.unshift({ ...entry, id: `local_${Date.now()}`, created_at: new Date().toISOString() });
+
+      if (editingHarvest) {
+        // Update existing in local storage
+        const idx = list.findIndex((h: HarvestEntry) => h.id === editingHarvest.id);
+        if (idx >= 0) {
+          list[idx] = { ...entry, id: editingHarvest.id };
+        }
+      } else {
+        // Add new to local storage
+        list.unshift({ ...entry, id: `local_${Date.now()}`, created_at: new Date().toISOString() });
+      }
+
       await AsyncStorage.setItem('@harvest_log', JSON.stringify(list));
       setHarvests(list);
       setShowForm(false);
       resetForm();
-      Alert.alert('Saved Locally', 'Harvest saved to your device. It will sync when you have connection.');
+      setEditingHarvest(null);
+      const msgTitle = editingHarvest ? 'Updated Locally' : 'Saved Locally';
+      Alert.alert(msgTitle, 'Harvest saved to your device. It will sync when you have connection.');
     }
   };
 
   const resetForm = () => {
     setFormSpecies('deer');
     setFormSpeciesDetail('');
-    setFormDate(new Date().toISOString().split('T')[0]);
+    setFormDate(new Date());
     setFormTime('');
     setFormWeapon('archery');
     setFormWeaponDetail('');
@@ -194,6 +236,34 @@ export default function HarvestLogScreen() {
     setFormGameCheckDone(false);
     setFormNotes('');
     setFormShared(false);
+    setFormPhotoUri('');
+  };
+
+  const openEditForm = (harvest: HarvestEntry) => {
+    setEditingHarvest(harvest);
+    setFormSpecies(harvest.species);
+    setFormSpeciesDetail(harvest.species_detail || '');
+    setFormDate(new Date(harvest.harvest_date + 'T00:00:00'));
+    setFormTime(harvest.harvest_time || '');
+    setFormWeapon(harvest.weapon);
+    setFormWeaponDetail(harvest.weapon_detail || '');
+    setFormCounty(harvest.county || '');
+    setFormLandName(harvest.land_name || '');
+    setFormAntlerPoints(harvest.antler_points ? harvest.antler_points.toString() : '');
+    setFormIsAntlered(harvest.is_antlered ?? true);
+    setFormWeight(harvest.estimated_weight_lbs ? harvest.estimated_weight_lbs.toString() : '');
+    setFormGameCheck(harvest.game_check_number || '');
+    setFormGameCheckDone(harvest.game_check_completed);
+    setFormNotes(harvest.notes || '');
+    setFormShared(harvest.is_shared);
+    setFormPhotoUri(harvest.photo_uri || '');
+    setShowForm(true);
+  };
+
+  const cancelEdit = () => {
+    setShowForm(false);
+    resetForm();
+    setEditingHarvest(null);
   };
 
   return (
@@ -201,7 +271,13 @@ export default function HarvestLogScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Harvest Log</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setShowForm(true)}>
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => setShowForm(true)}
+          accessibilityLabel="Log harvest"
+          accessibilityRole="button"
+          accessibilityHint="Opens form to record a new harvest"
+        >
           <Text style={styles.addBtnText}>+ Log Harvest</Text>
         </TouchableOpacity>
       </View>
@@ -211,6 +287,10 @@ export default function HarvestLogScreen() {
         <TouchableOpacity
           style={[styles.toggleBtn, view === 'list' && styles.toggleActive]}
           onPress={() => setView('list')}
+          accessibilityLabel="Harvest list"
+          accessibilityRole="tab"
+          accessibilityState={{ selected: view === 'list' }}
+          accessibilityHint="Shows all harvest records"
         >
           <Text style={[styles.toggleText, view === 'list' && styles.toggleTextActive]}>
             Harvests
@@ -219,6 +299,10 @@ export default function HarvestLogScreen() {
         <TouchableOpacity
           style={[styles.toggleBtn, view === 'summary' && styles.toggleActive]}
           onPress={() => setView('summary')}
+          accessibilityLabel="Season summary"
+          accessibilityRole="tab"
+          accessibilityState={{ selected: view === 'summary' }}
+          accessibilityHint="Shows season statistics and summary"
         >
           <Text style={[styles.toggleText, view === 'summary' && styles.toggleTextActive]}>
             Season Summary
@@ -245,12 +329,28 @@ export default function HarvestLogScreen() {
               harvests.map((h) => (
                 <View key={h.id} style={styles.harvestCard}>
                   <View style={styles.harvestHeader}>
-                    <Text style={styles.harvestSpecies}>
-                      {h.species.charAt(0).toUpperCase() + h.species.slice(1)}
-                      {h.species_detail ? ` — ${h.species_detail}` : ''}
-                    </Text>
-                    <Text style={styles.harvestDate}>{formatDate(h.harvest_date)}</Text>
+                    <View style={styles.harvestTitleGroup}>
+                      <Text style={styles.harvestSpecies}>
+                        {h.species.charAt(0).toUpperCase() + h.species.slice(1)}
+                        {h.species_detail ? ` — ${h.species_detail}` : ''}
+                      </Text>
+                      <Text style={styles.harvestDate}>{formatDate(h.harvest_date)}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => openEditForm(h)}
+                      accessibilityLabel="Edit harvest"
+                      accessibilityRole="button"
+                      accessibilityHint="Opens harvest editor"
+                    >
+                      <Text style={styles.editButton}>✎</Text>
+                    </TouchableOpacity>
                   </View>
+                  {h.photo_uri && (
+                    <View style={styles.photoPreview}>
+                      <Text style={styles.photoIcon}>📸</Text>
+                      <Text style={styles.photoText}>Photo attached</Text>
+                    </View>
+                  )}
                   <View style={styles.harvestDetails}>
                     <Text style={styles.detailText}>
                       {h.weapon.charAt(0).toUpperCase() + h.weapon.slice(1)}
@@ -337,15 +437,25 @@ export default function HarvestLogScreen() {
         )}
       </ScrollView>
 
-      {/* ── Log Harvest Modal ── */}
+      {/* ── Log/Edit Harvest Modal ── */}
       <Modal visible={showForm} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }}>
+            <TouchableOpacity
+              onPress={cancelEdit}
+              accessibilityLabel="Cancel"
+              accessibilityRole="button"
+              accessibilityHint="Closes the harvest form without saving"
+            >
               <Text style={styles.cancelBtn}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Log Harvest</Text>
-            <TouchableOpacity onPress={submitHarvest}>
+            <Text style={styles.modalTitle}>{editingHarvest ? 'Edit Harvest' : 'Log Harvest'}</Text>
+            <TouchableOpacity
+              onPress={submitHarvest}
+              accessibilityLabel="Save"
+              accessibilityRole="button"
+              accessibilityHint="Saves the harvest record"
+            >
               <Text style={styles.saveBtn}>Save</Text>
             </TouchableOpacity>
           </View>
@@ -359,6 +469,10 @@ export default function HarvestLogScreen() {
                   key={s}
                   style={[styles.chip, formSpecies === s && styles.chipActive]}
                   onPress={() => setFormSpecies(s)}
+                  accessibilityLabel={`Select ${s.replace('_', ' ')}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: formSpecies === s }}
+                  accessibilityHint="Select the species harvested"
                 >
                   <Text style={[styles.chipText, formSpecies === s && styles.chipTextActive]}>
                     {s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ')}
@@ -378,6 +492,10 @@ export default function HarvestLogScreen() {
                   key={w}
                   style={[styles.chip, formWeapon === w && styles.chipActive]}
                   onPress={() => setFormWeapon(w)}
+                  accessibilityLabel={`Select ${w}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: formWeapon === w }}
+                  accessibilityHint="Select the weapon or method used"
                 >
                   <Text style={[styles.chipText, formWeapon === w && styles.chipTextActive]}>
                     {w.charAt(0).toUpperCase() + w.slice(1)}
@@ -389,9 +507,17 @@ export default function HarvestLogScreen() {
             <FormField label="Weapon Detail (optional)" value={formWeaponDetail} onChange={setFormWeaponDetail}
               placeholder="e.g., Mathews V3X, .30-06 Remington" />
 
-            <FormField label="Date" value={formDate} onChange={setFormDate} placeholder="YYYY-MM-DD" />
+            <CalendarDatePicker
+              value={formDate}
+              onChange={setFormDate}
+              label="Date"
+            />
             <FormField label="Time (optional)" value={formTime} onChange={setFormTime} placeholder="07:30" />
-            <FormField label="County" value={formCounty} onChange={setFormCounty} placeholder="e.g., Frederick" />
+            <SearchableCountyPicker
+              value={formCounty}
+              onChange={setFormCounty}
+              label="County"
+            />
             <FormField label="Land Name" value={formLandName} onChange={setFormLandName}
               placeholder="e.g., Green Ridge SF, Private" />
 
@@ -405,6 +531,10 @@ export default function HarvestLogScreen() {
                     onValueChange={setFormIsAntlered}
                     trackColor={{ false: Colors.mud, true: Colors.moss }}
                     thumbColor={formIsAntlered ? Colors.lichen : Colors.textMuted}
+                    accessibilityLabel="Antlered buck"
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: formIsAntlered }}
+                    accessibilityHint="Toggle if the harvested deer was antlered"
                   />
                 </View>
                 {formIsAntlered && (
@@ -420,8 +550,11 @@ export default function HarvestLogScreen() {
             <View style={styles.gameCheckSection}>
               <Text style={styles.formSectionTitle}>Maryland Game Check</Text>
               <Text style={styles.formHelp}>
-                MD law requires checking your harvest within 24 hours.
-                Call 1-800-214-3337 or use the DNR website.
+                MD law requires checking your harvest within 24 hours. Call{' '}
+                <TouchableOpacity onPress={() => Linking.openURL('tel:18002143337')}>
+                  <Text style={styles.phoneLink}>1-800-214-3337</Text>
+                </TouchableOpacity>
+                {' '}or use the DNR website.
               </Text>
               <View style={styles.switchRow}>
                 <Text style={styles.formLabel}>Game Check Completed</Text>
@@ -430,6 +563,10 @@ export default function HarvestLogScreen() {
                   onValueChange={setFormGameCheckDone}
                   trackColor={{ false: Colors.mud, true: Colors.success }}
                   thumbColor={formGameCheckDone ? Colors.success : Colors.textMuted}
+                  accessibilityLabel="Game check completed"
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: formGameCheckDone }}
+                  accessibilityHint="Toggle to indicate game check has been completed"
                 />
               </View>
               {formGameCheckDone && (
@@ -440,6 +577,36 @@ export default function HarvestLogScreen() {
 
             <FormField label="Notes (optional)" value={formNotes} onChange={setFormNotes}
               placeholder="Weather conditions, stand location, story..." multiline />
+
+            {/* Photo Section */}
+            <View style={styles.photoSection}>
+              <Text style={styles.formSectionTitle}>Photo</Text>
+              <TouchableOpacity
+                style={styles.photoButton}
+                onPress={() => Alert.alert(
+                  'Photo Capture',
+                  'Photo capture and library selection coming soon. This feature will let you attach harvest photos with automatic geolocation.',
+                  [{ text: 'OK' }],
+                )}
+                accessibilityLabel="Add photo"
+                accessibilityRole="button"
+                accessibilityHint="Opens photo picker (coming soon)"
+              >
+                <Text style={styles.photoButtonIcon}>📷</Text>
+                <View style={styles.photoButtonContent}>
+                  <Text style={styles.photoButtonText}>Add Photo</Text>
+                  <Text style={styles.photoButtonSubtext}>
+                    {formPhotoUri ? 'Photo selected' : 'Take or choose from library'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              {formPhotoUri && (
+                <View style={styles.photoStatusBadge}>
+                  <Text style={styles.photoStatusIcon}>✓</Text>
+                  <Text style={styles.photoStatusText}>Photo attached</Text>
+                </View>
+              )}
+            </View>
 
             <View style={styles.switchRow}>
               <View>
@@ -479,6 +646,9 @@ function FormField({
         placeholderTextColor={Colors.textMuted}
         multiline={multiline}
         keyboardType={keyboardType || 'default'}
+        accessibilityLabel={label}
+        accessibilityRole="search"
+        accessibilityHint={`Enter ${label.toLowerCase()}`}
       />
     </View>
   );
@@ -504,7 +674,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.moss, paddingVertical: 8, paddingHorizontal: 16,
     borderRadius: 8,
   },
-  addBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  addBtnText: { color: Colors.mdWhite, fontSize: 14, fontWeight: '600' },
   toggleBar: {
     flexDirection: 'row', marginHorizontal: 16, backgroundColor: Colors.surface,
     borderRadius: 8, overflow: 'hidden', marginBottom: 12,
@@ -512,7 +682,7 @@ const styles = StyleSheet.create({
   toggleBtn: { flex: 1, paddingVertical: 10, alignItems: 'center' },
   toggleActive: { backgroundColor: Colors.moss },
   toggleText: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600' },
-  toggleTextActive: { color: '#fff' },
+  toggleTextActive: { color: Colors.mdWhite },
   scrollContent: { padding: 16, paddingBottom: 40 },
   emptyState: { alignItems: 'center', paddingTop: 60 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
@@ -522,9 +692,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface, borderRadius: 10, padding: 14, marginBottom: 10,
     borderWidth: 1, borderColor: Colors.mud,
   },
-  harvestHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  harvestHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  harvestTitleGroup: { flex: 1 },
   harvestSpecies: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  harvestDate: { fontSize: 13, color: Colors.textSecondary },
+  harvestDate: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
+  editButton: { fontSize: 18, color: Colors.tan, paddingLeft: 8 },
+  photoPreview: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.forestDark, paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6, marginBottom: 8, gap: 6 },
+  photoIcon: { fontSize: 16 },
+  photoText: { fontSize: 13, color: Colors.tan, fontWeight: '500' },
   harvestDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
   detailText: {
     fontSize: 12, color: Colors.tan, backgroundColor: Colors.surfaceElevated,
@@ -582,6 +757,7 @@ const styles = StyleSheet.create({
   },
   formInputMultiline: { minHeight: 80, textAlignVertical: 'top' },
   formHelp: { fontSize: 12, color: Colors.textMuted, marginBottom: 8 },
+  phoneLink: { fontSize: 12, color: Colors.moss, fontWeight: '700', textDecorationLine: 'underline' },
   formSectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginTop: 12, marginBottom: 4 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   chip: {
@@ -590,7 +766,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: Colors.moss, borderColor: Colors.moss },
   chipText: { fontSize: 13, color: Colors.textSecondary },
-  chipTextActive: { color: '#fff', fontWeight: '600' },
+  chipTextActive: { color: Colors.mdWhite, fontWeight: '600' },
   switchRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: 16,
@@ -598,4 +774,22 @@ const styles = StyleSheet.create({
   gameCheckSection: {
     marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.mud,
   },
+  photoSection: {
+    marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.mud,
+  },
+  photoButton: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surfaceElevated,
+    borderRadius: 8, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: Colors.mud,
+    gap: 12,
+  },
+  photoButtonIcon: { fontSize: 24 },
+  photoButtonContent: { flex: 1 },
+  photoButtonText: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
+  photoButtonSubtext: { fontSize: 13, color: Colors.textMuted, marginTop: 2 },
+  photoStatusBadge: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.forestDark,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6, gap: 8,
+  },
+  photoStatusIcon: { fontSize: 16, color: Colors.success },
+  photoStatusText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '500' },
 });

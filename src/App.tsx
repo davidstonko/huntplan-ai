@@ -13,7 +13,9 @@ import DatabaseProvider from './db/DatabaseProvider';
 import Colors from './theme/colors';
 import { initAuth } from './services/authService';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { OfflineBanner } from './components/common/OfflineBanner';
 import { flushFeedbackQueue } from './services/feedbackService';
+import { navigationRef } from './services/pushNotifications';
 
 const DISCLAIMER_KEY = 'HUNTPLAN_DISCLAIMER_ACCEPTED';
 
@@ -86,7 +88,9 @@ export default function App() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+        <OfflineBanner />
         <NavigationContainer
+          ref={navigationRef}
           theme={{
             dark: true,
             colors: {

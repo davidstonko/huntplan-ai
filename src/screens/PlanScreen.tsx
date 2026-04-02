@@ -9,8 +9,12 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import Colors from '../theme/colors';
+import { useDeerCamp } from '../context/DeerCampContext';
+import GearChecklist from '../components/common/GearChecklist';
+import { HuntPlan as ScoutHuntPlan } from '../types/scout';
 import {
   marylandPublicLands,
   MarylandPublicLand,
@@ -104,8 +108,11 @@ function checkSeasonStatus(
 }
 
 export default function PlanScreen() {
+  const { camps, importPlanToCamp } = useDeerCamp();
+
   const [plans, setPlans] = useState<HuntPlan[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<HuntPlan | null>(null);
   const [formData, setFormData] = useState({
     species: '',
     date: '',
@@ -122,6 +129,14 @@ export default function PlanScreen() {
   const [showCountyPicker, setShowCountyPicker] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
+
+  // Gear checklist modal
+  const [showGearModal, setShowGearModal] = useState(false);
+  const [selectedPlanForGear, setSelectedPlanForGear] = useState<HuntPlan | null>(null);
+
+  // Camp sharing modal
+  const [showCampPickerModal, setShowCampPickerModal] = useState(false);
+  const [selectedPlanForCamp, setSelectedPlanForCamp] = useState<HuntPlan | null>(null);
 
   // Suggested lands based on species + weapon + county
   const suggestedLands = useMemo(() => {
@@ -174,10 +189,10 @@ export default function PlanScreen() {
     if (seasonCheck.status === 'closed') {
       Alert.alert(
         'Season Closed',
-        `${formData.species} ${formData.weaponType} season appears to be closed on ${formData.date}. Create plan anyway?`,
+        `${formData.species} ${formData.weaponType} season appears to be closed on ${formData.date}. ${editingPlan ? 'Update' : 'Create'} plan anyway?`,
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Create Anyway', onPress: () => savePlan() },
+          { text: editingPlan ? 'Update Anyway' : 'Create Anyway', onPress: () => savePlan() },
         ]
       );
       return;
@@ -191,24 +206,62 @@ export default function PlanScreen() {
       ? marylandPublicLands.find((l) => l.id === formData.locationId)
       : undefined;
 
-    const newPlan: HuntPlan = {
-      id: Date.now().toString(),
-      species: formData.species,
-      date: formData.date,
-      location: formData.location,
-      locationId: formData.locationId,
-      weaponType: formData.weaponType,
-      county: formData.county || selectedLand?.county || '',
-      notes: formData.notes,
-      createdAt: new Date().toISOString().split('T')[0],
-      seasonStatus: seasonCheck.status,
-      reservationRequired: selectedLand?.reservationRequired ?? false,
-      sundayHunting: selectedLand?.sundayHunting ?? false,
-    };
+    if (editingPlan) {
+      // Update existing plan
+      const updatedPlan: HuntPlan = {
+        ...editingPlan,
+        species: formData.species,
+        date: formData.date,
+        location: formData.location,
+        locationId: formData.locationId,
+        weaponType: formData.weaponType,
+        county: formData.county || selectedLand?.county || '',
+        notes: formData.notes,
+        seasonStatus: seasonCheck.status,
+        reservationRequired: selectedLand?.reservationRequired ?? false,
+        sundayHunting: selectedLand?.sundayHunting ?? false,
+      };
+      setPlans(plans.map((p) => (p.id === editingPlan.id ? updatedPlan : p)));
+    } else {
+      // Create new plan
+      const newPlan: HuntPlan = {
+        id: Date.now().toString(),
+        species: formData.species,
+        date: formData.date,
+        location: formData.location,
+        locationId: formData.locationId,
+        weaponType: formData.weaponType,
+        county: formData.county || selectedLand?.county || '',
+        notes: formData.notes,
+        createdAt: new Date().toISOString().split('T')[0],
+        seasonStatus: seasonCheck.status,
+        reservationRequired: selectedLand?.reservationRequired ?? false,
+        sundayHunting: selectedLand?.sundayHunting ?? false,
+      };
+      setPlans([newPlan, ...plans]);
+    }
 
-    setPlans([newPlan, ...plans]);
-    setFormData({ species: '', date: '', location: '', locationId: '', weaponType: '', county: '', notes: '' });
+    resetFormState();
     setShowCreateModal(false);
+  };
+
+  const resetFormState = () => {
+    setFormData({ species: '', date: '', location: '', locationId: '', weaponType: '', county: '', notes: '' });
+    setEditingPlan(null);
+  };
+
+  const openEditModal = (plan: HuntPlan) => {
+    setEditingPlan(plan);
+    setFormData({
+      species: plan.species,
+      date: plan.date,
+      location: plan.location,
+      locationId: plan.locationId || '',
+      weaponType: plan.weaponType,
+      county: plan.county,
+      notes: plan.notes,
+    });
+    setShowCreateModal(true);
   };
 
   const deletePlan = (id: string) => {
@@ -256,30 +309,36 @@ export default function PlanScreen() {
   );
 
   const renderPlanCard = ({ item }: { item: HuntPlan }) => (
-    <TouchableOpacity
-      style={styles.planCard}
-      onLongPress={() => deletePlan(item.id)}
-      activeOpacity={0.8}
-    >
-      <View style={styles.planHeader}>
-        <View style={styles.planHeaderLeft}>
-          <Text style={styles.planSpecies}>{item.species}</Text>
-          <View
-            style={[
-              styles.seasonBadge,
-              item.seasonStatus === 'open'
-                ? styles.seasonOpen
-                : item.seasonStatus === 'closed'
-                ? styles.seasonClosed
-                : styles.seasonUnknown,
-            ]}
-          >
-            <Text style={styles.seasonBadgeText}>
-              {item.seasonStatus === 'open' ? 'In Season' : item.seasonStatus === 'closed' ? 'Closed' : '?'}
-            </Text>
+    <View style={styles.planCard}>
+      <View style={styles.planCardHeader}>
+        <View style={styles.planHeader}>
+          <View style={styles.planHeaderLeft}>
+            <Text style={styles.planSpecies}>{item.species}</Text>
+            <View
+              style={[
+                styles.seasonBadge,
+                item.seasonStatus === 'open'
+                  ? styles.seasonOpen
+                  : item.seasonStatus === 'closed'
+                  ? styles.seasonClosed
+                  : styles.seasonUnknown,
+              ]}
+            >
+              <Text style={styles.seasonBadgeText}>
+                {item.seasonStatus === 'open' ? 'In Season' : item.seasonStatus === 'closed' ? 'Closed' : '?'}
+              </Text>
+            </View>
           </View>
+          <Text style={styles.planDate}>{item.date}</Text>
         </View>
-        <Text style={styles.planDate}>{item.date}</Text>
+        <View style={styles.cardActions}>
+          <TouchableOpacity onPress={() => openEditModal(item)} style={styles.editButton}>
+            <Text style={styles.editButtonText}>✏️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => deletePlan(item.id)} style={styles.deleteButton}>
+            <Text style={styles.deleteButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.planDetails}>
         {item.location ? (
@@ -315,7 +374,37 @@ export default function PlanScreen() {
       {item.notes ? (
         <Text style={styles.planNotes}>{item.notes}</Text>
       ) : null}
-    </TouchableOpacity>
+
+      {/* Action buttons for Gear and Share */}
+      <View style={styles.actionButtonsRow}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => {
+            setSelectedPlanForGear(item);
+            setShowGearModal(true);
+          }}
+          accessibilityLabel="Open gear checklist"
+          accessibilityRole="button"
+        >
+          <Text style={styles.actionButtonText}>🎒 Gear List</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => {
+            if (camps.length === 0) {
+              Alert.alert('No Camps', 'Create a Deer Camp first to share plans.');
+            } else {
+              setSelectedPlanForCamp(item);
+              setShowCampPickerModal(true);
+            }
+          }}
+          accessibilityLabel="Share plan to camp"
+          accessibilityRole="button"
+        >
+          <Text style={styles.actionButtonText}>🏕️ Share</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   return (
@@ -356,19 +445,27 @@ export default function PlanScreen() {
         </TouchableOpacity>
       )}
 
-      {/* ── Create Plan Modal ── */}
+      {/* ── Create/Edit Plan Modal ── */}
       <Modal
         visible={showCreateModal}
         animationType="slide"
         transparent={false}
-        onRequestClose={() => setShowCreateModal(false)}
+        onRequestClose={() => {
+          setShowCreateModal(false);
+          resetFormState();
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowCreateModal(false)}>
+            <TouchableOpacity
+              onPress={() => {
+                setShowCreateModal(false);
+                resetFormState();
+              }}
+            >
               <Text style={styles.closeButton}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>New Hunt Plan</Text>
+            <Text style={styles.modalTitle}>{editingPlan ? 'Edit Hunt Plan' : 'New Hunt Plan'}</Text>
             <TouchableOpacity onPress={handleCreatePlan}>
               <Text style={styles.saveButton}>Save</Text>
             </TouchableOpacity>
@@ -582,6 +679,97 @@ export default function PlanScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* ── Gear Checklist Modal ── */}
+      <Modal
+        visible={showGearModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => {
+          setShowGearModal(false);
+          setSelectedPlanForGear(null);
+        }}
+      >
+        {selectedPlanForGear && (
+          <GearChecklist
+            species={selectedPlanForGear.species}
+            planId={selectedPlanForGear.id}
+            onClose={() => {
+              setShowGearModal(false);
+              setSelectedPlanForGear(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      {/* ── Camp Picker Modal ── */}
+      <Modal
+        visible={showCampPickerModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => {
+          setShowCampPickerModal(false);
+          setSelectedPlanForCamp(null);
+        }}
+      >
+        <View style={styles.campPickerOverlay}>
+          <View style={styles.campPickerModal}>
+            <View style={styles.campPickerHeader}>
+              <Text style={styles.campPickerTitle}>Share to Camp</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowCampPickerModal(false);
+                  setSelectedPlanForCamp(null);
+                }}
+                accessibilityLabel="Close"
+                accessibilityRole="button"
+              >
+                <Text style={styles.campPickerClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={camps}
+              keyExtractor={(camp) => camp.id}
+              renderItem={({ item: camp }) => (
+                <TouchableOpacity
+                  style={styles.campOption}
+                  onPress={() => {
+                    if (selectedPlanForCamp) {
+                      // Convert simplified HuntPlan to Scout HuntPlan format for import
+                      const scoutPlan: ScoutHuntPlan = {
+                        id: selectedPlanForCamp.id,
+                        name: selectedPlanForCamp.location || selectedPlanForCamp.species,
+                        createdAt: selectedPlanForCamp.createdAt,
+                        updatedAt: selectedPlanForCamp.createdAt,
+                        color: '#E03C31', // Default to MD Red
+                        visible: true,
+                        parkingPoint: null,
+                        waypoints: [],
+                        routes: [],
+                        areas: [],
+                        notes: selectedPlanForCamp.notes || '',
+                      };
+                      importPlanToCamp(camp.id, scoutPlan);
+                      Alert.alert('Success', `Plan shared to "${camp.name}"`);
+                    }
+                    setShowCampPickerModal(false);
+                    setSelectedPlanForCamp(null);
+                  }}
+                  accessibilityLabel={`Share to ${camp.name}`}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.campOptionText}>{camp.name}</Text>
+                  <Text style={styles.campOptionMeta}>
+                    {camp.members.length} member{camp.members.length !== 1 ? 's' : ''}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              scrollEnabled={false}
+              contentContainerStyle={styles.campPickerList}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -599,16 +787,41 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Colors.moss,
   },
+  planCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
   planHeader: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 0,
   },
   planHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginLeft: 12,
+  },
+  editButton: {
+    padding: 6,
+  },
+  editButtonText: {
+    fontSize: 16,
+  },
+  deleteButton: {
+    padding: 6,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    color: Colors.rust,
   },
   planSpecies: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
   planDate: { fontSize: 12, color: Colors.textMuted },
@@ -862,5 +1075,81 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     textAlign: 'center',
     paddingVertical: 20,
+  },
+
+  // Action buttons row (Gear List, Share to Camp)
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.mud,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: Colors.surfaceElevated,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.clay,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+
+  // Camp picker modal
+  campPickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  campPickerModal: {
+    backgroundColor: Colors.background,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingBottom: 24,
+    maxHeight: '70%',
+  },
+  campPickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.mud,
+  },
+  campPickerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  campPickerClose: {
+    fontSize: 20,
+    color: Colors.textSecondary,
+  },
+  campPickerList: {
+    paddingHorizontal: 0,
+  },
+  campOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.mud,
+  },
+  campOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  campOptionMeta: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 3,
   },
 });

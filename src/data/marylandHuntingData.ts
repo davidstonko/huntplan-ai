@@ -53,6 +53,16 @@ export interface BagLimitRule {
   countyRestrictions?: string[]; // If empty, statewide
 }
 
+export interface RutPhase {
+  phase: string;
+  startMonth: number;
+  startDay: number;
+  endMonth: number;
+  endDay: number;
+  description: string;
+  huntingTips: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MARYLAND HUNTING SEASONS 2025-2026
 // ─────────────────────────────────────────────────────────────────────────────
@@ -773,6 +783,68 @@ export const MD_BAG_LIMITS: BagLimitRule[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// MARYLAND WHITETAIL RUT CALENDAR
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Whitetail rut timeline for Maryland.
+ * Provides guidance on deer behavior and hunting strategy by phase.
+ * Based on historical breeding patterns in Eastern US populations.
+ */
+export const MD_RUT_CALENDAR: RutPhase[] = [
+  {
+    phase: 'Pre-Rut',
+    startMonth: 10,
+    startDay: 20,
+    endMonth: 11,
+    endDay: 1,
+    description: 'Bucks starting to scrape and rub. Increased movement at dawn and dusk.',
+    huntingTips:
+      'Hunt travel corridors, rub lines, and scrape areas. Focus on doe bedding areas. Best hunting: dawn and dusk.',
+  },
+  {
+    phase: 'Seeking Phase',
+    startMonth: 11,
+    startDay: 1,
+    endMonth: 11,
+    endDay: 7,
+    description: 'Bucks actively seeking does. All-day movement peaks as bucks cruise looking for estrous does.',
+    huntingTips:
+      'All-day sits can be productive. Stay on stand throughout daylight. Use doe estrus scent. Rattle and grunt.',
+  },
+  {
+    phase: 'Peak Rut',
+    startMonth: 11,
+    startDay: 7,
+    endMonth: 11,
+    endDay: 20,
+    description: 'Peak breeding activity. Bucks chasing does throughout the day. Best overall hunting period.',
+    huntingTips:
+      'All-day hunting is ideal. Expect increased movement all day. Less caution from bucks. Use all techniques.',
+  },
+  {
+    phase: 'Post-Rut',
+    startMonth: 11,
+    startDay: 20,
+    endMonth: 12,
+    endDay: 5,
+    description: 'Bucks recovering from rut. Reduced movement. Does concentrate on feeding and recovery.',
+    huntingTips:
+      'Focus on food sources: acorns, agricultural fields, browse. Sit food sources in early morning and late afternoon.',
+  },
+  {
+    phase: 'Second Rut',
+    startMonth: 12,
+    startDay: 10,
+    endMonth: 12,
+    endDay: 20,
+    description: 'Unbred does cycle again, triggering a secondary rut period. Bucks active again briefly.',
+    huntingTips:
+      'Secondary hunting opportunity. Expect moderate activity. Smaller than peak rut but still productive.',
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -820,4 +892,26 @@ export function getBagLimitInfo(species: string): BagLimitRule[] {
   return MD_BAG_LIMITS.filter(
     (rule) => rule.species.toLowerCase() === species.toLowerCase()
   );
+}
+
+/**
+ * Get the current rut phase for a given date.
+ * Returns the matching RutPhase or null if outside rut season.
+ */
+export function getCurrentRutPhase(date: Date): RutPhase | null {
+  const month = date.getMonth() + 1; // getMonth() returns 0-11
+  const day = date.getDate();
+
+  for (const phase of MD_RUT_CALENDAR) {
+    // Check if date falls within phase
+    const startDateNum = phase.startMonth * 100 + phase.startDay;
+    const endDateNum = phase.endMonth * 100 + phase.endDay;
+    const currentDateNum = month * 100 + day;
+
+    if (currentDateNum >= startDateNum && currentDateNum <= endDateNum) {
+      return phase;
+    }
+  }
+
+  return null;
 }

@@ -27,6 +27,7 @@ from app.models.deercamp import (
 )
 from app.modules.auth.dependencies import get_current_user
 from app.modules.auth.service import generate_invite_code
+from app.modules.deercamp.intelligence_service import generate_camp_intelligence
 
 
 router = APIRouter()
@@ -64,6 +65,73 @@ class AddPhotoRequest(BaseModel):
 class SyncRequest(BaseModel):
     """Offline-first sync: client sends last_synced timestamp, gets everything newer."""
     last_synced: Optional[str] = None  # ISO timestamp or None for full sync
+
+
+class HarvestLocation(BaseModel):
+    """Harvest location data point."""
+    name: str
+    lat: float
+    lng: float
+    count: int
+
+
+class WeaponStat(BaseModel):
+    """Weapon effectiveness statistics."""
+    attempts: int = 0
+    harvests: int = 0
+
+
+class SeasonalData(BaseModel):
+    """Monthly seasonal activity data."""
+    month: str
+    activity: int  # Percentage
+
+
+class TopStand(BaseModel):
+    """Top hunting stand/location."""
+    name: str
+    harvests: int
+
+
+class CampBounds(BaseModel):
+    """Geographic bounds of camp area."""
+    north: float
+    south: float
+    east: float
+    west: float
+
+
+class CampIntelligenceRequest(BaseModel):
+    """Request for AI intelligence analysis of camp data."""
+    data_point_count: int
+    members_count: int
+    species_breakdown: dict  # {"Deer": 45, "Turkey": 12}
+    harvest_locations: list[HarvestLocation] = []
+    time_patterns: dict  # {"morning": 65, "midday": 15, "evening": 20}
+    seasonal_data: list[SeasonalData] = []
+    weapon_stats: dict  # {"Archery": {"attempts": 20, "harvests": 5}, ...}
+    average_harvest_weight: Optional[float] = None
+    average_antler_points: Optional[float] = None
+    top_stands: list[TopStand] = []
+    camp_bounds: Optional[CampBounds] = None
+
+
+class CampIntelligenceResponse(BaseModel):
+    """AI-generated intelligence response."""
+    status: str = "ok"
+    summary: Optional[str] = None
+    recommendations: list[str] = []
+    patterns: list[str] = []
+    predicted_best_days: list[str] = []
+    strategy_suggestion: Optional[str] = None
+    analyzed_at: Optional[str] = None
+    data_point_count: Optional[int] = None
+    members_count: Optional[int] = None
+    fallback: bool = False  # True if LLM failed and using fallback
+    # For tier gating
+    message: Optional[str] = None
+    required_count: Optional[int] = None
+
 
 class CampSummary(BaseModel):
     id: str
@@ -603,6 +671,105 @@ async def get_activity_feed(
         ],
         "count": len(feed),
     }
+
+
+# --- AI Intelligence Endpoint ---
+
+@router.post("/camps/{camp_id}/intelligence", response_model=CampIntelligenceResponse)
+async def analyze_camp_intelligence(
+    camp_id: str,
+    request: CampIntelligenceRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    AI "Learns Your Deer Camp" — Analyze aggregated camp data and return intelligent hunting insights.
+
+    Requires:
+    - User must be a member of the camp
+    - At least 50 data points to unlock AI insights (tier gating)
+
+    Returns:
+    - AI-generated summary of camp patterns
+    - Specific recommendations for next season
+    - Notable patterns in the data
+    - Predicted best hunting days/windows
+    - Overall camp strategy suggestion
+
+    Falls back to rule-based analysis if LLM unavailable.
+
+    Example request:
+    ```json
+    {
+        "data_point_count": 145,
+        "members_count": 4,
+        "species_breakdown": {"Deer": 89, "Turkey": 12},
+        "harvest_locations": [
+            {"name": "Ridge Stand", "lat": 39.5, "lng": -78.2, "count": 34},
+            {"name": "Creek Bottom", "lat": 39.45, "lng": -78.15, "count": 28}
+        ],
+        "time_patterns": {"morning": 65, "midday": 10, "evening": 25},
+        "seasonal_data": [
+            {"month": "October", "activity": 45},
+            {"month": "November", "activity": 92}
+        ],
+        "weapon_stats": {
+            "Archery": {"attempts": 45, "harvests": 12},
+            "Firearms": {"attempts": 32, "harvests": 18}
+        },
+        "average_harvest_weight": 187.5,
+        "average_antler_points": 7.2,
+        "top_stands": [
+            {"name": "Ridge Stand", "harvests": 34},
+            {"name": "Creek Bottom", "harvests": 28}
+        ]
+    }
+    ```
+    """
+    cid = uuid.UUID(camp_id)
+
+    # Verify user is a member of this camp
+    membership = await _get_membership(db, cid, user.id)
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not a member of this camp")
+
+    # Convert Pydantic models to dict for intelligence service
+    camp_data = {
+        "data_point_count": request.data_point_count,
+        "members_count": request.members_count,
+        "species_breakdown": request.species_breakdown,
+        "harvest_locations": [loc.model_dump() for loc in request.harvest_locations],
+        "time_patterns": request.time_patterns,
+        "seasonal_data": [sd.model_dump() for sd in request.seasonal_data],
+        "weapon_stats": request.weapon_stats,
+        "average_harvest_weight": request.average_harvest_weight,
+        "average_antler_points": request.average_antler_points,
+        "top_stands": [ts.model_dump() for ts in request.top_stands],
+        "camp_bounds": request.camp_bounds.model_dump() if request.camp_bounds else None,
+    }
+
+    # Generate intelligence analysis
+    result = await generate_camp_intelligence(camp_data)
+
+    # Check for tier gating (insufficient data)
+    if result.get("status") == "insufficient_data":
+        raise HTTPException(
+            status_code=403,
+            detail=f"Need at least {result['required_count']} data points to unlock AI insights. Currently at {result['data_point_count']}.",
+        )
+
+    return CampIntelligenceResponse(
+        status=result.get("status", "ok"),
+        summary=result.get("summary"),
+        recommendations=result.get("recommendations", []),
+        patterns=result.get("patterns", []),
+        predicted_best_days=result.get("predicted_best_days", []),
+        strategy_suggestion=result.get("strategy_suggestion"),
+        analyzed_at=result.get("analyzed_at"),
+        data_point_count=result.get("data_point_count"),
+        members_count=result.get("members_count"),
+        fallback=result.get("fallback", False),
+    )
 
 
 # --- Sync endpoint (offline-first) ---

@@ -6,6 +6,7 @@ import {
   Text,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
+import Colors from '../../theme/colors';
 
 interface HuntMapProps {
   initialCoords: [number, number]; // [lon, lat]
@@ -55,7 +56,7 @@ const HuntMap = forwardRef(
               id="publicLandsCircle"
               style={{
                 circleRadius: 8,
-                circleColor: '#4CAF50',
+                circleColor: Colors.moss,
                 circleOpacity: 0.7,
               }}
             />
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     left: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: Colors.overlayLight,
     borderRadius: 6,
     overflow: 'hidden',
   },
@@ -107,10 +108,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(139, 115, 85, 0.3)',
+    borderBottomColor: Colors.mud,
   },
   zoomText: {
-    color: '#8B7355',
+    color: Colors.oak,
     fontSize: 20,
     fontWeight: '600',
   },

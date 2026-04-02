@@ -27,30 +27,34 @@ const MODE_CONFIG: Record<
   fish: {
     emoji: '\uD83D\uDC1F',
     label: 'MD Fish',
-    accent: '#0277BD',
+    accent: Colors.info,
     sublabel: 'Fishing',
   },
   hike: {
     emoji: '\uD83E\uDD7E',
     label: 'MD Hike',
-    accent: '#6D4C41',
+    accent: Colors.bark,
     sublabel: 'Hiking',
   },
   crab: {
     emoji: '\uD83E\uDD80',
     label: 'MD Crab',
-    accent: '#D84315',
+    accent: Colors.rust,
     sublabel: 'Crabbing',
   },
   boat: {
     emoji: '\uD83D\uDEA4',
     label: 'MD Boat',
-    accent: '#00695C',
+    accent: Colors.forestDark,
     sublabel: 'Boating',
   },
 };
 
-const MODES: ActivityMode[] = ['hunt', 'fish', 'hike', 'crab', 'boat'];
+/**
+ * Only show modes that are fully implemented.
+ * Hike, Crab, Boat deferred to Phase 5 — hidden until features are built.
+ */
+const MODES: ActivityMode[] = ['hunt', 'fish'];
 
 /**
  * ActivityModePicker - Dropdown in the navigation header that lets users
@@ -134,11 +138,6 @@ export default function ActivityModePicker() {
                   </View>
                   {isActive && (
                     <View style={[styles.activeIndicator, { backgroundColor: modeConf.accent }]} />
-                  )}
-                  {mode !== 'hunt' && mode !== 'fish' && (
-                    <View style={styles.comingSoonBadge}>
-                      <Text style={styles.comingSoonText}>Soon</Text>
-                    </View>
                   )}
                 </TouchableOpacity>
               );
@@ -250,21 +249,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginLeft: 8,
   },
-  comingSoonBadge: {
-    backgroundColor: Colors.mud,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  comingSoonText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-
   // MD stripe
   mdStripe: {
     flexDirection: 'row',

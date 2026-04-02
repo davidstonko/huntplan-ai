@@ -2,9 +2,10 @@
 AI Planner Service — RAG-powered hunting assistant
 
 Retrieves relevant regulation chunks via full-text search,
-then generates answers using Google Gemini with retrieved context.
+then generates answers using LLM with retrieved context.
 
-Supports Gemini (primary, free tier) with Anthropic Claude as optional fallback.
+Supports Anthropic Claude (primary, if ANTHROPIC_API_KEY set), Google Gemini (fallback),
+and template-based responses (final fallback).
 """
 
 import logging
@@ -18,7 +19,19 @@ logger = logging.getLogger(__name__)
 
 # ─── LLM Client Setup ────────────────────────────────────────────
 
+_anthropic_client = None
 _gemini_model = None
+
+
+def get_anthropic_client():
+    """Lazy-init Anthropic Claude client."""
+    global _anthropic_client
+    if _anthropic_client is None:
+        if not settings.anthropic_api_key:
+            return None
+        from anthropic import Anthropic
+        _anthropic_client = Anthropic(api_key=settings.anthropic_api_key)
+    return _anthropic_client
 
 
 def get_gemini_model():
@@ -26,11 +39,32 @@ def get_gemini_model():
     global _gemini_model
     if _gemini_model is None:
         if not settings.gemini_api_key:
-            raise ValueError("GEMINI_API_KEY not configured")
+            return None
         import google.generativeai as genai
         genai.configure(api_key=settings.gemini_api_key)
         _gemini_model = genai.GenerativeModel(settings.llm_model)
     return _gemini_model
+
+
+async def _call_claude(client, system_prompt: str, user_message: str) -> str:
+    """
+    Call Claude API. Since httpx is async-first but Anthropic SDK is sync,
+    run it in a thread to avoid blocking the async event loop.
+    """
+    import asyncio
+
+    def _sync_call():
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2048,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_message}
+            ]
+        )
+        return response.content[0].text
+
+    return await asyncio.get_event_loop().run_in_executor(None, _sync_call)
 
 
 async def _call_gemini(model, prompt: str) -> str:
@@ -169,6 +203,9 @@ async def generate_ai_response(
 ) -> dict:
     """
     Full RAG pipeline: search → retrieve → generate.
+
+    Tries Claude first (if ANTHROPIC_API_KEY set), falls back to Gemini,
+    then falls back to template-based response.
     """
     chunks = await search_regulation_chunks(db, query, state, category, species)
 
@@ -188,14 +225,6 @@ async def generate_ai_response(
         context_text = "No specific regulation data found for this query."
         sources_list = []
 
-    messages = []
-    if conversation_history:
-        for msg in conversation_history[-6:]:
-            messages.append({
-                "role": msg.get("role", "user"),
-                "content": msg.get("content", ""),
-            })
-
     user_message = f"""Based on the following Maryland hunting regulation data, please answer the user's question.
 
 REGULATION DATA:
@@ -203,15 +232,36 @@ REGULATION DATA:
 
 USER QUESTION: {query}"""
 
-    messages.append({"role": "user", "content": user_message})
+    answer_text = None
+    api_error = None
 
+    # Try Claude first
     try:
-        model = get_gemini_model()
-        full_prompt = f"{SYSTEM_PROMPT}\n\n---\n\n{user_message}"
-        response = await _call_gemini(model, full_prompt)
-        answer_text = response
+        claude_client = get_anthropic_client()
+        if claude_client:
+            logger.info("Attempting Claude API")
+            answer_text = await _call_claude(claude_client, SYSTEM_PROMPT, user_message)
+            logger.info("Claude API succeeded")
     except Exception as e:
-        logger.error(f"Gemini API error: {e}")
+        api_error = f"Claude API error: {e}"
+        logger.warning(api_error)
+
+    # Fall back to Gemini if Claude failed or not configured
+    if answer_text is None:
+        try:
+            model = get_gemini_model()
+            if model:
+                logger.info("Attempting Gemini API (Claude not available or failed)")
+                full_prompt = f"{SYSTEM_PROMPT}\n\n---\n\n{user_message}"
+                answer_text = await _call_gemini(model, full_prompt)
+                logger.info("Gemini API succeeded")
+        except Exception as e:
+            api_error = f"Gemini API error: {e}"
+            logger.warning(api_error)
+
+    # Fall back to template if both APIs failed
+    if answer_text is None:
+        logger.error(f"All LLM APIs failed. {api_error}")
         if chunks:
             answer_text = "I'm having trouble generating a response right now, but here's what I found:\n\n"
             for chunk in chunks[:3]:
@@ -265,7 +315,12 @@ async def generate_hunt_plan(
     land_name: Optional[str] = None,
     state: str = "MD",
 ) -> dict:
-    """Generate a comprehensive AI-powered hunt plan."""
+    """
+    Generate a comprehensive AI-powered hunt plan.
+
+    Tries Claude first (if ANTHROPIC_API_KEY set), falls back to Gemini,
+    then falls back to template-based plan.
+    """
     search_terms = f"{species} {weapon} season {county or ''} {land_name or ''} hunting Maryland"
 
     season_chunks = await search_regulation_chunks(db, f"{species} season {weapon}", state, category="season", species=species, limit=4)
@@ -312,12 +367,36 @@ MARYLAND REGULATION DATA:
 
 Please generate a complete hunt plan following the format in your instructions."""
 
+    plan_text = None
+    api_error = None
+
+    # Try Claude first
     try:
-        model = get_gemini_model()
-        full_prompt = f"{HUNT_PLAN_SYSTEM_PROMPT}\n\n---\n\n{user_message}"
-        plan_text = await _call_gemini(model, full_prompt)
+        claude_client = get_anthropic_client()
+        if claude_client:
+            logger.info("Attempting Claude API for hunt plan generation")
+            plan_text = await _call_claude(claude_client, HUNT_PLAN_SYSTEM_PROMPT, user_message)
+            logger.info("Claude API succeeded for hunt plan")
     except Exception as e:
-        logger.error(f"Gemini API error in hunt plan generation: {e}")
+        api_error = f"Claude API error: {e}"
+        logger.warning(api_error)
+
+    # Fall back to Gemini if Claude failed or not configured
+    if plan_text is None:
+        try:
+            model = get_gemini_model()
+            if model:
+                logger.info("Attempting Gemini API for hunt plan (Claude not available or failed)")
+                full_prompt = f"{HUNT_PLAN_SYSTEM_PROMPT}\n\n---\n\n{user_message}"
+                plan_text = await _call_gemini(model, full_prompt)
+                logger.info("Gemini API succeeded for hunt plan")
+        except Exception as e:
+            api_error = f"Gemini API error: {e}"
+            logger.warning(api_error)
+
+    # Fall back to template if both APIs failed
+    if plan_text is None:
+        logger.error(f"All LLM APIs failed for hunt plan. {api_error}")
         plan_text = _build_fallback_plan(species, weapon, hunt_date, county, all_chunks)
         sources_list = []
 

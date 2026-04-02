@@ -25,12 +25,13 @@ import TrackMeBar from '../components/scout/TrackMeBar';
 import CompassOverlay from '../components/scout/CompassOverlay';
 import MeasureTool, { MeasurePoint, measurePointsToGeoJSON } from '../components/scout/MeasureTool';
 import Colors from '../theme/colors';
+import Config from '../config';
 import {
   marylandPublicLands,
 } from '../data/marylandPublicLands';
 import { WaypointIcon, TrackPoint } from '../types/scout';
 
-MapboxGL.setAccessToken('pk.eyJ1IjoiZHN0b25rbzEiLCJhIjoiY21uYXJva3dqMG40MzJycHRreGg0NHp5diJ9.FjYw8WPexpiugKmhZqQiww');
+MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
 
 // ── Color maps (shared with MapScreen) ──
 const DESIGNATION_COLORS: Record<string, string> = {
@@ -386,6 +387,10 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={[styles.toolButton, showSidebar && styles.toolButtonActive]}
           onPress={() => { setShowSidebar(!showSidebar); setShowCreationFlow(false); }}
+          accessibilityLabel="Hunt plans"
+          accessibilityRole="button"
+          accessibilityState={{ selected: showSidebar }}
+          accessibilityHint="Toggle hunt plans and saved tracks panel"
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDCCB'}</Text>
           <Text style={styles.toolLabel}>Plans</Text>
@@ -399,6 +404,10 @@ export default function ScoutScreen() {
             }
             setMapTapMode(mapTapMode === 'waypoint' ? 'none' : 'waypoint');
           }}
+          accessibilityLabel="Add waypoint"
+          accessibilityRole="button"
+          accessibilityState={{ selected: mapTapMode === 'waypoint' }}
+          accessibilityHint="Toggle waypoint placement mode, tap map to add waypoints to plan"
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDCCC'}</Text>
           <Text style={styles.toolLabel}>Pin</Text>
@@ -406,6 +415,10 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={styles.toolButton}
           onPress={() => setShowTopo(!showTopo)}
+          accessibilityLabel={showTopo ? 'Satellite view' : 'Topographic view'}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: showTopo }}
+          accessibilityHint="Toggle between satellite and topographic map styles"
         >
           <Text style={styles.toolEmoji}>{showTopo ? '\uD83D\uDDFA\uFE0F' : '\uD83D\uDEF0\uFE0F'}</Text>
           <Text style={styles.toolLabel}>{showTopo ? 'Map' : 'Sat'}</Text>
@@ -413,6 +426,10 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={[styles.toolButton, showTrackMe && styles.toolButtonActive]}
           onPress={() => setShowTrackMe(!showTrackMe)}
+          accessibilityLabel={showTrackMe ? 'Stop GPS recording' : 'Start GPS recording'}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: showTrackMe }}
+          accessibilityHint="Toggle GPS track recording to capture your route"
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDC63'}</Text>
           <Text style={styles.toolLabel}>Track</Text>
@@ -430,6 +447,10 @@ export default function ScoutScreen() {
               setMeasurePoints([]);
             }
           }}
+          accessibilityLabel="Measure distance"
+          accessibilityRole="button"
+          accessibilityState={{ selected: showMeasure }}
+          accessibilityHint="Toggle distance measurement tool, tap map to measure"
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDCCF'}</Text>
           <Text style={styles.toolLabel}>Measure</Text>
@@ -445,6 +466,9 @@ export default function ScoutScreen() {
               });
             }
           }}
+          accessibilityLabel="Center on location"
+          accessibilityRole="button"
+          accessibilityHint="Centers map on your current GPS location"
         >
           <Text style={styles.crosshairIcon}>{'\u2316'}</Text>
         </TouchableOpacity>
@@ -458,7 +482,12 @@ export default function ScoutScreen() {
               ? 'Tap the map to set parking point'
               : 'Tap the map to place a waypoint'}
           </Text>
-          <TouchableOpacity onPress={() => setMapTapMode('none')}>
+          <TouchableOpacity
+            onPress={() => setMapTapMode('none')}
+            accessibilityLabel="Cancel"
+            accessibilityRole="button"
+            accessibilityHint="Cancels the current map tool"
+          >
             <Text style={styles.toolHintCancel}>Cancel</Text>
           </TouchableOpacity>
         </View>

@@ -148,6 +148,9 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           style={styles.card}
           onPress={() => navigation?.navigate?.('OfflineMaps')}
           activeOpacity={0.7}
+          accessibilityLabel="Manage offline maps"
+          accessibilityRole="button"
+          accessibilityHint={offlineCount > 0 ? `${offlineCount} region downloaded` : 'No maps downloaded. Open to download offline maps'}
         >
           <View style={styles.linkRow}>
             <View>
@@ -176,7 +179,13 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
         {/* ── Data ── */}
         <Text style={styles.sectionTitle}>Data</Text>
         <View style={styles.card}>
-          <TouchableOpacity style={styles.linkRow} onPress={clearLocalData}>
+          <TouchableOpacity
+            style={styles.linkRow}
+            onPress={clearLocalData}
+            accessibilityLabel="Clear local data"
+            accessibilityRole="button"
+            accessibilityHint="Removes all cached plans, tracks, and reports from device"
+          >
             <View>
               <Text style={[styles.linkLabel, { color: Colors.rust }]}>Clear Local Data</Text>
               <Text style={styles.linkDesc}>Remove cached plans, tracks, and reports</Text>
@@ -190,6 +199,9 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <TouchableOpacity
             style={styles.linkRow}
             onPress={() => Linking.openURL('https://davidstonko.github.io/huntmaryland-site/privacy.html')}
+            accessibilityLabel="Privacy policy"
+            accessibilityRole="link"
+            accessibilityHint="Opens privacy policy on website"
           >
             <Text style={styles.linkLabel}>Privacy Policy</Text>
             <Text style={styles.chevron}>{'\u203A'}</Text>
@@ -198,6 +210,9 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <TouchableOpacity
             style={styles.linkRow}
             onPress={() => Linking.openURL('https://dnr.maryland.gov')}
+            accessibilityLabel="Maryland DNR website"
+            accessibilityRole="link"
+            accessibilityHint="Opens Maryland Department of Natural Resources website"
           >
             <Text style={styles.linkLabel}>MD DNR Website</Text>
             <Text style={styles.chevron}>{'\u203A'}</Text>
@@ -244,6 +259,11 @@ function SettingRow({
         trackColor={{ false: Colors.mud, true: Colors.moss }}
         thumbColor={value ? Colors.lichen : Colors.textMuted}
         ios_backgroundColor={Colors.mud}
+        accessible
+        accessibilityLabel={label}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: value }}
+        accessibilityHint={description || `Toggle ${label}`}
       />
     </View>
   );

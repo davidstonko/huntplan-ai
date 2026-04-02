@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import Colors from '../../theme/colors';
 
 interface ScoutingReport {
   id: string;
@@ -106,12 +107,12 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   reportCard: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     padding: 14,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#8B7355',
+    borderLeftColor: Colors.oak,
   },
   header: {
     flexDirection: 'row',
@@ -122,16 +123,16 @@ const styles = StyleSheet.create({
   handle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#8B7355',
+    color: Colors.oak,
     marginBottom: 2,
   },
   date: {
     fontSize: 11,
-    color: '#666',
+    color: Colors.textMuted,
   },
   upvotes: {
     fontSize: 12,
-    color: '#aaa',
+    color: Colors.textSecondary,
   },
   content: {
     marginBottom: 10,
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
   species: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
+    color: Colors.textPrimary,
     marginRight: 6,
   },
   activityEmoji: {
@@ -152,19 +153,19 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 12,
-    color: '#aaa',
+    color: Colors.textSecondary,
     marginBottom: 8,
   },
   body: {
     fontSize: 13,
-    color: '#ddd',
+    color: Colors.textPrimary,
     lineHeight: 18,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: Colors.mud,
     paddingTop: 8,
   },
   actionButton: {
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 11,
-    color: '#8B7355',
+    color: Colors.oak,
     fontWeight: '500',
   },
   emptyContainer: {
@@ -188,12 +189,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: '#999',
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
 });

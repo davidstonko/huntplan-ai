@@ -8,9 +8,7 @@
  * @version 3.0.0
  */
 
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+import Config from '../config';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -87,7 +85,7 @@ export async function getSolunarData(
     if (date) params.append('date', date);
 
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/integrations/solunar?${params.toString()}`,
+      `${Config.API_BASE_URL}/api/v1/integrations/solunar?${params.toString()}`,
       { headers: { 'Content-Type': 'application/json' } },
     );
 
@@ -95,7 +93,8 @@ export async function getSolunarData(
       return await res.json();
     }
     return null;
-  } catch {
+  } catch (error) {
+    if (__DEV__) console.error('[Solunar] Failed to fetch solunar data, using local calculation:', error);
     // Offline — use local calculation
     return getLocalSolunarData(latitude, longitude, date);
   }
@@ -119,7 +118,7 @@ export async function getWeeklySolunar(
     if (startDate) params.append('start_date', startDate);
 
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/integrations/solunar/week?${params.toString()}`,
+      `${Config.API_BASE_URL}/api/v1/integrations/solunar/week?${params.toString()}`,
       { headers: { 'Content-Type': 'application/json' } },
     );
 
@@ -128,7 +127,8 @@ export async function getWeeklySolunar(
       return data.days || [];
     }
     return [];
-  } catch {
+  } catch (error) {
+    if (__DEV__) console.error('[Solunar] Failed to fetch weekly solunar forecast:', error);
     return [];
   }
 }

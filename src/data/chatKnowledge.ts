@@ -13,10 +13,12 @@ import {
   MD_WMAS,
   MD_COUNTIES,
   MD_BAG_LIMITS,
+  MD_RUT_CALENDAR,
   getSeasonsBySpecies,
   isInSeason,
   getWMAsByCounty,
   getBagLimitInfo,
+  getCurrentRutPhase,
 } from './marylandHuntingData';
 import {
   marylandPublicLands,
@@ -79,6 +81,10 @@ export function getSmartResponse(userQuery: string): ChatResponse {
     return handlePlanningQuery(userQuery);
   }
 
+  if (isRutQuery(q)) {
+    return handleRutQuery(userQuery);
+  }
+
   // Default: helpful fallback
   return getDefaultResponse();
 }
@@ -119,6 +125,10 @@ function isCountySpecificQuery(q: string): boolean {
 
 function isPlanningQuery(q: string): boolean {
   return /plan|recommend|suggest|help|what should|best time|where to hunt|hunt plan/.test(q);
+}
+
+function isRutQuery(q: string): boolean {
+  return /rut|breeding|estrus|doe|doe cycle|seeking|pre-rut|post-rut|peak rut|second rut|buck behavior|chasing|scrape|rub line/.test(q);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -540,6 +550,57 @@ function handlePlanningQuery(userQuery: string): ChatResponse {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// RUT QUERY HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleRutQuery(userQuery: string): ChatResponse {
+  const q = userQuery.toLowerCase();
+  const today = new Date();
+  const currentPhase = getCurrentRutPhase(today);
+
+  // Build rut calendar information
+  let text = '**Maryland Whitetail Rut Calendar**\n\n';
+
+  if (currentPhase) {
+    text +=
+      `🦌 **Current Rut Phase: ${currentPhase.phase}**\n\n` +
+      `${currentPhase.description}\n\n` +
+      `**Hunting Tips:** ${currentPhase.huntingTips}\n\n`;
+  } else {
+    text += 'Currently outside the primary rut season. Rut typically runs October-December.\n\n';
+  }
+
+  text += '**Full Rut Timeline:**\n\n';
+
+  for (const phase of MD_RUT_CALENDAR) {
+    const startDate = formatDateShort(phase.startMonth, phase.startDay);
+    const endDate = formatDateShort(phase.endMonth, phase.endDay);
+    text +=
+      `**${phase.phase}** (${startDate} – ${endDate})\n` +
+      `${phase.description}\n` +
+      `*Tips: ${phase.huntingTips}*\n\n`;
+  }
+
+  text +=
+    '**Key Rut Hunting Strategies:**\n' +
+    '• **Pre-Rut:** Focus on rub lines, scrapes, and doe bedding areas\n' +
+    '• **Seeking/Peak:** All-day sits pay off. Use doe estrus scent, rattling, and grunting\n' +
+    '• **Post-Rut:** Shift focus to food sources; hunt edges of fields and acorn concentrations\n' +
+    '• **Second Rut:** Unbred does trigger late-season activity – another great hunting window\n\n' +
+    'The rut is the most predictable time for deer movement. Use it to your advantage!';
+
+  return {
+    text,
+    citations: ['MD DNR Hunter\'s Guide', 'White-tailed Deer Behavior Studies'],
+    followUpSuggestions: [
+      'Best rut hunting strategies',
+      'Peak rut dates in November',
+      'How to use doe estrus scent',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // DEFAULT RESPONSE
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -648,7 +709,19 @@ function formatDate(dateStr: string): string {
       day: 'numeric',
       year: 'numeric',
     });
-  } catch {
+  } catch (error) {
+    if (__DEV__) console.error('[ChatKnowledge] Date formatting failed:', error);
     return dateStr;
   }
+}
+
+/**
+ * Format month and day to a readable format (e.g., "Oct 20").
+ */
+function formatDateShort(month: number, day: number): string {
+  const date = new Date(2025, month - 1, day);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
 }

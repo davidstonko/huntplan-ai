@@ -46,7 +46,7 @@ export default function ProfileScreen() {
           setTempHandle(parsed.anonymousHandle);
         }
       } catch (e) {
-        console.error('Error loading profile:', e);
+        if (__DEV__) console.error('Error loading profile:', e);
       }
     })();
   }, []);
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   infoLabel: { fontSize: 14, color: Colors.textSecondary },
   infoValue: { fontSize: 14, color: Colors.oak, fontWeight: '600' },
   dangerButton: {
-    backgroundColor: '#3A2220',
+    backgroundColor: Colors.surface,
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
@@ -252,6 +252,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  dangerButtonText: { color: '#FF8888', fontWeight: '600', fontSize: 14 },
+  dangerButtonText: { color: Colors.rust, fontWeight: '600', fontSize: 14 },
   dangerNote: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginTop: 6 },
 });

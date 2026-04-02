@@ -14,10 +14,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
-
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+import Config from '../config';
 
 interface ScoutingReport {
   id: string;
@@ -29,6 +26,14 @@ interface ScoutingReport {
   bodyText: string;
   date: string;
   upvotes: number;
+}
+
+interface ReportComment {
+  id: string;
+  report_id: string;
+  author: string;
+  content: string;
+  created_at: string;
 }
 
 const ACTIVITY_LABELS: Record<string, { label: string; color: string }> = {
@@ -94,11 +99,21 @@ export default function SocialScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingFeed, setLoadingFeed] = useState(true);
 
+  // Track upvoted reports to prevent double-upvoting
+  const [upvotedReports, setUpvotedReports] = useState<Set<string>>(new Set());
+
+  // Reply UI state
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [showReplies, setShowReplies] = useState<Set<string>>(new Set());
+  const [replyText, setReplyText] = useState<Record<string, string>>({});
+  const [reportComments, setReportComments] = useState<Record<string, ReportComment[]>>({});
+  const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set());
+
   /** Fetch scouting reports from backend, fallback to local mock data */
   const fetchReports = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('auth_token');
-      const response = await fetch(`${API_BASE_URL}/api/v1/social/social/feed?limit=30`, {
+      const response = await fetch(`${Config.API_BASE_URL}/api/v1/social/social/feed?limit=30`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (response.ok) {
@@ -135,12 +150,180 @@ export default function SocialScreen() {
     fetchReports();
   }, [fetchReports]);
 
+  /** Handle upvote button — optimistic update + API call */
+  const handleUpvote = useCallback(async (reportId: string) => {
+    // Prevent double-upvoting
+    if (upvotedReports.has(reportId)) {
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (!token) {
+        Alert.alert('Auth Required', 'Please ensure you are authenticated');
+        return;
+      }
+
+      // Optimistic update: increment upvote count immediately
+      setReports((prevReports) =>
+        prevReports.map((r) =>
+          r.id === reportId ? { ...r, upvotes: r.upvotes + 1 } : r
+        )
+      );
+
+      // Mark as upvoted locally
+      setUpvotedReports((prev) => new Set([...prev, reportId]));
+
+      // Make API call
+      const response = await fetch(
+        `${Config.API_BASE_URL}/api/v1/social/reports/${reportId}/upvote`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        // Revert on error
+        setReports((prevReports) =>
+          prevReports.map((r) =>
+            r.id === reportId ? { ...r, upvotes: r.upvotes - 1 } : r
+          )
+        );
+        setUpvotedReports((prev) => {
+          const next = new Set(prev);
+          next.delete(reportId);
+          return next;
+        });
+        Alert.alert('Error', 'Failed to upvote. Please try again.');
+      }
+    } catch (error) {
+      // Revert on error
+      setReports((prevReports) =>
+        prevReports.map((r) =>
+          r.id === reportId ? { ...r, upvotes: r.upvotes - 1 } : r
+        )
+      );
+      setUpvotedReports((prev) => {
+        const next = new Set(prev);
+        next.delete(reportId);
+        return next;
+      });
+      if (__DEV__) console.error('[Social] Upvote failed:', error);
+    }
+  }, [upvotedReports]);
+
+  /** Fetch comments for a report */
+  const fetchReportComments = useCallback(async (reportId: string) => {
+    if (reportComments[reportId]) {
+      // Already loaded, toggle visibility
+      setShowReplies((prev) => {
+        const next = new Set(prev);
+        if (next.has(reportId)) {
+          next.delete(reportId);
+        } else {
+          next.add(reportId);
+        }
+        return next;
+      });
+      return;
+    }
+
+    try {
+      setLoadingComments((prev) => new Set([...prev, reportId]));
+      const token = await AsyncStorage.getItem('auth_token');
+
+      const response = await fetch(
+        `${Config.API_BASE_URL}/api/v1/social/reports/${reportId}/comments`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const comments: ReportComment[] = data.comments || [];
+        setReportComments((prev) => ({ ...prev, [reportId]: comments }));
+        setShowReplies((prev) => new Set([...prev, reportId]));
+      }
+    } catch (error) {
+      if (__DEV__) console.error('[Social] Failed to fetch comments:', error);
+      Alert.alert('Error', 'Failed to load replies');
+    } finally {
+      setLoadingComments((prev) => {
+        const next = new Set(prev);
+        next.delete(reportId);
+        return next;
+      });
+    }
+  }, [reportComments]);
+
+  /** Submit a reply to a report */
+  const handleSubmitReply = useCallback(
+    async (reportId: string) => {
+      const content = replyText[reportId]?.trim();
+      if (!content) {
+        Alert.alert('Empty Reply', 'Please enter a comment');
+        return;
+      }
+
+      try {
+        const token = await AsyncStorage.getItem('auth_token');
+        if (!token) {
+          Alert.alert('Auth Required', 'Please ensure you are authenticated');
+          return;
+        }
+
+        const response = await fetch(
+          `${Config.API_BASE_URL}/api/v1/social/reports/${reportId}/comments`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          // Add new comment to list
+          const newComment: ReportComment = {
+            id: data.id || Date.now().toString(),
+            report_id: reportId,
+            author: username || 'Anonymous',
+            content,
+            created_at: new Date().toISOString(),
+          };
+
+          setReportComments((prev) => ({
+            ...prev,
+            [reportId]: [...(prev[reportId] || []), newComment],
+          }));
+
+          // Clear input
+          setReplyText((prev) => ({ ...prev, [reportId]: '' }));
+        } else {
+          Alert.alert('Error', 'Failed to post reply. Please try again.');
+        }
+      } catch (error) {
+        if (__DEV__) console.error('[Social] Reply submission failed:', error);
+        Alert.alert('Error', 'Failed to post reply');
+      }
+    },
+    [replyText, username]
+  );
+
   /** Submit report to backend, then add locally */
   const submitToBackend = async (report: ScoutingReport) => {
     try {
       const token = await AsyncStorage.getItem('auth_token');
       if (!token) return;
-      await fetch(`${API_BASE_URL}/api/v1/social/social/reports`, {
+      await fetch(`${Config.API_BASE_URL}/api/v1/social/social/reports`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,32 +404,94 @@ export default function SocialScreen() {
 
   const renderReport = ({ item }: { item: ScoutingReport }) => {
     const activity = ACTIVITY_LABELS[item.activityLevel];
+    const isUpvoted = upvotedReports.has(item.id);
+    const hasReplies = showReplies.has(item.id);
+    const comments = reportComments[item.id] || [];
+    const isLoadingComments = loadingComments.has(item.id);
+
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.handle}>{item.handle}</Text>
-            <Text style={styles.date}>{item.date}</Text>
+      <View>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View>
+              <Text style={styles.handle}>{item.handle}</Text>
+              <Text style={styles.date}>{item.date}</Text>
+            </View>
+            <View style={[styles.activityBadge, { backgroundColor: activity.color }]}>
+              <Text style={styles.activityText}>{activity.label}</Text>
+            </View>
           </View>
-          <View style={[styles.activityBadge, { backgroundColor: activity.color }]}>
-            <Text style={styles.activityText}>{activity.label}</Text>
+
+          <View style={styles.cardBody}>
+            <Text style={styles.speciesLabel}>{item.species}</Text>
+            <Text style={styles.location}>{item.area}, {item.county} Co.</Text>
+            <Text style={styles.body}>{item.bodyText}</Text>
           </View>
+
+          <View style={styles.cardFooter}>
+            <TouchableOpacity
+              style={[styles.actionBtn, isUpvoted && styles.actionBtnActive]}
+              onPress={() => handleUpvote(item.id)}
+              disabled={isUpvoted}
+            >
+              <Text style={[styles.actionText, isUpvoted && styles.actionTextActive]}>
+                {isUpvoted ? '✓' : ''} Upvote ({item.upvotes})
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => fetchReportComments(item.id)}
+            >
+              <Text style={styles.actionText}>Reply</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Reply Text Input (visible when expanded) */}
+          {hasReplies && (
+            <View style={styles.replyInputContainer}>
+              <TextInput
+                style={styles.replyInput}
+                placeholder="Write a reply..."
+                placeholderTextColor={Colors.textMuted}
+                value={replyText[item.id] || ''}
+                onChangeText={(t) => setReplyText((prev) => ({ ...prev, [item.id]: t }))}
+                multiline
+                maxLength={500}
+              />
+              <TouchableOpacity
+                style={styles.replySubmitBtn}
+                onPress={() => handleSubmitReply(item.id)}
+              >
+                <Text style={styles.replySubmitBtnText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
-        <View style={styles.cardBody}>
-          <Text style={styles.speciesLabel}>{item.species}</Text>
-          <Text style={styles.location}>{item.area}, {item.county} Co.</Text>
-          <Text style={styles.body}>{item.bodyText}</Text>
-        </View>
-
-        <View style={styles.cardFooter}>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionText}>Upvote ({item.upvotes})</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionText}>Reply</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Comments Section */}
+        {hasReplies && (
+          <View style={styles.commentsContainer}>
+            {isLoadingComments ? (
+              <View style={styles.loadingIndicator}>
+                <Text style={styles.loadingText}>Loading replies...</Text>
+              </View>
+            ) : comments.length === 0 ? (
+              <View style={styles.noComments}>
+                <Text style={styles.noCommentsText}>No replies yet</Text>
+              </View>
+            ) : (
+              comments.map((comment) => (
+                <View key={comment.id} style={styles.commentItem}>
+                  <Text style={styles.commentAuthor}>{comment.author}</Text>
+                  <Text style={styles.commentText}>{comment.content}</Text>
+                  <Text style={styles.commentDate}>
+                    {new Date(comment.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
+        )}
       </View>
     );
   };
@@ -540,7 +785,89 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   actionBtn: { paddingVertical: 4 },
+  actionBtnActive: { opacity: 0.6 },
   actionText: { fontSize: 12, color: Colors.oak, fontWeight: '600' },
+  actionTextActive: { color: Colors.moss, fontWeight: '700' },
+  replyInputContainer: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: Colors.mud,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  replyInput: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: Colors.textPrimary,
+    fontSize: 12,
+    maxHeight: 60,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+  },
+  replySubmitBtn: {
+    backgroundColor: Colors.moss,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  replySubmitBtnText: {
+    color: Colors.textOnAccent,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  commentsContainer: {
+    backgroundColor: Colors.surface,
+    marginHorizontal: 12,
+    marginBottom: 12,
+    borderRadius: 10,
+    padding: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.tan,
+  },
+  loadingIndicator: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 12,
+    color: Colors.textMuted,
+  },
+  noComments: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  noCommentsText: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+  },
+  commentItem: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.mud,
+  },
+  commentAuthor: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.oak,
+    marginBottom: 2,
+  },
+  commentText: {
+    fontSize: 12,
+    color: Colors.textPrimary,
+    lineHeight: 16,
+    marginBottom: 4,
+  },
+  commentDate: {
+    fontSize: 10,
+    color: Colors.textMuted,
+  },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyMark: { fontSize: 36, fontWeight: '900', color: Colors.mud, letterSpacing: 6, marginBottom: 12 },
   emptyTitle: { fontSize: 18, fontWeight: '600', color: Colors.textPrimary, marginBottom: 8 },
@@ -611,7 +938,7 @@ const styles = StyleSheet.create({
   submitButtonText: { color: Colors.textOnAccent, fontWeight: '700', fontSize: 16 },
   usernameModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: Colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,

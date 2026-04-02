@@ -1,268 +1,301 @@
 # MDHuntFishOutdoors — Hunting Module Build Plan
 
-**Last updated:** 2026-03-31
-**Status:** V2 submitted to App Review, backend live on Render (v3.0.0), Sprint A+B+C core features complete, C4 terrain done, C5 pending
+**Last updated:** 2026-04-02
+**Status:** V2 live on App Store, backend live on Render (v3.0.0), Sprints A+B+C complete (except C5 WatermelonDB migration)
 
 ---
 
-## Completed (V1 + V2)
+## Hunter UX Audit (2026-04-02)
 
-### Mobile App
-- 5-tab Hunt Mode: Map, Scout, AI, Deer Camp, Resources
+A full audit of every screen, service, context, and backend module from the perspective of a Maryland hunter using the app in the field. This drives the priority list below.
+
+### What Works Well
+- Offline map tiles with 192 public lands + polygon boundaries — can navigate in the field with no signal
+- Scout plan creation with waypoints, routes, areas — good for preseason planning
+- Deer Camp shared maps — hunt groups can coordinate stands and routes
+- 3D terrain with hillshade — see ridgelines, valleys, funnels
+- Regulations with "Can I Hunt?" checker — quick legal question answering
+- AI chat with local fallback — answers regulation questions even offline
+- Harvest log with game check tracking — MD requires 24-hour check-in
+- GPX/KML export — share plans with non-app users
+- Offline map downloads — 5 MD regions available
+
+### Critical UX Gaps (Things a hunter would notice immediately)
+
+1. **No offline indicator** — Hunter drives to Green Ridge SF, loses signal, has no idea if data is stale or fresh. No banner says "You're offline."
+
+2. **Date picker is text input (YYYY-MM-DD)** — In Regulations "Can I Hunt?" and Plan screens, hunter must type a date manually instead of tapping a calendar. Error-prone in the field with gloves.
+
+3. **County dropdown is unsearchable** — 23 counties in a scroll list. Appears in Regulations, PlanScreen, HuntPlanScreen, HarvestLog. Should be a searchable picker.
+
+4. **No barometric pressure trends** — Single biggest predictor of deer movement. Weather service tracks temp/wind but not pressure changes (6h/12h/24h trends). Hunters check pressure religiously.
+
+5. **Push notifications don't navigate** — Notifications register with APNS but `handleNotificationRouting()` stores to AsyncStorage and never opens the relevant screen. Season alert comes in, hunter taps it, nothing happens.
+
+6. **No background GPS tracking** — TrackMeBar stops recording when app is backgrounded. Hunter puts phone in pocket, walks 2 miles, track is incomplete.
+
+7. **Can't edit plans after creation** — PlanScreen only supports create and delete. Hunter makes a plan, realizes parking coordinates are wrong, has to delete and start over.
+
+8. **Social features are non-functional** — Upvote and Reply buttons exist in SocialScreen and ForumScreen but don't work. Hunter sees a scouting report, tries to upvote or reply, nothing happens.
+
+9. **No map legend** — 9 land type colors (WMA red, CFL green, SF dark green, etc.) with no legend. New user has no idea what colors mean.
+
+10. **Public land search not available from Map tab** — Hunter wants to find "Dan's Mountain WMA" from the map. Has to go to PlanScreen to search the 192-land database. Map tab has no text search.
+
+### Medium UX Gaps
+
+11. **No wind direction integration** — Scout plans don't account for wind. No "approach from downwind" recommendation. No current wind overlay on map.
+
+12. **Rut prediction missing** — No breeding season timeline or behavior change predictions by rut phase. Hunters plan their entire November around this.
+
+13. **Harvest log can't be edited** — Once logged, hunter can't fix typos or add game check number later. (Backend supports PATCH, but mobile UI doesn't expose edit.)
+
+14. **Game check phone number not clickable** — `1-800-214-3337` appears in help text but isn't a tappable link.
+
+15. **No photo capture for harvest log** — Can log species/weapon/weight but no photo attachment (backend supports photo_key but UI doesn't offer camera).
+
+16. **Scout toolbar overwhelming** — 7 buttons stacked vertically on a phone screen. New users won't know what each does.
+
+17. **42 MB GIS JSON bundled in app** — mdGISData.json ships in the binary. Should be fetched from API or lazy-loaded.
+
+18. **Season data hardcoded (2025-2026)** — `marylandHuntingData.ts` won't update without a new app build. Should pull from backend.
+
+19. **No hunt plan sharing** — Can't share a plan with Deer Camp members directly from PlanScreen. Export-to-camp exists in Scout but not in the manual plan builder.
+
+20. **Chat history not persisted** — AI conversation resets when navigating away. Hunter asks a question, switches to Map, comes back — chat is gone.
+
+### Low Priority / Polish
+
+21. No GPS routing to selected WMA (could deep-link to Apple Maps)
+22. No pack/gear checklist integrated with plans
+23. No image compression before photo upload (large files on LTE)
+24. No offline maps resume (interrupted download restarts from 0)
+25. No dark mode detection (always dark — fine for hunting, but preference would be nice)
+26. API requests not cached or deduplicated
+27. WeatherOverlay doesn't show dew point (scent conditions)
+28. Forum threads don't support reply viewing (thread detail view missing)
+29. No community harvest heatmap (which WMAs produce most deer)
+30. ActivityMode doesn't persist across restarts (always resets to Hunt)
+
+---
+
+## Completed Work
+
+### V1 (shipped 2026-03-30)
+- 6-tab Hunt Mode app with Map, Regulations, AI, Social, Resources, Profile
 - 192 Maryland public lands with polygon boundaries + enriched metadata
+- Static bundled data (seasons, bag limits, lands, GIS)
+- Animated splash screen, liability disclaimer, MDHuntFishOutdoors branding
+
+### V2 (submitted 2026-03-30, live on App Store)
+- 5-tab restructure: Map | Scout | AI | Deer Camp | Resources
+- Scout tab: PlanSidebar, PlanCreationFlow, AnnotationLayer, CompassOverlay, TrackMeBar, MeasureTool
+- Deer Camp: Camp list/map, member management, activity feed, photo pins, import/export
+- Resources segmented control (Regulations | Links & Guides)
 - 9 land type filters, 5 species, 3 weapons, 3 access filters (AND logic)
-- Scout tab: plan creation wizard, GPS tracking, compass, measure tool, annotation layers
-- Deer Camp: local collaborative maps, member management, activity feed, photo pins
-- Local AI chat (keyword-matching knowledge base for regulations)
-- GPX/KML export on-device
-- Animated splash, disclaimer, MDHuntFishOutdoors branding
-- Offline data bundles (regulations, lands, GeoJSON)
+- GPX/KML on-device export with iOS share sheet
 
-### Backend (live at huntplan-api.onrender.com)
-- 35+ live endpoints: auth, regulations, lands, deer camp, export, notifications
-- Anonymous-first JWT auth with device registration
-- Full Deer Camp CRUD with invite codes + offline sync endpoint
-- Regulations API (seasons, can-i-hunt, bag-limits, species, Sunday hunting)
-- Lands API with PostGIS spatial queries
+### Sprint A — AI & Backend Integration (COMPLETE)
+- RAG pipeline: PostgreSQL full-text search over ~80 regulation chunks
+- Gemini 2.0 Flash for AI chat + hunt plan generation (free tier)
+- Mobile ↔ backend wiring: ChatScreen, SocialScreen, auth, camp sync
+- AI hunt plan generator with multi-category RAG search
 
----
+### Sprint B — Daily-Use Features (COMPLETE)
+- Weather integration: NOAA API + hunting condition analysis + deer activity score
+- Solunar service: Moon phase, major/minor periods, activity ratings, offline fallback
+- Harvest log: Full CRUD with game check tracking + season summary
+- Offline maps UI: 5 MD regions, download/delete/manage
+- Settings screen: Notifications, units, clear data, privacy policy
+- AI hunt plan UI: Species/weapon/date/county pickers + generated plan display
 
-## Sprint A — AI & Backend Integration (COMPLETE)
+### Sprint C — Premium Polish (MOSTLY COMPLETE)
+- C1: WebSocket real-time sync for Deer Camp (manager, reconnect, presence)
+- C2: Push notifications APNS (token registration, preferences — routing incomplete)
+- C3: S3/R2 photo upload (presigned URLs, offline queue, confirmation)
+- C4: 3D terrain (DEM, hillshade, atmosphere, sky, exaggeration presets)
+- C5: WatermelonDB migration — **PENDING** (schema defined, migration code written, not activated)
+- C6: Navigation wiring (stack navigators, sub-screen access from all tabs)
 
-### A1. RAG Pipeline (DONE)
-- PostgreSQL full-text search (tsvector/tsquery) for regulation chunk retrieval
-- `regulation_chunks` table with auto-ingestion on first startup
-- ~80 chunks: 16 seasons, 17 WMAs, 24 counties, 10 bag limits, 8 general topics
-- `search_regulation_chunks()` + `fallback_search()` (ILIKE fallback)
-
-### A2. Claude AI Backend (DONE → Gemini LLM)
-- `/api/v1/planner/ai/query` — RAG-powered Q&A endpoint
-- System prompt: MD hunting regulations expert, cites sources, adds DNR disclaimer
-- LLM switched to Google Gemini 2.0 Flash (free tier) on 2026-03-31; endpoints unchanged
-- Graceful fallback: if Gemini API fails, returns formatted raw chunks
-- Follow-up suggestions based on detected species/topic
-- `/api/v1/planner/ai/ingest` — Admin endpoint for re-seeding data
-
-### A3. AI Hunt Plan Generator (DONE → Gemini LLM)
-- `/api/v1/planner/ai/hunt-plan` — comprehensive plan generation endpoint
-- Input: species, weapon, date, county, specific land name
-- Multi-category RAG search: seasons + lands + bag limits + county rules + general
-- Gemini 2.0 Flash generates full plan: overview, legal check, locations, timing, gear, strategy, safety
-- LLM switched to Google Gemini 2.0 Flash (free tier) on 2026-03-31
-- Fallback plan from raw chunks if API unavailable
-
-### A4. Mobile ↔ Backend Wiring (DONE)
-- ChatScreen calls backend RAG endpoint, falls back to local knowledge base
-- Auto-register device on first launch (silent JWT in App.tsx)
-- JWT stored in AsyncStorage, attached to all API requests
-- SocialScreen wired to backend feed + post submission
-
-### A5. Deer Camp Backend Sync (DONE)
-- Full sync endpoint: client sends `last_synced`, server returns delta
-- Camp CRUD, member management, annotations, photos, activity feed all wired
+### Sprint D — Growth (PARTIAL)
+- D2: Forum/Marketplace — COMPLETE (threads, gear listings, land permissions, moderation)
+- D5: Feedback system — COMPLETE (mobile offline queue, backend API, Gmail SMTP, donation notifications)
+- D6: Donate screen — COMPLETE (tiers, Venmo/BMC/Patreon, backend notification tap)
 
 ---
 
-## Sprint B — Daily-Use Features (COMPLETE)
+## Recommended Build Priority
 
-### B1. Weather Integration (DONE)
-- Backend: Weather.gov API integration with hunting condition analysis
-- `_calculate_hunting_conditions()`: deer activity, wind/scent, pressure trends, overall rating
-- Sunrise/sunset endpoint with MD legal shooting hours (30 min before/after)
-- Mobile: WeatherOverlay badge on MapScreen (temp + condition + hunting rating)
-- Expanded view: current conditions, deer activity assessment, 3-day forecast
+Based on the hunter UX audit, here's what to build next, ordered by impact for real hunters:
 
-### B2. Solunar / Best Hunting Times (DONE)
-- Backend: `/solunar`, `/solunar/week`, `/moon` endpoints
-- Moon phase calculation (synodic month algorithm)
-- Major periods (moon overhead/underfoot) + minor periods (moonrise/moonset)
-- Activity rating (0-100) based on moon phase, solunar-dawn overlap, daylight
-- Multi-day forecast for picking best day to hunt
-- Mobile: `solunarService.ts` with offline fallback calculation
-- Mobile: `SolunarWidget` component for map/scout screens
+### Sprint E — Field-Ready Polish (HIGH IMPACT)
 
-### B3. Harvest Log (DONE)
-- Backend model: `HarvestLog` with species, weapon, location, deer details, game check
-- Full CRUD: log, list, update, delete harvests
-- Season summary with bag limit tracking (antlered/antlerless breakdown)
-- Game check compliance rate tracking
-- Community harvest stats (anonymous, opt-in)
-- Mobile: `HarvestLogScreen` with list view, season summary, log form modal
-- Offline: saves locally, syncs when connected
+**E1. Offline Network Banner** (2-3 hours)
+- Show a persistent banner when `isOnline === false`
+- Use `useNetworkStatus()` hook in AppNavigator
+- Simple colored bar: "Offline — using cached data"
+- Dismiss on reconnect
 
-### B4. Social Scouting Feed (DONE)
-- Backend: full CRUD for scouting reports with species/county/land filters
-- Upvote + comment system
-- Mobile: SocialScreen wired to backend
+**E2. Calendar Date Picker** (3-4 hours)
+- Replace text input with `@react-native-community/datetimepicker`
+- Apply to: RegulationsScreen "Can I Hunt?", PlanScreen, HuntPlanScreen, HarvestLogScreen
+- Default to today, restrict to current season range
 
-### B5. Offline Maps UI (DONE)
-- `OfflineMapsScreen`: download/delete/manage 5 MD regional tile packs
-- Disk usage tracking, progress indicator during download
-- Tips for offline hunting
+**E3. Searchable County Picker** (3-4 hours)
+- TextInput with filtered FlatList dropdown
+- Replace county ScrollView picker in all 4+ screens
+- Consider reusable `<SearchablePicker>` component
 
-### B6. Settings Screen (DONE)
-- Notification preferences (season alerts, camp activity, reg changes, weather)
-- Offline maps shortcut
-- Metric/imperial unit toggle
-- Clear local data option
-- Privacy policy, version info, DNR link
+**E4. Map Land Search** (4-6 hours)
+- Add search bar to MapScreen header
+- Search against 192 land names (local, instant)
+- On select: fly to land location, open LandInfoPanel
+- Reuse PlanScreen's location search logic
 
-### B7. AI Hunt Plan UI (DONE)
-- `HuntPlanScreen`: species picker, weapon selector, date input, county dropdown
-- County picker with all 24 MD counties
-- Full plan display with sources and disclaimer
-- Error handling with connection retry
+**E5. Map Legend** (2-3 hours)
+- Collapsible legend overlay showing land type colors
+- 9 entries: WMA (red), CFL (green), SF (dark green), etc.
+- Toggle via button on MapFilterPanel
 
----
+**E6. Fix Push Notification Routing** (3-4 hours)
+- Complete `handleNotificationRouting()` in pushNotifications.ts
+- Map notification types to screen navigation:
+  - `season_alert` → RegulationsScreen
+  - `camp_activity` → DeerCampScreen
+  - `regulation_change` → RegulationsScreen
+  - `weather_alert` → MapScreen (weather overlay)
 
-## Sprint AB-Post — LLM Migration (COMPLETE)
+**E7. Edit Hunt Plans** (3-4 hours)
+- Add edit button to PlanScreen plan cards
+- Pre-populate form with existing plan data
+- Save updates via context CRUD
 
-### Gemini API Migration
-- Switched from Anthropic Claude to Google Gemini 2.0 Flash (free tier) on 2026-03-31
-- Reason: Anthropic API credit balance exhausted; Gemini offers generous free tier (15 RPM, 1M tokens/day)
-- google-generativeai SDK added to requirements.txt
-- Synchronous `generate_content()` wrapped in asyncio executor for async backend compatibility
-- GEMINI_API_KEY added to Render environment variables
-- Anthropic SDK retained as optional fallback dependency
-- Deployed to Render via auto-deploy from GitHub push
-- No breaking changes to API contracts; all endpoints remain fully functional
+**E8. Make Game Check Number Clickable** (30 min)
+- Wrap `1-800-214-3337` in `Linking.openURL('tel:18002143337')`
+- Apply in HarvestLogScreen help text
 
----
+### Sprint F — Hunter Intelligence (MEDIUM IMPACT)
 
-## Sprint C — Premium Polish (IN PROGRESS)
+**F1. Barometric Pressure Trends** (6-8 hours)
+- Backend: Add pressure history tracking (NOAA includes pressure in forecast data)
+- Calculate 6h/12h/24h trends (rising/falling/stable)
+- Mobile: Add pressure widget to weather overlay
+- Deer activity formula: rising pressure = increased movement
+- This is the #1 feature serious deer hunters would want
 
-### C1. WebSocket Real-Time Sync (DONE)
-- `app/modules/websocket/manager.py` — ConnectionManager with per-camp rooms
-- `app/modules/websocket/routes.py` — WebSocket endpoint at `/ws/camps/{camp_id}`
-- JWT auth on connect, camp membership verification
-- Message types: annotation_add/update/delete, photo_added, location_update, ping/pong
-- Member online/offline presence with real-time roster broadcasts
-- REST fallback: `/ws/camps/{camp_id}/online` for polling clients
-- Mobile: `websocketService.ts` — CampWebSocket class with auto-reconnect (exponential backoff)
+**F2. Wind Direction Overlay** (4-6 hours)
+- Show current wind direction arrow on map
+- Color-code: green = favorable (downwind approach), red = unfavorable
+- Integrate with scout plan — suggest approach routes based on wind
 
-### C2. Push Notifications (APNS) (DONE)
-- `app/modules/notifications/apns_service.py` — Full APNS service with PyAPNs2
-- Token-based auth (.p8 key), lazy-init client
-- `notify_camp_members()` — sends push to all camp members except actor
-- `notify_season_alert()` — broadcast season opening/closing alerts
-- Dev mode: logs notifications when APNS not configured
-- `send_camp_notification()` in routes.py now wired to real APNS service
+**F3. Rut Prediction Calendar** (4-6 hours)
+- Add MD rut timeline to chatKnowledge.ts and regulations data
+- Pre-rut (late Oct), Peak Rut (Nov 5-15), Post-Rut (late Nov)
+- AI chat should reference rut phase when answering November questions
+- Optional: push notification for rut phase changes
 
-### C3. S3/R2 Photo Upload (DONE)
-- `app/modules/photos/routes.py` — Presigned URL generation + upload confirmation
-- Cloudflare R2 (S3-compatible) storage with boto3 client
-- Upload flow: request URL → direct upload to R2 → confirm with backend
-- Camp photos, harvest photos, scouting report photos supported
-- `/api/v1/photos/upload-url` + `/api/v1/photos/confirm` + `/api/v1/photos/camp/{id}`
-- Mobile: `photoService.ts` — upload with offline queue and automatic retry
-- Dev fallback: local upload endpoint when R2 not configured
+**F4. Background GPS Tracking** (6-8 hours)
+- Use `react-native-background-geolocation` or equivalent
+- Keep TrackMeBar recording when app is backgrounded
+- Critical for all-day scouting trips
+- Battery impact warning in UI
 
-### C4. 3D Terrain (DONE)
-- `MapScreen.tsx` — Mapbox `RasterDemSource` + `Terrain` + `HillshadeLayer` + `Atmosphere` + `SkyLayer`
-- 3D toggle button in map controls (ON/OFF)
-- Terrain exaggeration cycle: 0.5x, 1.0x, 1.5x, 2.0x, 3.0x (tap to cycle)
-- `ElevationProfile.tsx` — Track elevation chart with distance, gain/loss, min/max stats
-- `TerrainControls.tsx` — Inline terrain settings panel with exaggeration presets and hunting tips
-- Hillshade illumination at 335°, accent color #4a6741 (forest green)
-- Atmosphere + sky layer for immersive 3D experience
+**F5. Harvest Log Edit + Photo** (4-6 hours)
+- Add edit mode to harvest log entries (backend PATCH already works)
+- Add camera/gallery picker for harvest photos
+- Upload via photoService with offline queue
+- Display photo thumbnail on harvest card
 
-### C6. Navigation Wiring (DONE)
-- Stack navigation wrappers: `MapStack`, `AIStack`, `ResourcesStack`
-- Sub-screens accessible via push: Settings, HarvestLog, HuntPlan, OfflineMaps
-- ResourcesHub quick-access toolbar: Harvest Log + Settings pill buttons
-- ChatScreen Hunt Plan Generator banner with navigation to HuntPlanScreen
-- All Sprint B screens now reachable from main tabs
+### Sprint G — Social & Community (LOWER IMPACT)
 
-### C5. WatermelonDB Migration (PENDING)
-- Replace AsyncStorage with WatermelonDB (SQLite)
-- Schema: plans, tracks, camps, annotations, photos
-- Sync adapter connecting to backend REST endpoints
-- Offline queue with automatic retry
+**G1. Fix Upvote/Reply** (4-6 hours)
+- Wire upvote buttons to backend endpoints (already exist)
+- Implement reply UI for scouting reports and forum threads
+- Show reply count accurately
 
----
+**G2. Chat History Persistence** (3-4 hours)
+- Save conversation to AsyncStorage per session
+- Restore on screen re-mount
+- Add "Clear Chat" button
 
-## Sprint D — Growth (Ongoing)
+**G3. Plan Sharing to Deer Camp** (3-4 hours)
+- Add "Share to Camp" button on PlanScreen plan cards
+- Use existing `importPlanToCamp()` from DeerCampContext
+- Show camp picker modal
 
-### D1. Multi-State Expansion (PENDING)
-- Virginia + Pennsylvania data pack scrapers
-- State-specific regulation chunks for RAG
-- State selector in app settings
+**G4. Community Harvest Heatmap** (8-12 hours)
+- Backend: Aggregate anonymous harvest data by WMA
+- Mobile: Render heatmap overlay on map
+- Show "X deer harvested at [WMA] this season"
 
-### D2. Forum / Marketplace (DONE)
-- `ForumThread` model: discussion threads with categories, land association, tags, upvotes
-- `ForumReply` model: nested comment system with upvotes and moderation
-- `MarketplaceListing` model: gear buy/sell/trade with pricing, condition, 30-day expiry
-- `LandPermission` model: hunting lease/access listings with species, weapons, pricing
-- Full CRUD endpoints: `/api/v1/forum/threads`, `/marketplace`, `/land-permissions`
-- Thread filtering: category, land_id, county; sorting: recent, popular, active
-- Marketplace filtering: category, listing_type, price range
-- Mobile: `ForumScreen` with 3-tab layout (Forum, Gear, Land)
-- Category filter chips, thread cards, marketplace cards, creation modal
-- Forum accessible from Resources tab quick-access toolbar
-- Moderation flags (is_flagged, is_removed, is_locked) on all content types
+### Sprint H — Technical Debt
 
-### D3. MATLAB Analytics
-- MD DNR harvest data ingestion
-- Success probability models by land, season, weapon
-- Population density heatmaps
-- Trend analysis dashboard
+**H1. Remove 42 MB GIS JSON from Bundle** (4-6 hours)
+- Serve mdGISData.json from backend API
+- Cache locally after first fetch
+- Reduce app binary size significantly
 
-### D4. Monetization
-- Non-intrusive ads (banner on Resources tab)
-- Premium tier: offline maps, 3D terrain, advanced analytics
-- Sponsored content from outdoor brands
+**H2. Dynamic Season Data** (4-6 hours)
+- Fetch seasons/bag limits from backend instead of hardcoded TS
+- Cache in AsyncStorage with freshness check
+- Backend already serves this via `/api/v1/regulations/seasons`
+
+**H3. Admin RBAC** (2-3 hours)
+- Add `is_admin` flag to User model
+- Protect `/admin/*` feedback endpoints
+- Currently any auth user can access admin routes
+
+**H4. Alembic Migrations** (4-6 hours)
+- Set up Alembic for proper schema versioning
+- Currently using `create_all()` at startup (dangerous for production)
+
+**H5. Image Compression** (2-3 hours)
+- Compress photos to 1080p before upload
+- Reduces upload time on LTE significantly
 
 ---
 
-## New Files Created (Sprint A+B Session 2)
+## Backend Endpoint Coverage
 
-### Backend
-```
-app/models/harvest.py                    — Harvest log SQLAlchemy model
-app/modules/harvest/__init__.py          — Package init
-app/modules/harvest/routes.py            — Full harvest CRUD + season summary + community stats
-app/modules/integrations/solunar_service.py — Moon phase, solunar periods, activity ratings
-```
+| Module | Endpoints | Mobile Wired? | Notes |
+|--------|-----------|---------------|-------|
+| Auth | 4 | Yes | Silent register on launch |
+| Regulations | 5 | Yes | "Can I Hunt?" + seasons + bag limits |
+| Lands | 6 | Partial | api.ts has types, MapScreen uses local data |
+| AI Planner | 2 | Yes | ChatScreen + HuntPlanScreen |
+| Deer Camp | 12 | Yes | Full sync via campSyncService |
+| WebSocket | 2 | Yes | websocketService.ts |
+| Export | 4 | Partial | On-device export exists; backend export not used |
+| Harvest | 7 | Yes | HarvestLogScreen with offline fallback |
+| Social | 5 | Yes | SocialScreen feed + posting |
+| Forum | 9+ | Yes | ForumScreen 3-tab layout |
+| Photos | 5 | Yes | photoService with offline queue |
+| Integrations | 3 | Yes | Weather + solunar widgets |
+| Notifications | 4 | Partial | Token registered, routing broken |
+| Feedback | 6 | Yes | Offline queue + admin panel |
 
-### Backend Modified
-```
-app/main.py                              — Added harvest router
-app/models/__init__.py                   — Added harvest import
-app/modules/ai_planner/service.py        — Rewritten for Gemini; added generate_hunt_plan() + system prompt
-app/modules/ai_planner/routes.py         — Added /hunt-plan endpoint + HuntPlanRequest/Response
-app/modules/ai_planner/config.py         — Updated with Gemini settings
-app/modules/integrations/routes.py       — Added /solunar, /solunar/week, /moon endpoints
-requirements.txt                         — Added google-generativeai dependency
-```
+---
 
-### Mobile
-```
-screens/OfflineMapsScreen.tsx            — Offline map download manager UI
-screens/SettingsScreen.tsx               — App settings (notifications, maps, units, data)
-screens/HarvestLogScreen.tsx             — Harvest log with list, summary, form
-screens/HuntPlanScreen.tsx               — AI hunt plan generator UI
-services/solunarService.ts              — Solunar data fetching + offline fallback
-components/map/SolunarWidget.tsx         — Compact solunar badge for map screens
-```
+## Development Phases
 
-## New Files Created (Sprint C4 Session)
-
-### Mobile
-```
-components/map/ElevationProfile.tsx      — Track elevation profile chart with stats
-components/map/TerrainControls.tsx       — 3D terrain settings panel with exaggeration presets
-navigation/AppNavigator.tsx              — Updated: stack navigation wrappers for sub-screens
-screens/MapScreen.tsx                    — Updated: 3D terrain (DEM + hillshade + atmosphere + sky)
-screens/ChatScreen.tsx                   — Updated: Hunt Plan banner + navigation
-screens/ResourcesHubScreen.tsx           — Updated: quick-access toolbar (Harvest Log, Settings)
-```
+- **V1** (shipped 2026-03-30): Hunting MVP
+- **V2** (live, App Store): Scout + Deer Camp + branding
+- **Sprint E** (next): Field-ready polish (offline banner, date pickers, search, legend)
+- **Sprint F** (after E): Hunter intelligence (pressure, wind, rut, background GPS)
+- **Sprint G**: Social polish (upvotes, chat persistence, plan sharing)
+- **Sprint H**: Technical debt (bundle size, dynamic data, admin RBAC, migrations)
+- **Phase 4** (Weeks 23-30): Fishing module — MD fishing regulations, stocking reports, boat ramps
+- **Phase 5** (Weeks 31+): Crabbing + Boating + Hiking modules
+- **Phase 6** (Post-launch): Monetization, multi-state expansion (VA, PA)
 
 ---
 
 ## Architecture Notes
 
-- **Offline-first principle**: Every feature must work without internet, syncing when connected
+- **Offline-first**: Every feature must work without internet, syncing when connected
 - **Maryland-first**: All features validated on MD data before multi-state expansion
-- **DNR disclaimer**: Every AI response and regulation display includes "Verify with MD DNR" footer
+- **DNR disclaimer**: Every AI response and regulation display includes "Verify with MD DNR"
 - **Privacy**: Anonymous by default, username-based profiles, no real names required
 - **Graceful degradation**: Gemini API → raw chunks → local knowledge base → error message
+- **WatermelonDB**: Schema defined, migration code ready — activation is Sprint C5 (pending)
+- **Bundle ID locked**: com.davidstonko.huntmaryland (registered with Apple, do NOT change)
