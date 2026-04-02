@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     apns_key_path: Optional[str] = None  # Path to .p8 key file
     apns_use_sandbox: bool = True  # True for dev, False for production
 
+    # Feedback email notifications (Gmail SMTP)
+    feedback_email: str = "feedback.mdhuntfishoutdoors@gmail.com"
+    feedback_email_app_password: Optional[str] = None  # Gmail App Password (not regular password)
+
     # Auth
     secret_key: str = "CHANGE-ME-IN-PRODUCTION"
     access_token_expire_minutes: int = 60 * 24 * 30  # 30 days

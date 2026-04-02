@@ -9,8 +9,11 @@ import AnimatedSplash from './components/splash/AnimatedSplash';
 import { ActivityModeProvider } from './context/ActivityModeContext';
 import { ScoutDataProvider } from './context/ScoutDataContext';
 import { DeerCampProvider } from './context/DeerCampContext';
+import DatabaseProvider from './db/DatabaseProvider';
 import Colors from './theme/colors';
 import { initAuth } from './services/authService';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { flushFeedbackQueue } from './services/feedbackService';
 
 const DISCLAIMER_KEY = 'HUNTPLAN_DISCLAIMER_ACCEPTED';
 
@@ -32,12 +35,15 @@ export default function App() {
             // Also store under 'auth_token' for simple fetch() calls
             AsyncStorage.setItem('auth_token', authState.accessToken);
           }
-          console.log('[Auth]', authState.isAuthenticated ? 'Authenticated' : 'Offline mode');
+          if (__DEV__) console.log('[Auth]', authState.isAuthenticated ? 'Authenticated' : 'Offline mode');
         }).catch(() => {
-          console.warn('[Auth] Silent auth failed, running offline');
+          if (__DEV__) console.warn('[Auth] Silent auth failed, running offline');
         });
+
+        // Flush any queued feedback from previous offline sessions
+        flushFeedbackQueue().catch(() => {});
       } catch (e) {
-        console.error('Error checking disclaimer:', e);
+        if (__DEV__) console.error('[App] Error checking disclaimer:', e);
       } finally {
         setIsLoading(false);
       }
@@ -49,7 +55,7 @@ export default function App() {
       await AsyncStorage.setItem(DISCLAIMER_KEY, 'true');
       setDisclaimerAccepted(true);
     } catch (e) {
-      console.error('Error saving disclaimer:', e);
+      if (__DEV__) console.error('[App] Error saving disclaimer:', e);
     }
   };
 
@@ -73,40 +79,44 @@ export default function App() {
   }
 
   return (
+    <DatabaseProvider>
     <ActivityModeProvider>
     <ScoutDataProvider>
     <DeerCampProvider>
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
-      <NavigationContainer
-        theme={{
-          dark: true,
-          colors: {
-            primary: Colors.oak,
-            background: Colors.background,
-            card: Colors.surface,
-            text: Colors.textPrimary,
-            border: Colors.mud,
-            notification: Colors.amber,
-          },
-          fonts: {
-            regular: { fontFamily: 'System', fontWeight: '400' as const },
-            medium: { fontFamily: 'System', fontWeight: '500' as const },
-            bold: { fontFamily: 'System', fontWeight: '700' as const },
-            heavy: { fontFamily: 'System', fontWeight: '900' as const },
-          },
-        }}
-      >
-        {!disclaimerAccepted ? (
-          <SplashDisclaimer onAccept={handleAccept} />
-        ) : (
-          <AppNavigator />
-        )}
-      </NavigationContainer>
+      <ErrorBoundary>
+        <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+        <NavigationContainer
+          theme={{
+            dark: true,
+            colors: {
+              primary: Colors.oak,
+              background: Colors.background,
+              card: Colors.surface,
+              text: Colors.textPrimary,
+              border: Colors.mud,
+              notification: Colors.amber,
+            },
+            fonts: {
+              regular: { fontFamily: 'System', fontWeight: '400' as const },
+              medium: { fontFamily: 'System', fontWeight: '500' as const },
+              bold: { fontFamily: 'System', fontWeight: '700' as const },
+              heavy: { fontFamily: 'System', fontWeight: '900' as const },
+            },
+          }}
+        >
+          {!disclaimerAccepted ? (
+            <SplashDisclaimer onAccept={handleAccept} />
+          ) : (
+            <AppNavigator />
+          )}
+        </NavigationContainer>
+      </ErrorBoundary>
     </SafeAreaProvider>
     </DeerCampProvider>
     </ScoutDataProvider>
     </ActivityModeProvider>
+    </DatabaseProvider>
   );
 }
 

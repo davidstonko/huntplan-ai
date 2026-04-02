@@ -11,6 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import Colors from '../theme/colors';
+import { submitFeedback } from '../services/feedbackService';
 import {
   MD_SEASONS,
   MD_COUNTIES,
@@ -48,7 +49,8 @@ const formatDate = (dateStr: string): string => {
   try {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch {
+  } catch (error) {
+    if (__DEV__) console.error('[RegulationsScreen] Date formatting failed:', error);
     return dateStr;
   }
 };
@@ -79,13 +81,22 @@ export default function RegulationsScreen() {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  const handleSubmitFeedback = () => {
+  const handleSubmitFeedback = async () => {
     if (!feedbackText.trim()) {
       Alert.alert('Missing Details', 'Please describe the issue or suggestion.');
       return;
     }
-    // V2: store locally; V3+: send to backend
-    console.log('[RegFeedback]', { type: feedbackType, text: feedbackText, tab: activeTab, date: new Date().toISOString() });
+    // Submit to backend with offline queue fallback
+    try {
+      await submitFeedback({
+        feedback_type: feedbackType,
+        description: feedbackText.trim(),
+        screen: 'RegulationsScreen',
+        active_tab: activeTab,
+      });
+    } catch (e) {
+      if (__DEV__) console.warn('[RegFeedback] submitFeedback error:', e);
+    }
     setFeedbackSubmitted(true);
     setTimeout(() => {
       setShowFeedbackModal(false);
@@ -629,7 +640,7 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.success,
   },
   resultDenied: {
-    backgroundColor: '#3A2220',
+    backgroundColor: Colors.surface,
     borderLeftWidth: 4,
     borderLeftColor: Colors.danger,
   },
@@ -707,7 +718,7 @@ const styles = StyleSheet.create({
   // ── Feedback Modal ──
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: Colors.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
