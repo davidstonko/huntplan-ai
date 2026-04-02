@@ -25,7 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.models.user import User
 from app.models.feedback import Feedback
-from app.modules.auth.dependencies import get_current_user, get_optional_user
+from app.modules.auth.dependencies import get_current_user, get_optional_user, require_admin
 from app.modules.feedback.email_service import send_feedback_notification, send_donation_notification
 
 logger = logging.getLogger(__name__)
@@ -223,14 +223,11 @@ async def my_feedback(
 
 
 # ─── Admin Endpoints ───────────────────────────────────────────
-# Note: In production, add proper admin role check.
-# For now, any authenticated user can access admin endpoints.
-# TODO: Add is_admin flag to User model for proper RBAC.
 
 @router.get("/admin/list", response_model=FeedbackListResponse)
 async def admin_list_feedback(
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
     status_filter: Optional[str] = Query(None, alias="status"),
     type_filter: Optional[str] = Query(None, alias="type"),
     limit: int = Query(50, ge=1, le=200),
@@ -270,7 +267,7 @@ async def admin_list_feedback(
 @router.get("/admin/export")
 async def admin_export_feedback(
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
     status_filter: Optional[str] = Query(None, alias="status"),
 ):
     """
@@ -314,7 +311,7 @@ async def admin_export_feedback(
 async def admin_get_feedback(
     feedback_id: str,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
 ):
     """Get a single feedback item with all details."""
     try:
@@ -336,7 +333,7 @@ async def admin_respond_to_feedback(
     feedback_id: str,
     req: AdminRespondRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
 ):
     """
     Update feedback status, add admin notes, or write a response.

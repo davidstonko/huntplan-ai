@@ -66,3 +66,18 @@ async def get_optional_user(
         return None
 
     return await get_user_by_id(db, user_id)
+
+
+async def require_admin(
+    user: User = Depends(get_current_user),
+) -> User:
+    """
+    Require the current user to be an admin.
+    Raises 403 if user is not an admin.
+    """
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return user

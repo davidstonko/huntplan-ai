@@ -32,6 +32,7 @@ from app.db.database import get_db
 from app.models.user import User
 from app.modules.auth.dependencies import get_current_user
 from .storage import PhotoStorageService
+from .thumbnail_service import generate_thumbnail
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -293,9 +294,20 @@ async def upload_local_file(
     # Save locally
     try:
         image_key = await storage.save_local_file(photo_id, contents, ext)
+
+        # Generate thumbnail
+        thumb_bytes = generate_thumbnail(contents)
+        if thumb_bytes:
+            thumb_key = f"photos/{context}/{context_id}/thumb_{photo_id}.{ext}"
+            thumb_path = Path("./data/photos") / f"{context}/{context_id}/thumb_{photo_id}.{ext}"
+            thumb_path.parent.mkdir(parents=True, exist_ok=True)
+            thumb_path.write_bytes(thumb_bytes)
+        else:
+            thumb_key = None
+
         return {
             "image_key": image_key,
-            "thumbnail_key": f"photos/{context}/{context_id}/thumb_{photo_id}.{ext}",
+            "thumbnail_key": thumb_key,
             "success": True,
         }
     except Exception as e:

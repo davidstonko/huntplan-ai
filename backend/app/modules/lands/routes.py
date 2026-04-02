@@ -163,6 +163,39 @@ async def lands_statistics(
     return {"status": "success", "stats": stats}
 
 
+@router.get("/gis/boundaries")
+async def get_gis_boundaries():
+    """
+    Serve the full GeoJSON boundaries file.
+    Mobile fetches this once and caches locally.
+    Returns the raw GeoJSON FeatureCollection.
+
+    Endpoint: GET /api/v1/lands/gis/boundaries
+    Response: GeoJSON FeatureCollection with 124 Maryland public land boundaries
+    Cache-Control: public, max-age=604800 (7 days)
+
+    Note: This endpoint must come BEFORE the {land_id} catch-all route below.
+    """
+    from pathlib import Path
+    from fastapi.responses import Response
+    from app.config import settings
+
+    gis_path = Path(settings.data_dir) / "mdGISData.json"
+    if not gis_path.exists():
+        raise HTTPException(status_code=404, detail="GIS data not found")
+
+    # Read and return as JSON response with cache headers
+    data = gis_path.read_bytes()
+    return Response(
+        content=data,
+        media_type="application/geo+json",
+        headers={
+            "Cache-Control": "public, max-age=604800",  # 7 days
+            "Content-Encoding": "identity",
+        }
+    )
+
+
 # This must be LAST — catch-all {land_id} would match "search", "county", "stats" otherwise
 @router.get("/{land_id}")
 async def land_details(
