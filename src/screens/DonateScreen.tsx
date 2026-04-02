@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import Colors from '../theme/colors';
+import { Config } from '../config';
 
 /**
  * DonateScreen — Support the OutdoorsMaryland Project
@@ -26,11 +27,10 @@ import Colors from '../theme/colors';
 // ── Configuration ──
 // Replace these with your actual payment links
 const DONATION_CONFIG = {
-  venmo: 'dstonko1', // Venmo username
-  paypal: 'dstonko1@gmail.com', // PayPal email
-  buyMeACoffee: 'huntplanai', // Buy Me a Coffee username
-  patreon: 'huntplanai', // Patreon username
-  stripeLink: '', // Stripe payment link (set up later)
+  venmo: 'David-Stonko',
+  buyMeACoffee: 'outdoorsmaryland',
+  patreon: 'outdoorsmaryland',
+  stripeLink: '',
 };
 
 interface DonationTier {
@@ -81,13 +81,6 @@ const SUPPORT_OPTIONS = [
     fallbackUrl: `https://venmo.com/${DONATION_CONFIG.venmo}`,
   },
   {
-    id: 'paypal',
-    label: 'PayPal',
-    color: '#003087',
-    getUrl: () => `https://paypal.me/${DONATION_CONFIG.venmo}`,
-    fallbackUrl: `https://paypal.me/${DONATION_CONFIG.venmo}`,
-  },
-  {
     id: 'buymeacoffee',
     label: 'Buy Me a Coffee',
     color: '#FFDD00',
@@ -107,7 +100,28 @@ const SUPPORT_OPTIONS = [
 export default function DonateScreen() {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
 
+  const notifyDonationTap = async (paymentMethod: string) => {
+    const tier = DONATION_TIERS.find(t => t.id === selectedTier);
+    try {
+      await fetch(`${Config.API_BASE_URL}/api/v1/feedback/donation-tap`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_method: paymentMethod,
+          tier: tier?.title || null,
+          amount: tier?.amount || null,
+        }),
+      });
+    } catch {
+      // Fire-and-forget — don't block the user if notification fails
+      if (__DEV__) console.warn('[Donate] notification failed');
+    }
+  };
+
   const handleDonate = async (option: typeof SUPPORT_OPTIONS[0]) => {
+    // Notify backend (sends email to David) — fire-and-forget
+    notifyDonationTap(option.id);
+
     const url = option.getUrl();
     try {
       const canOpen = await Linking.canOpenURL(url);
@@ -185,7 +199,7 @@ export default function DonateScreen() {
         <View style={styles.featureItem}>
           <Text style={styles.featureBullet}>{'\uD83D\uDC1F'}</Text>
           <Text style={styles.featureText}>
-            Coming soon: Fishing seasons, crabbing guides, boating regulations, and hiking trails
+            Expanding to include fishing, crabbing, boating, and hiking resources in future updates
           </Text>
         </View>
       </View>
@@ -290,10 +304,10 @@ export default function DonateScreen() {
           for Maryland's outdoor community.
         </Text>
         <View style={styles.mdFlagFooter}>
-          <View style={[styles.mdStripeSmall, { backgroundColor: '#E03C31' }]} />
-          <View style={[styles.mdStripeSmall, { backgroundColor: '#FFD700' }]} />
-          <View style={[styles.mdStripeSmall, { backgroundColor: '#1C1C1C' }]} />
-          <View style={[styles.mdStripeSmall, { backgroundColor: '#F5F5DC' }]} />
+          <View style={[styles.mdStripeSmall, { backgroundColor: Colors.mdRed }]} />
+          <View style={[styles.mdStripeSmall, { backgroundColor: Colors.mdGold }]} />
+          <View style={[styles.mdStripeSmall, { backgroundColor: Colors.mdBlack }]} />
+          <View style={[styles.mdStripeSmall, { backgroundColor: Colors.mdWhite }]} />
         </View>
         <Text style={styles.footerHeart}>{'\uD83E\uDD80'} Thank you for supporting Maryland's outdoors. {'\uD83E\uDD80'}</Text>
       </View>

@@ -53,6 +53,9 @@ export default function ResourcesHubScreen() {
           style={styles.quickButton}
           onPress={() => navigation.navigate('HarvestLog')}
           activeOpacity={0.7}
+          accessibilityLabel="Harvest log"
+          accessibilityRole="button"
+          accessibilityHint="Opens harvest log to record kills"
         >
           <Text style={styles.quickIcon}>{'🦌'}</Text>
           <Text style={styles.quickLabel}>Harvest Log</Text>
@@ -61,14 +64,31 @@ export default function ResourcesHubScreen() {
           style={styles.quickButton}
           onPress={() => navigation.navigate('Forum')}
           activeOpacity={0.7}
+          accessibilityLabel="Community forum"
+          accessibilityRole="button"
+          accessibilityHint="Opens discussion forum for community posts"
         >
           <Text style={styles.quickIcon}>{'💬'}</Text>
           <Text style={styles.quickLabel}>Forum</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.quickButton}
+          onPress={() => navigation.navigate('Donate')}
+          activeOpacity={0.7}
+          accessibilityLabel="Support the app"
+          accessibilityRole="button"
+          accessibilityHint="Opens donation page to support development"
+        >
+          <Text style={styles.quickIcon}>{'❤️'}</Text>
+          <Text style={styles.quickLabel}>Donate</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.quickButton}
           onPress={() => navigation.navigate('Settings')}
           activeOpacity={0.7}
+          accessibilityLabel="Settings"
+          accessibilityRole="button"
+          accessibilityHint="Opens app settings and preferences"
         >
           <Text style={styles.quickIcon}>{'⚙️'}</Text>
           <Text style={styles.quickLabel}>Settings</Text>
@@ -81,6 +101,10 @@ export default function ResourcesHubScreen() {
           style={[styles.segment, activeSegment === 'regulations' && styles.segmentActive]}
           onPress={() => setActiveSegment('regulations')}
           activeOpacity={0.7}
+          accessibilityLabel="Regulations"
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeSegment === 'regulations' }}
+          accessibilityHint="Shows hunting regulations and season information"
         >
           <Text style={[styles.segmentText, activeSegment === 'regulations' && styles.segmentTextActive]}>
             Regulations
@@ -90,6 +114,10 @@ export default function ResourcesHubScreen() {
           style={[styles.segment, activeSegment === 'links' && styles.segmentActive]}
           onPress={() => setActiveSegment('links')}
           activeOpacity={0.7}
+          accessibilityLabel="Links and guides"
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeSegment === 'links' }}
+          accessibilityHint="Shows external resources and guide links"
         >
           <Text style={[styles.segmentText, activeSegment === 'links' && styles.segmentTextActive]}>
             Links & Guides

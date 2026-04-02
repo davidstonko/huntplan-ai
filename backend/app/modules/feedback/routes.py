@@ -26,7 +26,7 @@ from app.db.database import get_db
 from app.models.user import User
 from app.models.feedback import Feedback
 from app.modules.auth.dependencies import get_current_user, get_optional_user
-from app.modules.feedback.email_service import send_feedback_notification
+from app.modules.feedback.email_service import send_feedback_notification, send_donation_notification
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -164,6 +164,37 @@ async def submit_feedback(
         feedback_id=str(feedback.id),
         message="Thank you! Your feedback has been received.",
     )
+
+
+# ─── Donation Notification ────────────────────────────────────
+
+class DonationTapRequest(BaseModel):
+    payment_method: str  # 'venmo', 'buymeacoffee', 'patreon'
+    tier: Optional[str] = None  # 'coffee', 'ammo', 'lease', 'sponsor'
+    amount: Optional[str] = None  # '$5', '$25', etc.
+    device_id: Optional[str] = None
+
+
+@router.post("/donation-tap")
+async def donation_tap(
+    req: DonationTapRequest,
+):
+    """
+    Fire-and-forget email notification when a user taps a donation button.
+    No auth required — anonymous users can donate too.
+    No database write — just sends the email.
+    """
+    try:
+        await send_donation_notification(
+            payment_method=req.payment_method,
+            tier=req.tier,
+            amount=req.amount,
+            device_id=req.device_id,
+        )
+    except Exception as e:
+        logger.warning(f"Donation notification email failed (non-blocking): {e}")
+
+    return {"status": "ok", "message": "Thanks for your support!"}
 
 
 @router.get("/my", response_model=FeedbackListResponse)

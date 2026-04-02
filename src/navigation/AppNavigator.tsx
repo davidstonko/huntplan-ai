@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -19,10 +19,10 @@ import HarvestLogScreen from '../screens/HarvestLogScreen';
 import HuntPlanScreen from '../screens/HuntPlanScreen';
 import OfflineMapsScreen from '../screens/OfflineMapsScreen';
 import ForumScreen from '../screens/ForumScreen';
+import DonateScreen from '../screens/DonateScreen';
 
-// ── Fish / Coming Soon screens ──
+// ── Fish mode screens ──
 import FishMapScreen from '../screens/FishMapScreen';
-import ComingSoonScreen from '../screens/ComingSoonScreen';
 
 import Colors from '../theme/colors';
 
@@ -60,6 +60,7 @@ function ResourcesStack() {
       <Stack.Screen name="HarvestLog" component={HarvestLogScreen} options={{ headerShown: true, title: 'Harvest Log' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, title: 'Settings' }} />
       <Stack.Screen name="Forum" component={ForumScreen} options={{ headerShown: true, title: 'Community Forum' }} />
+      <Stack.Screen name="Donate" component={DonateScreen} options={{ headerShown: true, title: 'Support the App' }} />
     </Stack.Navigator>
   );
 }
@@ -112,7 +113,7 @@ const MdFlagStripe = () => (
  * Main app navigator — switches tab configuration based on active activity mode.
  * V2 Hunt mode: Map, Scout, AI, Deer Camp, Resources (5 tabs)
  * Fish mode: Map, AI, Resources
- * Other modes: Coming Soon placeholder
+ * Other modes: Fallback to Fish mode tabs
  */
 export default function AppNavigator() {
   const { activeMode } = useActivityMode();
@@ -189,7 +190,7 @@ export default function AppNavigator() {
     );
   }
 
-  // ── Fish Mode (map + coming soon features) ──
+  // ── Fish Mode (map + fishing resources) ──
   if (activeMode === 'fish') {
     return (
       <Tab.Navigator screenOptions={sharedScreenOptions}>
@@ -227,22 +228,18 @@ export default function AppNavigator() {
     );
   }
 
-  // ── Hike / Crab / Boat modes (Coming Soon) ──
-  const ComingSoonForMode = () => (
-    <ComingSoonScreen route={{ params: { mode: activeMode as 'hike' | 'crab' | 'boat' } }} />
-  );
-
+  // ── Fallback: Show Fish mode tabs for any unimplemented modes ──
+  // (Hike, Crab, Boat modes are hidden from the activity picker,
+  //  but this fallback ensures the app never shows a blank screen.)
   return (
     <Tab.Navigator screenOptions={sharedScreenOptions}>
       <Tab.Screen
-        name="ComingSoonTab"
-        component={ComingSoonForMode}
+        name="FishMapTab"
+        component={FishMapScreen}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: 'Map',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.5 }}>
-              {activeMode === 'hike' ? '\uD83E\uDD7E' : activeMode === 'crab' ? '\uD83E\uDD80' : '\uD83D\uDEA4'}
-            </Text>
+            <TabIcon label="MAP" focused={focused} icons={FISH_ICONS} />
           ),
         }}
       />
@@ -252,9 +249,7 @@ export default function AppNavigator() {
         options={{
           tabBarLabel: 'AI',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.5 }}>
-              {'\uD83E\uDD16'}
-            </Text>
+            <TabIcon label="AI" focused={focused} icons={FISH_ICONS} />
           ),
         }}
       />
@@ -264,9 +259,7 @@ export default function AppNavigator() {
         options={{
           tabBarLabel: 'Resources',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.5 }}>
-              {'\uD83D\uDCDA'}
-            </Text>
+            <TabIcon label="RESOURCES" focused={focused} icons={FISH_ICONS} />
           ),
         }}
       />

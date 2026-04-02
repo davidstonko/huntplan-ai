@@ -165,3 +165,80 @@ async def send_feedback_notification(
     return await loop.run_in_executor(
         None, _send_email_sync, FEEDBACK_EMAIL, subject, html
     )
+
+
+# ─── Donation Notification ─────────────────────────────────────
+
+def _build_donation_email(
+    payment_method: str,
+    tier: Optional[str] = None,
+    amount: Optional[str] = None,
+    device_id: Optional[str] = None,
+) -> tuple[str, str]:
+    """Build subject and HTML body for a donation tap notification."""
+
+    subject = f"💚 Donation tap — {payment_method}" + (f" ({tier} / {amount})" if tier else "")
+
+    html = f"""
+    <html>
+    <body style="font-family: -apple-system, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #1a1a1a; color: #ffffff; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="margin: 0; color: #E03C31;">MDHuntFishOutdoors</h2>
+            <p style="margin: 5px 0 0; color: #FFD700; font-size: 14px;">💚 Donation Interest</p>
+        </div>
+
+        <div style="background: #f9f9f9; padding: 20px; border: 1px solid #ddd;">
+            <p style="font-size: 16px; color: #333; margin: 0 0 12px;">
+                A user tapped a donation button in the app!
+            </p>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; width: 140px;">Payment Method:</td>
+                    <td style="padding: 8px 0;">{payment_method}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Selected Tier:</td>
+                    <td style="padding: 8px 0;">{tier or 'None selected'}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Amount:</td>
+                    <td style="padding: 8px 0;">{amount or 'N/A'}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Time:</td>
+                    <td style="padding: 8px 0;">{datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="background: #333; color: #aaa; padding: 12px 20px; border-radius: 0 0 8px 8px; font-size: 12px;">
+            <p style="margin: 0;">This doesn't confirm a payment was completed — only that the user tapped the button.</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    return subject, html
+
+
+async def send_donation_notification(
+    payment_method: str,
+    tier: Optional[str] = None,
+    amount: Optional[str] = None,
+    device_id: Optional[str] = None,
+) -> bool:
+    """
+    Send a donation tap notification email asynchronously.
+    Fires when a user taps a donation button in the app.
+    """
+    subject, html = _build_donation_email(
+        payment_method=payment_method,
+        tier=tier,
+        amount=amount,
+        device_id=device_id,
+    )
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        None, _send_email_sync, FEEDBACK_EMAIL, subject, html
+    )
