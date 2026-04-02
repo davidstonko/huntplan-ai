@@ -29,6 +29,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.database import get_db
+from app.models.user import User
+from app.modules.auth.dependencies import get_current_user
 from .storage import PhotoStorageService
 
 logger = logging.getLogger(__name__)
@@ -91,7 +93,7 @@ class StorageHealthResponse(BaseModel):
 
 
 @router.post("/upload-url", response_model=UploadURLResponse)
-async def get_upload_url(req: UploadURLRequest):
+async def get_upload_url(req: UploadURLRequest, user: User = Depends(get_current_user)):
     """
     Generate a presigned URL for direct photo upload to R2/S3.
 
@@ -226,6 +228,7 @@ async def list_camp_photos(
     camp_id: str,
     limit: int = 50,
     offset: int = 0,
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """List all photos in a camp, newest first."""
@@ -263,6 +266,7 @@ async def upload_local_file(
     context: str,
     context_id: str,
     file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
 ):
     """
     Local file upload endpoint (fallback when R2 is not configured).
@@ -300,7 +304,7 @@ async def upload_local_file(
 
 
 @router.get("/file/{file_path:path}")
-async def serve_local_file(file_path: str):
+async def serve_local_file(file_path: str, user: User = Depends(get_current_user)):
     """
     Serve files from local storage.
 

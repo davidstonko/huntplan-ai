@@ -67,7 +67,7 @@ export const AddSightingModal: React.FC<Props> = ({ campId, visible, onClose }) 
   const { location } = useLocation();
 
   // Form state
-  const [species, setSpecies] = useState('Whitetail Deer');
+  const [species, setSpecies] = useState('Whitetail Buck');
   const [count, setCount] = useState(1);
   const [activity, setActivity] = useState('Moving');
   const [direction, setDirection] = useState('N');

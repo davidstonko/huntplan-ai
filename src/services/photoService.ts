@@ -181,7 +181,7 @@ async function compressImage(
 // ── API Helpers ────────────────────────────────────────────────
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const token = await AsyncStorage.getItem('jwt_token');
+  const token = await AsyncStorage.getItem('auth_token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

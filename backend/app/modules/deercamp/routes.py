@@ -158,6 +158,14 @@ class CampDetail(BaseModel):
 
 # --- Helper functions ---
 
+def _parse_uuid(value: str, label: str = "ID") -> uuid.UUID:
+    """Parse a string to UUID, raising a 400 error if invalid."""
+    try:
+        return uuid.UUID(value)
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail=f"Invalid {label}: {value}")
+
+
 async def _get_membership(db: AsyncSession, camp_id: uuid.UUID, user_id: uuid.UUID) -> CampMember | None:
     result = await db.execute(
         select(CampMember).where(
@@ -260,7 +268,7 @@ async def get_camp(
     db: AsyncSession = Depends(get_db),
 ):
     """Get full camp details including members, annotations, photos, and activity feed."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     # Verify membership
     membership = await _get_membership(db, cid, user.id)
@@ -364,7 +372,7 @@ async def delete_camp(
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a camp. Only the admin (creator) can delete."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     membership = await _get_membership(db, cid, user.id)
     if not membership or membership.role != "admin":
@@ -434,7 +442,7 @@ async def leave_camp(
     db: AsyncSession = Depends(get_db),
 ):
     """Leave a camp. Admins cannot leave (must delete instead)."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     membership = await _get_membership(db, cid, user.id)
     if not membership:
@@ -461,7 +469,7 @@ async def remove_member(
     db: AsyncSession = Depends(get_db),
 ):
     """Remove a member from camp. Only admins can remove."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     admin_membership = await _get_membership(db, cid, user.id)
     if not admin_membership or admin_membership.role != "admin":
@@ -493,7 +501,7 @@ async def add_annotation(
     db: AsyncSession = Depends(get_db),
 ):
     """Add a shared annotation (waypoint, route, area, track, note) to the camp map."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     membership = await _get_membership(db, cid, user.id)
     if not membership:
@@ -539,7 +547,7 @@ async def remove_annotation(
     db: AsyncSession = Depends(get_db),
 ):
     """Remove an annotation. Members can remove their own; admins can remove any."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
     aid = uuid.UUID(annotation_id)
 
     membership = await _get_membership(db, cid, user.id)
@@ -575,7 +583,7 @@ async def add_photo(
     db: AsyncSession = Depends(get_db),
 ):
     """Add a geotagged photo to the camp."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     membership = await _get_membership(db, cid, user.id)
     if not membership:
@@ -611,7 +619,7 @@ async def remove_photo(
     db: AsyncSession = Depends(get_db),
 ):
     """Remove a photo. Members can remove their own; admins can remove any."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
     pid = uuid.UUID(photo_id)
 
     membership = await _get_membership(db, cid, user.id)
@@ -642,7 +650,7 @@ async def get_activity_feed(
     db: AsyncSession = Depends(get_db),
 ):
     """Get the activity feed for a camp."""
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     membership = await _get_membership(db, cid, user.id)
     if not membership:
@@ -726,7 +734,7 @@ async def analyze_camp_intelligence(
     }
     ```
     """
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     # Verify user is a member of this camp
     membership = await _get_membership(db, cid, user.id)
@@ -786,7 +794,7 @@ async def sync_camp(
     Client sends last_synced timestamp; server returns everything newer.
     Full sync if last_synced is None.
     """
-    cid = uuid.UUID(camp_id)
+    cid = _parse_uuid(camp_id, "camp_id")
 
     membership = await _get_membership(db, cid, user.id)
     if not membership:

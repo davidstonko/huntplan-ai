@@ -33,7 +33,8 @@ export const OfflineBanner: React.FC = () => {
         setIsVisible(false);
       });
     }
-  }, [isOnline, fadeAnim]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   if (!isVisible) return null;
 

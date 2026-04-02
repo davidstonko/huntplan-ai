@@ -133,7 +133,9 @@ export async function findRelatedHarvests(
       }
     }
 
-    related.push(harvest);
+    if (matches) {
+      related.push(harvest);
+    }
   }
 
   return related;

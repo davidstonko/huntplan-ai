@@ -253,7 +253,7 @@ function handleNotificationRouting(
  */
 async function sendTokenToBackend(token: string): Promise<void> {
   try {
-    const authToken = await AsyncStorage.getItem('@auth_access_token');
+    const authToken = await AsyncStorage.getItem('auth_token');
     if (!authToken) {
       if (__DEV__) console.warn('[Push] No auth token available, skipping backend registration');
       return;

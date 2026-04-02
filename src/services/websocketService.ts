@@ -334,7 +334,7 @@ export class CampWebSocket {
  */
 export async function createCampWebSocket(campId: string): Promise<CampWebSocket | null> {
   try {
-    const token = await AsyncStorage.getItem('jwt_token');
+    const token = await AsyncStorage.getItem('auth_token');
     if (!token) {
       if (__DEV__) console.warn('[WS] No JWT token found — cannot connect');
       return null;

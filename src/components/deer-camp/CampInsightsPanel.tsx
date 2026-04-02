@@ -69,10 +69,12 @@ export const CampInsightsPanel: React.FC<CampInsightsPanelProps> = ({
 
   const config = TIER_CONFIG[tier];
   const isLocked = tier === 'locked';
-  const nextTierLabel = Object.entries(TIER_CONFIG).find(
-    ([_, cfg]) => cfg.nextThreshold === config.nextThreshold && _ !== tier
-  )?.[0];
-  const nextConfig = nextTierLabel ? TIER_CONFIG[nextTierLabel as InsightsTier] : null;
+  const TIER_ORDER: InsightsTier[] = ['locked', 'basic', 'intermediate', 'advanced', 'expert'];
+  const currentTierIndex = TIER_ORDER.indexOf(tier);
+  const nextTierLabel = currentTierIndex < TIER_ORDER.length - 1
+    ? TIER_ORDER[currentTierIndex + 1]
+    : null;
+  const nextConfig = nextTierLabel ? TIER_CONFIG[nextTierLabel] : null;
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);

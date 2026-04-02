@@ -53,6 +53,20 @@ const MD_COUNTIES = [
   'Wicomico', 'Worcester',
 ];
 
+/**
+ * Returns the next Saturday from today as a Date object.
+ * Used as the default hunt date in the plan generator.
+ */
+function getNextSaturdayDate(): Date {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun, 6=Sat
+  const daysUntilSaturday = dayOfWeek === 6 ? 7 : (6 - dayOfWeek);
+  const nextSat = new Date(today);
+  nextSat.setDate(today.getDate() + daysUntilSaturday);
+  nextSat.setHours(0, 0, 0, 0);
+  return nextSat;
+}
+
 export default function HuntPlanScreen() {
   const [species, setSpecies] = useState('deer');
   const [weapon, setWeapon] = useState('archery');
@@ -425,16 +439,6 @@ function ConditionsPreviewCard({
       )}
     </View>
   );
-}
-
-// ─── Helpers ────────────────────────────────────────────────────
-
-function getNextSaturdayDate(): Date {
-  const d = new Date();
-  const day = d.getDay();
-  const daysUntilSat = (6 - day + 7) % 7 || 7;
-  d.setDate(d.getDate() + daysUntilSat);
-  return d;
 }
 
 // ─── Styles ─────────────────────────────────────────────────────

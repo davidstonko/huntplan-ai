@@ -54,6 +54,7 @@ async def register_push_token(
     user.device_token = request.token
     db.add(user)
     await db.flush()
+    await db.commit()
 
     return {"status": "registered", "platform": request.platform}
 
@@ -84,6 +85,7 @@ async def update_preferences(
     user.notification_preferences = prefs.model_dump()
     db.add(user)
     await db.flush()
+    await db.commit()
     return user.notification_preferences
 
 

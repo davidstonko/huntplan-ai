@@ -457,7 +457,7 @@ export class CampSyncManager {
   }
 
   private async getToken(): Promise<string> {
-    const token = await AsyncStorage.getItem('jwt_token');
+    const token = await AsyncStorage.getItem('auth_token');
     return token || '';
   }
 

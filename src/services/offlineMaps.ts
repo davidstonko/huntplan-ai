@@ -287,6 +287,9 @@ export async function downloadRegion(
         if (error) {
           if (__DEV__) console.error('[offlineMaps] Download error for region:', region.id, error);
 
+          // Clean up polling before rejecting
+          if (pollInterval) clearInterval(pollInterval);
+
           // Mark as interrupted (user can resume)
           await saveDownloadState(region.id, {
             regionId: region.id,
@@ -307,7 +310,8 @@ export async function downloadRegion(
     );
 
     // Poll for completion with more aggressive timing (250ms instead of 500ms)
-    const pollInterval = setInterval(async () => {
+    let pollInterval: any = null;
+    pollInterval = setInterval(async () => {
       try {
         const packs = await MapboxGL.offlineManager.getPacks();
         const downloadedPack = packs.find((p: any) => p.name === region.id);

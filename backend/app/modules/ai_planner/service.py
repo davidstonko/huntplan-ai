@@ -62,6 +62,8 @@ async def _call_claude(client, system_prompt: str, user_message: str) -> str:
                 {"role": "user", "content": user_message}
             ]
         )
+        if not response.content:
+            raise ValueError("Empty response from Claude API")
         return response.content[0].text
 
     return await asyncio.get_event_loop().run_in_executor(None, _sync_call)

@@ -195,13 +195,17 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
               if (__DEV__) console.warn('[DeerCampContext] Migration failed:', e);
             }
           }
-          await AsyncStorage.setItem(MIGRATION_FLAG, 'true');
         }
 
         // Load camps from WatermelonDB
         const campModels = await database.get<DeerCampModel>('deer_camps').query().fetch();
         const loadedCamps = await Promise.all(campModels.map(modelToDeerCamp));
         setCamps(loadedCamps);
+
+        // Set migration flag AFTER successful load
+        if (!migrationDone) {
+          await AsyncStorage.setItem(MIGRATION_FLAG, 'true');
+        }
 
         if (__DEV__) console.log('[DeerCampContext] Loaded', loadedCamps.length, 'camps from WatermelonDB');
       } catch (e) {
