@@ -1,6 +1,0 @@
-module Pods_HuntPlanAI {
-  umbrella header "Pods-HuntPlanAI-umbrella.h"
-
-  export *
-  module * { export * }
-}

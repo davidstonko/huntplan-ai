@@ -1,6 +1,0 @@
-module rnmapbox_maps {
-  umbrella header "rnmapbox-maps-umbrella.h"
-
-  export *
-  module * { export * }
-}

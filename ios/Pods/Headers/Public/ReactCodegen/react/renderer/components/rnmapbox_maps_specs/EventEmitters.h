@@ -1,1 +1,0 @@
-../../../../../../../../build/generated/ios/react/renderer/components/rnmapbox_maps_specs/EventEmitters.h
