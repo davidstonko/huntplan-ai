@@ -6,17 +6,20 @@
 import { Model } from '@nozbe/watermelondb';
 import { field, text, date, readonly } from '@nozbe/watermelondb/decorators';
 
+// TypeScript type augmentation (properties set by decorators at runtime)
+interface RecordedTrackModel {
+  name: string;
+  pointsJson: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  elevationGain: number;
+  elevationLoss: number;
+  visible: boolean;
+  createdAt: Date | number;
+}
+
 class RecordedTrackModel extends Model {
   static table = 'recorded_tracks';
-
-  name!: string;
-  pointsJson!: string; // JSON-serialized track points with time/elevation
-  distanceMeters!: number;
-  durationSeconds!: number;
-  elevationGain!: number | null;
-  elevationLoss!: number | null;
-  visible!: boolean;
-  createdAt!: Date;
 
   get points(): Array<any> {
     try {
@@ -50,20 +53,26 @@ class RecordedTrackModel extends Model {
   }
 }
 
-// Apply decorators programmatically
-const applyDecorator = (decorator: any, target: any, key: string) => {
-  const descriptor = decorator(target, key, Object.getOwnPropertyDescriptor(target, key) || { configurable: true, writable: true, enumerable: true });
-  if (descriptor) Object.defineProperty(target, key, descriptor);
-};
+// WatermelonDB decorators — guarded for V2 (AsyncStorage mode)
+try {
+  const proto = RecordedTrackModel.prototype as any;
+  const applyDecorator = (decorator: any, key: string) => {
+    const descriptor = decorator(proto, key, undefined);
+    if (descriptor) Object.defineProperty(proto, key, descriptor);
+  };
 
-applyDecorator(text('name'), RecordedTrackModel.prototype, 'name');
-applyDecorator(text('points_json'), RecordedTrackModel.prototype, 'pointsJson');
-applyDecorator(field('distance_meters'), RecordedTrackModel.prototype, 'distanceMeters');
-applyDecorator(field('duration_seconds'), RecordedTrackModel.prototype, 'durationSeconds');
-applyDecorator(field('elevation_gain'), RecordedTrackModel.prototype, 'elevationGain');
-applyDecorator(field('elevation_loss'), RecordedTrackModel.prototype, 'elevationLoss');
-applyDecorator(field('visible'), RecordedTrackModel.prototype, 'visible');
-applyDecorator(date('created_at'), RecordedTrackModel.prototype, 'createdAt');
-applyDecorator(readonly, RecordedTrackModel.prototype, 'createdAt');
+  applyDecorator(text('name'), 'name');
+  applyDecorator(text('points_json'), 'pointsJson');
+  applyDecorator(field('distance_meters'), 'distanceMeters');
+  applyDecorator(field('duration_seconds'), 'durationSeconds');
+  applyDecorator(field('elevation_gain'), 'elevationGain');
+  applyDecorator(field('elevation_loss'), 'elevationLoss');
+  applyDecorator(field('visible'), 'visible');
+  applyDecorator(date('created_at'), 'createdAt');
+  applyDecorator(readonly, 'createdAt');
+} catch (e) {
+  // WatermelonDB not active in V2 — decorators skipped
+  if (__DEV__) console.log('[WatermelonDB] Decorators deferred for RecordedTrackModel');
+}
 
 export default RecordedTrackModel;

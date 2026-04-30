@@ -26,12 +26,16 @@
  * @returns {JSX.Element} Container with segmented control and content view
  */
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Colors from '../theme/colors';
 import RegulationsScreen from './RegulationsScreen';
+import FishRegulationsScreen from './FishRegulationsScreen';
+import FishResourcesScreen from './FishResourcesScreen';
 import ResourcesScreen from './ResourcesScreen';
+import OnboardingTourGate from '../components/OnboardingTourGate';
+import { useActivityMode } from '../context/ActivityModeContext';
 
 type Segment = 'regulations' | 'links';
 
@@ -42,58 +46,104 @@ type Segment = 'regulations' | 'links';
  * @returns {JSX.Element} Container with segmented control and either RegulationsScreen or ResourcesScreen
  */
 export default function ResourcesHubScreen() {
-  const [activeSegment, setActiveSegment] = useState<Segment>('regulations');
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { activeMode } = useActivityMode();
+  // Honor deep-link / cross-tab params so 1-tap shortcuts from the map land on
+  // the correct segment. Accepted values: 'regulations' | 'links'.
+  const initialSegment: Segment =
+    route?.params?.initialSegment === 'links' ? 'links' : 'regulations';
+  const [activeSegment, setActiveSegment] = useState<Segment>(initialSegment);
+  // Phase A.26 — controlled re-show of the per-mode onboarding tour.
+  const [tourOpen, setTourOpen] = useState(false);
+  useEffect(() => {
+    const incoming = route?.params?.initialSegment;
+    if (incoming === 'links' || incoming === 'regulations') {
+      setActiveSegment(incoming);
+    }
+  }, [route?.params?.initialSegment]);
 
   return (
     <View style={styles.container}>
+      {/* 2026-04-26: Contact David button. Surfaced above the quick-access
+          bar so businesses + partners can reach out about adding their
+          information to the app. Tap → mailto: with subject pre-filled. */}
+      <TouchableOpacity
+        style={contactStyles.row}
+        onPress={() => {
+          const subject = encodeURIComponent('MDHuntFishOutdoors — partnership / listing inquiry');
+          const body = encodeURIComponent(
+            'Hi David,\n\n' +
+            'I would like to talk about [adding my business / partnership / a feature request / other]:\n\n\n' +
+            '— Sent from MDHuntFishOutdoors',
+          );
+          Linking.openURL(`mailto:dstonko1@gmail.com?subject=${subject}&body=${body}`).catch(() => {});
+        }}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Contact David"
+      >
+        <View style={contactStyles.pill}>
+          <Text style={contactStyles.pillEmoji}>{'✉'}</Text>
+          <Text style={contactStyles.pillText}>Contact</Text>
+        </View>
+        <View style={contactStyles.textWrap}>
+          <Text style={contactStyles.title}>Reach out to David at:</Text>
+          <Text style={contactStyles.email}>dstonko1@gmail.com</Text>
+          <Text style={contactStyles.subtitle}>
+            Add your business, partner with us, or report something. Bug reports also welcome via the support tab.
+          </Text>
+        </View>
+      </TouchableOpacity>
+
       {/* ── Quick-Access Toolbar ── */}
+      {/* Icon style matches TabIcon geometry (View-shape, not emoji) for a
+          consistent visual language across the nav surfaces. See audit §16.3. */}
       <View style={styles.quickBar}>
         <TouchableOpacity
           style={styles.quickButton}
           onPress={() => navigation.navigate('HarvestLog')}
           activeOpacity={0.7}
-          accessibilityLabel="Harvest log"
-          accessibilityRole="button"
-          accessibilityHint="Opens harvest log to record kills"
         >
-          <Text style={styles.quickIcon}>{'🦌'}</Text>
+          <HarvestLogGlyph />
           <Text style={styles.quickLabel}>Harvest Log</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.quickButton}
           onPress={() => navigation.navigate('Forum')}
           activeOpacity={0.7}
-          accessibilityLabel="Community forum"
-          accessibilityRole="button"
-          accessibilityHint="Opens discussion forum for community posts"
         >
-          <Text style={styles.quickIcon}>{'💬'}</Text>
+          <ForumGlyph />
           <Text style={styles.quickLabel}>Forum</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.quickButton}
-          onPress={() => navigation.navigate('Donate')}
-          activeOpacity={0.7}
-          accessibilityLabel="Support the app"
-          accessibilityRole="button"
-          accessibilityHint="Opens donation page to support development"
-        >
-          <Text style={styles.quickIcon}>{'❤️'}</Text>
-          <Text style={styles.quickLabel}>Donate</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.quickButton}
           onPress={() => navigation.navigate('Settings')}
           activeOpacity={0.7}
-          accessibilityLabel="Settings"
-          accessibilityRole="button"
-          accessibilityHint="Opens app settings and preferences"
         >
-          <Text style={styles.quickIcon}>{'⚙️'}</Text>
+          <SettingsGlyph />
           <Text style={styles.quickLabel}>Settings</Text>
         </TouchableOpacity>
       </View>
+
+      {/* ── "Take the tour again" — Phase A.26 onboarding replay entry ── */}
+      <TouchableOpacity
+        style={styles.tourReplayRow}
+        onPress={() => setTourOpen(true)}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Replay this mode's onboarding tour"
+      >
+        <View style={styles.tourReplayChip}>
+          <Text style={styles.tourReplayChipText}>TR</Text>
+        </View>
+        <View style={styles.tourReplayTextWrap}>
+          <Text style={styles.tourReplayTitle}>Take the tour again</Text>
+          <Text style={styles.tourReplaySubtitle}>
+            Replay the {activeMode === 'fish' ? 'Fish' : 'Hunt'} mode walkthrough
+          </Text>
+        </View>
+      </TouchableOpacity>
 
       {/* ── Segmented Control ── */}
       <View style={styles.segmentBar}>
@@ -101,10 +151,6 @@ export default function ResourcesHubScreen() {
           style={[styles.segment, activeSegment === 'regulations' && styles.segmentActive]}
           onPress={() => setActiveSegment('regulations')}
           activeOpacity={0.7}
-          accessibilityLabel="Regulations"
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeSegment === 'regulations' }}
-          accessibilityHint="Shows hunting regulations and season information"
         >
           <Text style={[styles.segmentText, activeSegment === 'regulations' && styles.segmentTextActive]}>
             Regulations
@@ -114,10 +160,6 @@ export default function ResourcesHubScreen() {
           style={[styles.segment, activeSegment === 'links' && styles.segmentActive]}
           onPress={() => setActiveSegment('links')}
           activeOpacity={0.7}
-          accessibilityLabel="Links and guides"
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeSegment === 'links' }}
-          accessibilityHint="Shows external resources and guide links"
         >
           <Text style={[styles.segmentText, activeSegment === 'links' && styles.segmentTextActive]}>
             Links & Guides
@@ -125,13 +167,176 @@ export default function ResourcesHubScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Content ── */}
+      {/* ── Content ── 2026-04-26: mode-aware. Fish mode shows the
+          fishing-specific Regulations + Resources screens (no "Can I Hunt"
+          checker). Hunt mode keeps the canonical screens. */}
       <View style={styles.content}>
-        {activeSegment === 'regulations' ? <RegulationsScreen /> : <ResourcesScreen />}
+        {activeMode === 'fish' ? (
+          activeSegment === 'regulations' ? (
+            <FishRegulationsScreen />
+          ) : (
+            <FishResourcesScreen />
+          )
+        ) : activeSegment === 'regulations' ? (
+          <RegulationsScreen />
+        ) : (
+          <ResourcesScreen />
+        )}
       </View>
+
+      {/* ── Controlled onboarding tour replay (Phase A.26) ── */}
+      <OnboardingTourGate
+        mode={activeMode}
+        open={tourOpen}
+        onClose={() => setTourOpen(false)}
+      />
     </View>
   );
 }
+
+/* ── View-shape glyphs for the quick-access toolbar ──
+ * These replace the prior emoji icons (🦌💬⚙️) so the quick bar matches the
+ * tab-bar visual language (see AppNavigator TabIcon). Kept deliberately small
+ * and abstract — not literal art. */
+
+function HarvestLogGlyph() {
+  // Stylized antler/tag: two stacked short bars on a disc.
+  return (
+    <View style={glyphStyles.wrap}>
+      <View style={[glyphStyles.disc, { backgroundColor: Colors.moss }]} />
+      <View style={[glyphStyles.bar, { width: 10, top: 3 }]} />
+      <View style={[glyphStyles.bar, { width: 6, top: 8 }]} />
+    </View>
+  );
+}
+
+function ForumGlyph() {
+  // Two overlapping rounded rectangles — a conversation bubble stack.
+  return (
+    <View style={glyphStyles.wrap}>
+      <View
+        style={{
+          width: 11,
+          height: 9,
+          borderRadius: 2,
+          borderWidth: 1.5,
+          borderColor: Colors.textPrimary,
+          position: 'absolute',
+          top: 1,
+          left: 0,
+        }}
+      />
+      <View
+        style={{
+          width: 11,
+          height: 9,
+          borderRadius: 2,
+          backgroundColor: Colors.moss,
+          position: 'absolute',
+          top: 5,
+          left: 4,
+        }}
+      />
+    </View>
+  );
+}
+
+function SettingsGlyph() {
+  // Concentric rings — gear-like without drawing teeth.
+  return (
+    <View style={glyphStyles.wrap}>
+      <View
+        style={{
+          width: 15,
+          height: 15,
+          borderRadius: 8,
+          borderWidth: 1.5,
+          borderColor: Colors.textPrimary,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: Colors.moss,
+        }}
+      />
+    </View>
+  );
+}
+
+const glyphStyles = StyleSheet.create({
+  wrap: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  disc: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    opacity: 0.35,
+  },
+  bar: {
+    position: 'absolute',
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: '#F3E3A1',
+  },
+});
+
+// 2026-04-26: Contact-David banner styles. Green moss accent with white
+// pill so the email is the visual hook. Uses textOnAccent for AA contrast.
+const contactStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: Colors.moss,
+    marginHorizontal: 12,
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  pill: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  pillEmoji: { fontSize: 14 },
+  pillText: {
+    color: Colors.moss,
+    fontWeight: '800',
+    fontSize: 13,
+    letterSpacing: 0.4,
+  },
+  textWrap: { flex: 1 },
+  title: { color: Colors.textOnAccent, fontSize: 13, fontWeight: '600' },
+  email: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 2,
+    letterSpacing: 0.3,
+  },
+  subtitle: {
+    color: Colors.textOnAccent,
+    fontSize: 11,
+    marginTop: 4,
+    opacity: 0.85,
+    lineHeight: 14,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -188,12 +393,50 @@ const styles = StyleSheet.create({
     borderColor: Colors.mud,
     gap: 6,
   },
-  quickIcon: {
-    fontSize: 14,
-  },
   quickLabel: {
     fontSize: 12,
     fontWeight: '600',
     color: Colors.textPrimary,
+  },
+  tourReplayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 0,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+  },
+  tourReplayChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: Colors.moss,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  tourReplayChipText: {
+    color: Colors.textOnAccent,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  tourReplayTextWrap: {
+    flex: 1,
+  },
+  tourReplayTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  tourReplaySubtitle: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 1,
   },
 });

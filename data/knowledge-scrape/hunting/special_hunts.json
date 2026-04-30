@@ -1,0 +1,113 @@
+{
+  "source_url": "https://dnr.maryland.gov/wildlife/",
+  "date_accessed": "2026-04-11",
+  "description": "Maryland Special Hunts & Lottery Draws - Managed hunts, controlled hunts, and military base hunting opportunities",
+  "data": {
+    "hunting_tract_lottery": {
+      "name": "Chesapeake Forest Hunting Tract Lottery",
+      "description": "Lottery for hunt club members to lease Chesapeake Forest tracts",
+      "eligibility": [
+        "Hunt club members at least 18 years old",
+        "Hunt club must have at least 2 members licensed to hunt in Maryland",
+        "One person designated as club president"
+      ],
+      "application_deadline": "August 21, 2025 at 11:59 PM",
+      "drawing_date": "August 22, 2025 at 2:00 PM",
+      "drawing_method": "Random automated online drawing",
+      "fee": "No fee to enter",
+      "application_url": "https://dnr.maryland.gov/forests/pages/publiclands/cfl/hunting-tract-lottery.aspx",
+      "contact": "410-632-3732 or [email protected]"
+    },
+    "managed_hunts": {
+      "mentored_deer_hunts": {
+        "name": "Mentored Deer Hunts",
+        "description": "Lottery-based hunts where hunters are selected by lottery",
+        "application_availability": "Available online by September 1 on Central Region webpage",
+        "application_limit": "One application allowed per hunter",
+        "group_applications": "Groups of up to 3 hunters accepted",
+        "regions": ["Central Region"],
+        "notes": "Designed for mentorship and training of new hunters"
+      },
+      "stocked_pheasant_hunts": {
+        "name": "Stocked Pheasant Hunts",
+        "description": "Managed hunts with stocked pheasant populations",
+        "selection_method": "Lottery system - hunters are chosen by lottery",
+        "application_limit": "Only one application allowed per hunter",
+        "group_applications": "Group applications of up to 3 hunters accepted",
+        "application_info_url": "https://dnr.maryland.gov/wildlife/documents/2020_stockedpheasanthunts_howtoapply.pdf",
+        "notes": "Separate application required for this program"
+      }
+    },
+    "deal_island_wma_impoundment": {
+      "name": "Deal Island WMA Impoundment Hunts",
+      "location": "Dorchester County (Eastern Shore)",
+      "permit_required": true,
+      "application_url": "https://dnr.maryland.gov/wildlife/Documents/DealIslandImpoundmentPermitApplication.pdf",
+      "open_season_periods": [
+        {
+          "period": "Early Season",
+          "start_date": "September 1, 2025",
+          "end_date": "September 15, 2025"
+        },
+        {
+          "period": "Main Season",
+          "start_date": "November 1, 2025",
+          "end_date": "February 7, 2026"
+        }
+      ],
+      "application_requirements": [
+        "Complete application form",
+        "Valid 2025-26 Maryland Hunting License",
+        "Maryland Migratory Game Bird Stamp",
+        "DNR ID number",
+        "Select up to 4 preferred hunt dates (priority 1, 2, 3, 4)"
+      ],
+      "application_notes": "Legible, complete applications only. Faxed or duplicate applications disqualified."
+    },
+    "fairmount_wma_impoundment": {
+      "name": "Fairmount WMA Impoundment Hunts",
+      "location": "Multiple locations",
+      "permit_required": true,
+      "application_url": "https://dnr.maryland.gov/wildlife/Documents/FairmountImpoundmentPermitApplication.pdf",
+      "notes": "Similar permit-based system to Deal Island WMA"
+    },
+    "free_public_hunting_permit": {
+      "name": "Free Public Hunting Permit Program",
+      "description": "Free permit to hunt on designated public lands",
+      "availability": "2025-2026 season",
+      "cost": "Free",
+      "online_application": true,
+      "application_url": "https://dnr.maryland.gov/wildlife/Documents/Free-Public-Hunting-Permit-Program.pdf",
+      "application_info": "Step-by-step online application instructions available"
+    },
+    "military_base_hunting": {
+      "name": "Military Base Hunting Opportunities",
+      "description": "Hunting opportunities on Maryland military installations",
+      "installations": [
+        {
+          "name": "Aberdeen Proving Ground (APG)",
+          "location": "Harford County",
+          "status": "Investigation needed"
+        },
+        {
+          "name": "Fort Meade",
+          "location": "Anne Arundel County",
+          "personnel": "54,000+ employees",
+          "status": "Investigation needed"
+        },
+        {
+          "name": "Naval Air Station Patuxent River",
+          "location": "St. Mary's County",
+          "personnel": "22,000+",
+          "status": "Investigation needed"
+        },
+        {
+          "name": "Naval Support Facility Indian Head",
+          "location": "Charles County",
+          "status": "Investigation needed"
+        }
+      ],
+      "notes": "Contact base MWR (Morale, Welfare, and Recreation) departments directly for hunting program information"
+    }
+  }
+}

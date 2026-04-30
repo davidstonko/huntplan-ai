@@ -13,6 +13,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Config from '../config';
+import { captureException } from './sentryClient';
 
 const API_BASE = `${Config.API_BASE_URL}/api/v1`;
 
@@ -21,6 +22,7 @@ const STORAGE_KEYS = {
   userId: '@auth_user_id',
   handle: '@auth_handle',
   deviceToken: '@auth_device_token',
+  email: '@auth_email',
 };
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -78,6 +80,13 @@ export async function initAuth(): Promise<AuthState> {
     return await registerDevice();
   } catch (error) {
     if (__DEV__) console.warn('[Auth] Init failed, running offline:', error);
+    // 2026-04-27: Surface auth-init failures to Sentry so we can detect
+    // backend-down or token-corruption regressions post-ship instead of
+    // silently dropping users into offline mode forever.
+    captureException(
+      error instanceof Error ? error : new Error(String(error)),
+      { context: 'authService.initAuth' },
+    );
     return {
       isAuthenticated: false,
       userId: null,
@@ -85,6 +94,13 @@ export async function initAuth(): Promise<AuthState> {
       accessToken: null,
     };
   }
+}
+
+/**
+ * Get the stored email address (if set).
+ */
+export async function getEmail(): Promise<string | null> {
+  return AsyncStorage.getItem(STORAGE_KEYS.email);
 }
 
 /**
@@ -121,6 +137,10 @@ export async function registerDevice(handle?: string): Promise<AuthState> {
     };
   } catch (error) {
     if (__DEV__) console.warn('[Auth] Registration failed:', error);
+    captureException(
+      error instanceof Error ? error : new Error(String(error)),
+      { context: 'authService.registerDevice' },
+    );
     return {
       isAuthenticated: false,
       userId: null,
@@ -206,6 +226,11 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<User
       await AsyncStorage.setItem(STORAGE_KEYS.handle, updates.handle);
     }
 
+    // Update stored email if changed
+    if (updates.email) {
+      await AsyncStorage.setItem(STORAGE_KEYS.email, updates.email);
+    }
+
     return response.data;
   } catch {
     return null;
@@ -220,6 +245,7 @@ export async function signOut(): Promise<void> {
     STORAGE_KEYS.accessToken,
     STORAGE_KEYS.userId,
     STORAGE_KEYS.handle,
+    STORAGE_KEYS.email,
   ]);
 }
 

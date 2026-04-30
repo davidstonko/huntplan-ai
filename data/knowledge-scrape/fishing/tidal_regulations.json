@@ -1,0 +1,134 @@
+{
+  "source_url": "https://www.eregulations.com/maryland/fishing/chesapeake-bay-seasons-sizes-limits",
+  "date_accessed": "2026-04-11",
+  "data": {
+    "tidal_water_definition": {
+      "regulatory_basis": "Md. Code Regs. 08.02.01.09 - Dividing Lines; Tidal and Nontidal Waters",
+      "purpose": "Delineates which license required (nontidal vs Chesapeake Bay/Coastal)",
+      "boundary_lines": "Established at specific geographic points throughout Maryland's rivers and creeks",
+      "requirement": "Recreational fishing in tidal waters requires Chesapeake Bay and Coastal Sport Fishing License"
+    },
+    "example_boundary_locations": [
+      "Fishing Creek - 1.5 miles upstream from mouth at Chesapeake Beach",
+      "Hall's Creek - Bridge on MD Route 4",
+      "Hellen Creek - Mill Branch Road near Solomons",
+      "Hunting Creek - Bridge on MD Route 263 about 100 yards west of MD Route 4"
+    ],
+    "striped_bass_tidal": {
+      "chesapeake_bay": {
+        "april_2026": {
+          "dates": "April 1 - 30",
+          "activity": "Catch-and-release only",
+          "harvest": "Not permitted"
+        },
+        "may_september_2026": {
+          "dates": "May 1 - September 30",
+          "harvest": true,
+          "bag_limit": "1 fish per person per day",
+          "size_slot": {
+            "minimum": "19 inches",
+            "maximum": "24 inches"
+          }
+        },
+        "august_closure": {
+          "month": "August 1 - 31",
+          "status": "Closed to all striped bass targeting"
+        }
+      },
+      "atlantic_ocean_coastal": {
+        "season": "Year-round",
+        "bag_limit": "1 fish per person per day",
+        "size_slot": {
+          "minimum": "28 inches",
+          "maximum": "31 inches"
+        },
+        "waters": "Atlantic Ocean, coastal bays, and tributaries"
+      }
+    },
+    "blue_crab_regulations": {
+      "licensing": {
+        "recreational_crabbing_license": {
+          "requirement": "Required for using trotline, collapsible traps, net rings, seines, eel pots",
+          "exemption": "Youth under 16 with handlines/dip nets only (2 dozen limit)"
+        },
+        "boat_license": {
+          "allows": "License holder or one person on boat to crab"
+        }
+      },
+      "season": {
+        "start": "April 1",
+        "end": "December 15",
+        "closed_day": "Wednesdays (except during weeks with state/federal holidays on Wed/Thu)"
+      },
+      "operating_hours": {
+        "april_october_december": "1/2 hour after sunrise to sunset",
+        "may_september": "1/2 hour before sunrise to sunset"
+      },
+      "catch_limits": {
+        "without_license": "Limited to 24 male hard crabs OR 12 soft/male peeler crabs",
+        "note": "These are unlicensed crabber limits"
+      },
+      "equipment_requirements": {
+        "pot_cull_rings": [
+          "Ring 1: minimum 23/16 inches",
+          "Ring 2: minimum 25/16 inches",
+          "Location: exterior side panel or top panels"
+        ],
+        "turtle_reduction_device": {
+          "requirement": "Required at each entrance/funnel in lower chamber",
+          "material": "Wire or plastic",
+          "shape": "Rectangular",
+          "dimensions": "Not larger than 1 3/4 inches high by 4 3/4 inches long"
+        }
+      }
+    },
+    "yellow_perch": {
+      "2026_regulation_change": "Creel limit decreased to 5 per person per day",
+      "previous_limit": "Higher (changed effective 2026)",
+      "waters": "All tidal waters and nontidal rivers and streams"
+    },
+    "other_species": {
+      "catfish_tidal": {
+        "daily_limit": "10 per person",
+        "minimum_size": "No size restriction",
+        "note": "Includes blue catfish, channel catfish, flathead catfish"
+      },
+      "american_eel": {
+        "daily_limit": "25 per person",
+        "season": "Year-round"
+      },
+      "red_drum": {
+        "season": "Year-round",
+        "size_requirements": {
+          "minimum": "18 inches",
+          "maximum": "27 inches"
+        }
+      }
+    },
+    "charter_boat_regulations": {
+      "facts_charter_pilot": {
+        "atlantic_striped_bass": {
+          "standard_limit": "1 fish per person per day (19-24 inch slot)",
+          "captain_bonus": "+1 additional fish for captain",
+          "mate_bonus": "+1 additional fish for mate (if present)",
+          "required_license": [
+            "Non-Resident Guide License (FGN)",
+            "Resident Guide License (FGR)",
+            "Master Fishing Guide License (FGM)",
+            "Unlimited Tidal Fishing License (TFL)"
+          ]
+        }
+      }
+    },
+    "tidal_water_boundary_info": {
+      "resource": "eRegulations interactive map at https://www.eregulations.com/maryland/fishing/tidal-nontidal-dividing-lines",
+      "legal_reference": "COMAR 08.02.01.09",
+      "importance": "Critical for determining correct license type"
+    },
+    "free_fishing_days_tidal": [
+      "June 6, 2026",
+      "June 13, 2026",
+      "July 4, 2026"
+    ]
+  }
+}

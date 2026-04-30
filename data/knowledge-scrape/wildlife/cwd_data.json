@@ -1,0 +1,59 @@
+{
+  "source_url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/cwd_in_maryland.aspx",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "CWD Management Zone",
+      "description": "Chronic Wasting Disease Management Area (CWDMA)",
+      "affected_counties": [
+        "Allegany",
+        "Baltimore",
+        "Carroll",
+        "Frederick",
+        "Howard",
+        "Montgomery",
+        "Washington"
+      ],
+      "expansion_date": "2025",
+      "notes": "Howard County added in 2025. CWDMA includes all public and private lands in these counties.",
+      "management_objective": "Help slow the spread of CWD through regulations and monitoring"
+    },
+    {
+      "category": "Testing Procedures",
+      "description": "CWD sampling conducted by approved processors",
+      "approved_businesses": [
+        "Approved taxidermists",
+        "Approved meat processors"
+      ],
+      "sampling_method": "Brain stem and certain lymph nodes removed",
+      "sample_destinations": "Laboratory for testing",
+      "source_materials": [
+        "Road-kills",
+        "Deer brought by hunters to cooperating processors"
+      ],
+      "notes": "Department maintains list of approved taxidermists and meat processors in CWDMA"
+    },
+    {
+      "category": "Carcass Transport",
+      "description": "Carcass transport restrictions within CWDMA",
+      "restrictions": "Cannot transport whole carcasses or certain parts outside CWDMA without testing/approval",
+      "allowed_transport": "Processed parts and approved carcasses to approved processors",
+      "enforcement": "Violation results in penalties and disease spread prevention"
+    },
+    {
+      "category": "Surveillance",
+      "description": "CWD surveillance and testing results",
+      "testing_capacity": "Conducted through approved processors statewide",
+      "monitoring_program": "Continuous surveillance of road-kills and hunter-harvested deer",
+      "reporting": "Results compiled into annual surveillance reports"
+    },
+    {
+      "category": "Contact Information",
+      "description": "CWD Information and Assistance",
+      "phone": "301-334-4255",
+      "email": "Available through Maryland DNR",
+      "website": "dnr.maryland.gov/wildlife/pages/hunt_trap/cwd_in_maryland.aspx",
+      "office": "Maryland DNR Wildlife and Heritage Service"
+    }
+  ]
+}

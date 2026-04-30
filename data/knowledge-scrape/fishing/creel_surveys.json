@@ -1,0 +1,89 @@
+{
+  "source_url": "https://dnr.maryland.gov/fisheries/pages/recreational/muskie_management.aspx",
+  "date_accessed": "2026-04-11",
+  "data": {
+    "creel_survey_program": {
+      "type": "Volunteer-based monitoring program",
+      "initiated": "2009",
+      "target_species": "Potomac River muskellunge",
+      "purpose": "Monitor size distribution and relative abundance"
+    },
+    "muskie_volunteer_creel_survey": {
+      "data_collected_by_anglers": [
+        "Date of fishing",
+        "Number of anglers targeting muskie",
+        "General location of fishing activity",
+        "Duration of trip",
+        "Total catch (including zero-catch trips)",
+        "Tag numbers from tagged fish caught"
+      ],
+      "importance": "Zero-catch trips are recorded (critical for accurate CPUE estimates)",
+      "location": "Potomac River muskie waters"
+    },
+    "electrofishing_surveys": {
+      "overview": "Maryland DNR conducts regular electrofishing surveys for fishery management",
+      "survey_types": {
+        "daytime_electrofishing": {
+          "purpose": "General stock assessment",
+          "application": "Freshwater lake and stream surveys"
+        },
+        "nighttime_boat_electrofishing": {
+          "location": "Upper Potomac River",
+          "study_area": "Whites Ferry upstream to McCoy's Ferry",
+          "target_species": "Catfish",
+          "purpose": "Catfish population monitoring"
+        }
+      },
+      "example_survey_2023": {
+        "location": "Piney Reservoir",
+        "purpose": "Verify survival of saugeye stocked April 2023",
+        "result": "Confirmed successful establishment"
+      }
+    },
+    "freshwater_fisheries_monthly_reports": {
+      "frequency": "Monthly reports available",
+      "contents": [
+        "Stock assessment data",
+        "Stocking activity summary",
+        "Survey results (electrofishing, creel data)",
+        "Species-specific management notes"
+      ],
+      "recent_reports_available": [
+        "January 2025",
+        "September 2023",
+        "October 2023",
+        "September 2021",
+        "March 2021"
+      ],
+      "access": "https://dnr.maryland.gov/fisheries/pages/trout/stocking.aspx"
+    },
+    "lake_specific_surveys": {
+      "deep_creek_lake": {
+        "target_species": ["Walleye", "Saugeye"],
+        "survey_method": "Electrofishing",
+        "management_focus": "Size structure and population dynamics"
+      }
+    },
+    "data_management": {
+      "purpose": "Inform adaptive management decisions",
+      "applications": [
+        "Stocking rates and timing",
+        "Harvest regulation adjustments",
+        "Species-specific management plans",
+        "Invasive species monitoring"
+      ]
+    },
+    "current_research_focus": {
+      "bass_research": "DNR research targets bass and invasive fish species",
+      "invasive_species": "Monitoring and management programs underway"
+    },
+    "public_participation": {
+      "opportunities": [
+        "Volunteer creel survey participation",
+        "Report tagged fish catches",
+        "Submit fishing photos for reports"
+      ],
+      "contact": "Maryland DNR Fisheries - contact via website for participation"
+    }
+  }
+}

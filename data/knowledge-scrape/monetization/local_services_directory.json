@@ -1,0 +1,596 @@
+{
+  "metadata": {
+    "lastUpdated": "2026-04-11",
+    "state": "Maryland",
+    "purpose": "Local outdoor services directory for monetization partnerships",
+    "summary": {
+      "taxidermists": 12,
+      "deer_processors": 40,
+      "fishing_charters": 17,
+      "bait_tackle_shops": 12,
+      "kayak_canoe_rentals": 8,
+      "hunting_lease_platforms": 4,
+      "archery_pro_shops": 7
+    }
+  },
+  "taxidermists": [
+    {
+      "id": "tax_001",
+      "name": "Upper Bay Taxidermy",
+      "location": {"address": "523 Red Toad Road", "city": "North East", "county": "Cecil", "zipcode": "21901"},
+      "phone": "(410) 708-1140",
+      "website": "https://www.upperbaytaxidermy.com/",
+      "services": ["Deer shoulder mounts", "Big game taxidermy", "Waterfowl", "Lifesize mounts"],
+      "notes": "Father/son team, 35+ years experience"
+    },
+    {
+      "id": "tax_002",
+      "name": "Creative Whitetails Taxidermy",
+      "location": {"address": "11950 Provident Dr", "city": "La Plata", "county": "Charles"},
+      "phone": "(301) 520-0348",
+      "website": "https://www.creativewhitetails.com/",
+      "email": "Dean@creativewhitetails.com",
+      "services": ["Whitetail deer", "Mule deer", "Sika deer", "In-house tanning"],
+      "notes": "Owner Dean Ursitti, 35+ years, multiple national awards"
+    },
+    {
+      "id": "tax_003",
+      "name": "Mountin' Man Taxidermy",
+      "location": {"address": "1215 Hoffmaster Rd", "city": "Knoxville", "county": "Frederick", "zipcode": "21758"},
+      "phone": "(301) 834-5197",
+      "website": "https://www.mountinman.com/",
+      "services": ["Custom taxidermy", "Lifesize mammals", "Deer mounts"],
+      "notes": "Dane Gaulding owner, 19+ years experience"
+    },
+    {
+      "id": "tax_004",
+      "name": "Natalie's Taxidermy",
+      "location": {"address": "1725 Monument Rd", "city": "Myersville", "county": "Frederick", "zipcode": "21773"},
+      "phone": "(240) 315-3471",
+      "website": "https://www.nataliestaxidermy.com/",
+      "hours": "Sun-Fri 9am-7pm, Sat 9am-8pm",
+      "services": ["Deer shoulder mounts", "Custom taxidermy"]
+    },
+    {
+      "id": "tax_005",
+      "name": "Precision Taxidermy",
+      "location": {"address": "504 Crosby Road", "city": "Catonsville", "county": "Baltimore"},
+      "phone": "(443) 833-5511",
+      "website": "https://www.precisiontaxidermymd.com/",
+      "services": ["Deer mounts", "Custom taxidermy"]
+    },
+    {
+      "id": "tax_006",
+      "name": "Hitchcock Taxidermy",
+      "location": {"address": "8261 New Cut Rd", "city": "Severn", "county": "Anne Arundel", "zipcode": "21144"},
+      "phone": "(410) 987-6990",
+      "hours": "Mon-Sat 9am-9pm, Sun 9am-3pm",
+      "services": ["Deer mounts", "Wildlife processing"],
+      "notes": "CWD approved processor"
+    },
+    {
+      "id": "tax_007",
+      "name": "Fegan's Taxidermy",
+      "location": {"address": "3660 Muddy Creek Rd", "city": "Edgewater", "county": "Anne Arundel", "zipcode": "21037"},
+      "phone": "(410) 798-5656",
+      "website": "https://feganstaxidermy.com/",
+      "services": ["Deer mounts", "Custom taxidermy"]
+    },
+    {
+      "id": "tax_008",
+      "name": "Cutchins Trail Taxidermy",
+      "location": {"address": "3055 Daisy Lane", "city": "White Hall", "county": "Baltimore", "zipcode": "21161"},
+      "phone": "(410) 929-9838",
+      "website": "https://www.cutchinstrailtaxidermy.com/",
+      "services": ["Deer mounts", "Custom taxidermy"]
+    },
+    {
+      "id": "tax_009",
+      "name": "Bonehead Wildlife Taxidermy, LLC",
+      "location": {"address": "506 Crouse Mill Rd", "city": "Queen Anne", "county": "Queen Anne's"},
+      "phone": "(443) 262-2314",
+      "services": ["Deer mounts", "Wildlife taxidermy"]
+    },
+    {
+      "id": "tax_010",
+      "name": "Creative Concepts Taxidermy",
+      "location": {"address": "7194 Montevideo Rd", "city": "Jessup", "county": "Howard", "zipcode": "20794"},
+      "phone": "(410) 799-1558",
+      "website": "https://www.creativeconceptstaxidermy.com/",
+      "services": ["Deer shoulder mounts", "Custom taxidermy"]
+    },
+    {
+      "id": "tax_011",
+      "name": "Bob Miller Taxidermy",
+      "location": {"city": "Maryland Line", "county": "Baltimore"},
+      "website": "https://www.bobmillertaxidermy.com/",
+      "services": ["Custom taxidermy", "Deer mounts"]
+    },
+    {
+      "id": "tax_012",
+      "name": "Nature's Best Wildlife Artistry",
+      "location": {"city": "Mount Airy", "county": "Carroll"},
+      "website": "https://www.mdtaxidermist.com/",
+      "services": ["Custom mounts", "Wildlife artistry"],
+      "notes": "Kelly Double owner, 30+ years experience"
+    }
+  ],
+  "deer_processors": {
+    "note": "Maryland DNR-approved processors by county - over 40 total available",
+    "featured": [
+      {
+        "id": "proc_001",
+        "name": "Burnie's Deer Processing",
+        "location": {"city": "Westminster", "county": "Carroll"},
+        "phone": "(410) 878-3334",
+        "website": "https://www.chuckandburniesdeerprocessing.com/",
+        "services": ["Deer processing", "24-hour refrigerator drop-off", "Senior/veteran discounts"],
+        "notes": "60+ years experience, CWD approved"
+      },
+      {
+        "id": "proc_002",
+        "name": "M & G Wild Game Processing",
+        "location": {"city": "Carroll", "county": "Carroll"},
+        "phone": "(443) 375-7138",
+        "website": "https://mgprocessing.com/",
+        "services": ["Wild game processing"],
+        "notes": "CWD approved"
+      },
+      {
+        "id": "proc_003",
+        "name": "Clint's Cuts",
+        "location": {"city": "Frederick", "county": "Frederick"},
+        "phone": "(301) 865-5120 or (301) 748-1505",
+        "website": "https://clints-cuts.com/",
+        "services": ["Deer processing", "Custom venison cuts"],
+        "notes": "CWD approved"
+      },
+      {
+        "id": "proc_004",
+        "name": "Austin's Deer Processing",
+        "location": {"address": "7074 Ridge Rd", "city": "Hanover", "county": "Anne Arundel"},
+        "phone": "(410) 850-5838"
+      },
+      {
+        "id": "proc_005",
+        "name": "B&B Country Meats",
+        "location": {"city": "Frostburg", "county": "Allegany"},
+        "phone": "(301) 689-6225",
+        "website": "https://bandbfrostburg.com/",
+        "notes": "CWD approved"
+      },
+      {
+        "id": "proc_006",
+        "name": "Pry's Deer Processing",
+        "location": {"city": "Burkittsville", "county": "Frederick"},
+        "phone": "(301) 834-8752",
+        "website": "https://www.needwoodfarms.com/deerprocessing.html",
+        "notes": "CWD approved"
+      },
+      {
+        "id": "proc_007",
+        "name": "Bob Parker Deer Butchering",
+        "location": {"address": "11318 Newport Mill Rd", "city": "Silver Spring", "county": "Montgomery"},
+        "phone": "(301) 946-1622"
+      },
+      {
+        "id": "proc_008",
+        "name": "Mike McWilliams Wild Game Processors",
+        "location": {"address": "25500 Maidenside Lane", "city": "Leonardtown", "county": "St. Mary's"},
+        "phone": "(301) 475-9667 or (240) 925-6994"
+      },
+      {
+        "id": "proc_009",
+        "name": "Harwood Butcher Shop",
+        "location": {"city": "Harwood", "county": "Anne Arundel"},
+        "phone": "(410) 212-8803"
+      },
+      {
+        "id": "proc_010",
+        "name": "Trophy Care Taxidermy & Deer Processing",
+        "location": {"city": "Baltimore", "county": "Baltimore"},
+        "phone": "(410) 282-1118",
+        "services": ["Deer processing", "Taxidermy"],
+        "notes": "CWD approved"
+      }
+    ],
+    "reference": "Full list available at https://www.eregulations.com/maryland/hunting/deer-processors"
+  },
+  "fishing_charters": [
+    {
+      "id": "charter_001",
+      "name": "The Ocean Princess",
+      "location": {"city": "Ocean City", "county": "Worcester"},
+      "phone": "(410) 289-2500",
+      "website": "https://www.theoceanprincess.com/",
+      "vessel": "Maryland's largest party boat, 75+ passengers",
+      "services": ["Deep sea fishing", "Party boat fishing", "Black sea bass", "Flounder"]
+    },
+    {
+      "id": "charter_002",
+      "name": "Wound Tight Sport Fishing",
+      "location": {"city": "Chesapeake Beach", "county": "Calvert"},
+      "website": "https://woundtightcharters.com/",
+      "services": ["Chesapeake Bay fishing", "Offshore fishing"],
+      "notes": "40+ years combined experience"
+    },
+    {
+      "id": "charter_003",
+      "name": "The Natural Charters",
+      "location": {"city": "Deale", "county": "Anne Arundel"},
+      "website": "https://naturalcharters.com/",
+      "services": ["Chesapeake Bay fishing", "Striped bass"]
+    },
+    {
+      "id": "charter_004",
+      "name": "Ocean City Saltwater Adventures",
+      "location": {"city": "Ocean City", "county": "Worcester"},
+      "website": "https://ocsaltwater.com/",
+      "vessel": "Kashmir - 25 ft center console"
+    },
+    {
+      "id": "charter_005",
+      "name": "Get Sum Charters",
+      "location": {"city": "Ocean City", "county": "Worcester"},
+      "website": "https://getsumcharters.com/",
+      "services": ["Bay fishing", "Flounder", "Rockfish", "Tautog"]
+    },
+    {
+      "id": "charter_006",
+      "name": "Back Bay Adventures",
+      "location": {"city": "Ocean City", "county": "Worcester"},
+      "website": "https://backbayadventuresocmd.com/",
+      "services": ["Fishing charters", "Jet ski rentals", "Cruises"]
+    },
+    {
+      "id": "charter_007",
+      "name": "Rod 'N' Reel Charter Fishing",
+      "location": {"address": "4165 Mears Ave.", "city": "Chesapeake Beach", "county": "Calvert"},
+      "phone": "(866) 312-5596",
+      "website": "https://www.rnrresortmd.com/marina/charterfishing",
+      "notes": "Largest fleet on Chesapeake Bay, operating since 1946"
+    },
+    {
+      "id": "charter_008",
+      "name": "Annapolis Fishing Charters",
+      "location": {"city": "Annapolis", "county": "Anne Arundel"},
+      "phone": "(410) 858-2944",
+      "website": "https://annapolisfishingcharters.com/",
+      "vessel": "Bay Eagle"
+    },
+    {
+      "id": "charter_009",
+      "name": "Last Hurrah Charters",
+      "location": {"city": "Chesapeake Bay"},
+      "phone": "(443) 223-5919",
+      "website": "https://www.lasthurrahcharters.com/",
+      "captain": "Captain Scott"
+    },
+    {
+      "id": "charter_010",
+      "name": "Marauder Charters",
+      "location": {"address": "255 Alexander Lane", "city": "Solomons", "county": "Calvert"},
+      "phone": "(240) 417-2408"
+    },
+    {
+      "id": "charter_011",
+      "name": "Tenacious Charter Fishing",
+      "location": {"address": "533 Deale Rd", "city": "Deale", "county": "Anne Arundel"},
+      "phone": "(410) 353-8636"
+    },
+    {
+      "id": "charter_012",
+      "name": "Bunky's Charter Boats",
+      "location": {"address": "14448 S. Solomons Island Rd", "city": "Solomons", "county": "Calvert"},
+      "phone": "(410) 326-3241",
+      "website": "http://www.bunkyscharterboats.com/"
+    },
+    {
+      "id": "charter_013",
+      "name": "Shea-D-Lady Fishing Charters",
+      "location": {"address": "14485 Dowell Road", "city": "Solomons", "county": "Calvert"},
+      "phone": "(301) 672-3282",
+      "vessel": "46 ft Markley, 30 passenger capacity"
+    },
+    {
+      "id": "charter_014",
+      "name": "Miss Susie Charters",
+      "location": {"address": "105 Charles St.", "city": "Solomons", "county": "Calvert"},
+      "phone": "(301) 873-1327"
+    },
+    {
+      "id": "charter_015",
+      "name": "Strike Zone Charter Fishing",
+      "location": {"city": "Solomons", "county": "Calvert"},
+      "phone": "(443) 624-0247",
+      "website": "https://www.fishstrikezone.com/home"
+    },
+    {
+      "id": "charter_016",
+      "name": "All In Charters",
+      "location": {"city": "Solomons", "county": "Calvert"},
+      "phone": "(443) 684-1484",
+      "contact": "Ashley"
+    },
+    {
+      "id": "charter_017",
+      "name": "Maryland Fishing and Hunting, LLC",
+      "vessel": "The Marylander",
+      "phone": "(443) 262-2588",
+      "website": "https://www.marylandfishingandhunting.com/",
+      "services": ["Fishing charters", "Hunting trips"]
+    }
+  ],
+  "bait_tackle_shops": [
+    {
+      "id": "bait_001",
+      "name": "Tochterman's Fishing Tackle",
+      "location": {"address": "1925 Eastern Ave", "city": "Baltimore", "county": "Baltimore City", "zipcode": "21231"},
+      "phone": "(410) 327-6942",
+      "website": "https://www.tochtermansfishingtackle.com/",
+      "email": "tochtermans@hotmail.com",
+      "notes": "Family owned since 1916, same location"
+    },
+    {
+      "id": "bait_002",
+      "name": "Atlantic Tackle",
+      "location": {"address": "12930 Sunset Avenue", "city": "Ocean City", "county": "Worcester", "zipcode": "21842"},
+      "phone": "(410) 213-0421",
+      "tollfree": "1-877-566-BAIT",
+      "website": "https://atlantictackle.com/",
+      "email": "info@atlantictackle.com",
+      "notes": "Two-story mega store, inshore and offshore tackle"
+    },
+    {
+      "id": "bait_003",
+      "name": "Fishbones Bait & Tackle",
+      "location": {"address": "4729 Mountain Rd", "city": "Pasadena", "county": "Anne Arundel", "zipcode": "21122"},
+      "phone": "(410) 360-0573",
+      "website": "https://www.fishbonesmd.com/",
+      "services": ["Fishing bait", "Crabbing equipment", "Tackle"]
+    },
+    {
+      "id": "bait_004",
+      "name": "Alltackle.com Annapolis",
+      "location": {"address": "2062 Somerville Rd", "city": "Annapolis", "county": "Anne Arundel", "zipcode": "21401"},
+      "phone": "(410) 571-1111",
+      "website": "https://alltackle.com/"
+    },
+    {
+      "id": "bait_005",
+      "name": "Alltackle.com Ocean City",
+      "location": {"address": "12826 Ocean Gateway", "city": "Ocean City", "county": "Worcester", "zipcode": "21842"},
+      "phone": "(410) 213-2840",
+      "website": "https://alltackle.com/"
+    },
+    {
+      "id": "bait_006",
+      "name": "Sarge's Bait and Tackle",
+      "location": {"address": "751 Augustine Herman Hwy", "city": "Elkton", "county": "Cecil", "zipcode": "21921"},
+      "phone": "(410) 620-9183",
+      "website": "https://marylandbayfishing.com/",
+      "hours": "Mon-Thurs 7am-7pm, Fri-Sat 6am-7pm, Sun 6am-5pm",
+      "notes": "Between Elkton and Chesapeake City on Rt 213"
+    },
+    {
+      "id": "bait_007",
+      "name": "Anglers Sport Center",
+      "location": {"address": "1456 Whitehall Rd", "city": "Annapolis", "county": "Anne Arundel", "zipcode": "21409"},
+      "phone": "(410) 757-3442"
+    },
+    {
+      "id": "bait_008",
+      "name": "Chesapeake Outdoors",
+      "location": {"address": "1707 Main St", "city": "Chester", "county": "Queen Anne's"},
+      "phone": "(410) 604-2500",
+      "website": "https://chesapeakeoutdoors.com/",
+      "notes": "Kent Island area"
+    },
+    {
+      "id": "bait_009",
+      "name": "Rusty Hook Bait & Tackle",
+      "location": {"address": "975 Port St", "city": "Easton", "county": "Talbot", "zipcode": "21601"},
+      "phone": "(443) 746-2137",
+      "notes": "Eastern Shore location"
+    },
+    {
+      "id": "bait_010",
+      "name": "Sea Hawk Sports Center",
+      "location": {"address": "643 Ocean Hwy", "city": "Pocomoke City", "county": "Worcester", "zipcode": "21851"},
+      "phone": "(410) 957-0198",
+      "notes": "Eastern Shore/Salisbury area"
+    },
+    {
+      "id": "bait_011",
+      "name": "Fred's Outdoors Fishing Department",
+      "location": {"address": "2895 Crain Hwy", "city": "Waldorf", "county": "Charles", "zipcode": "20601"},
+      "phone": "(301) 645-5694 or (301) 843-3040",
+      "website": "https://fredsoutdoors.com/"
+    },
+    {
+      "id": "bait_012",
+      "name": "Tyler's Tackle Shop and Crab House",
+      "location": {"city": "Chesapeake Beach", "county": "Calvert"},
+      "website": "https://www.tylerstackle.com/",
+      "notes": "Combined tackle shop and seafood restaurant"
+    }
+  ],
+  "kayak_canoe_rentals": [
+    {
+      "id": "kayak_001",
+      "name": "Annapolis Canoe and Kayak",
+      "location": {"address": "311 Third Street", "city": "Annapolis", "county": "Anne Arundel", "zipcode": "21403"},
+      "phone": "(410) 263-2303",
+      "website": "https://www.annapoliscanoeandkayak.com/",
+      "services": ["Kayak", "Canoe", "SUP rentals", "Sales"]
+    },
+    {
+      "id": "kayak_002",
+      "name": "Paddle Annapolis",
+      "location": {"address": "326 First Street", "city": "Annapolis", "county": "Anne Arundel", "zipcode": "21403"},
+      "phone": "(443) 254-0087",
+      "website": "https://paddle-annapolis.com/",
+      "services": ["Paddleboard", "Kayak rentals", "Tours"]
+    },
+    {
+      "id": "kayak_003",
+      "name": "Black Hill Boats at Little Seneca Lake",
+      "location": {"address": "20930 Lake Ridge Dr", "city": "Boyds", "county": "Montgomery", "zipcode": "20841"},
+      "phone": "(301) 528-3462 or (301) 528-3466",
+      "website": "https://montgomeryparks.org/parks-and-trails/black-hill-regional-park/black-hill-boats-little-seneca-lake/",
+      "season": "Memorial Day through Labor Day",
+      "services": ["Kayak", "Canoe", "Pedal boat", "Paddleboard", "Rowboat rentals"],
+      "notes": "Photo ID required, life jackets mandatory"
+    },
+    {
+      "id": "kayak_004",
+      "name": "Pocomoke River Canoe Company",
+      "location": {"address": "2 River Street", "city": "Snow Hill", "county": "Worcester", "zipcode": "21863"},
+      "phone": "(410) 632-3971",
+      "website": "https://www.pocomokeriverpaddle.com/",
+      "email": "canoe@pocomokeriverpaddle.com",
+      "services": ["Kayak", "Canoe", "SUP rentals", "Half-day", "Full-day"],
+      "notes": "Walk-ins welcome"
+    },
+    {
+      "id": "kayak_005",
+      "name": "Chesapeake Beach Water Sports",
+      "location": {"address": "4055 Gordon Stinnett Ave.", "city": "Chesapeake Beach", "county": "Calvert", "zipcode": "20732"},
+      "phone": "(410) 257-1028 or (866) 312-5596",
+      "website": "https://www.rnrresortmd.com/marina/charterfishing",
+      "services": ["Kayak rentals", "Water sports"]
+    },
+    {
+      "id": "kayak_006",
+      "name": "Patuxent Adventure Center (PAC Paddle)",
+      "location": {"address": "155 Holiday Dr, Solomons Inn Marina", "city": "Solomons", "county": "Calvert", "zipcode": "20688"},
+      "phone": "(410) 610-3541 or (410) 394-2770",
+      "services": ["Kayak", "Paddle rentals"]
+    },
+    {
+      "id": "kayak_007",
+      "name": "Chesapeake Bay Environmental Center",
+      "location": {"address": "600 Discovery Lane", "city": "Grasonville", "county": "Queen Anne's", "zipcode": "21638"},
+      "website": "https://bayrestoration.org/activities-overview/kayaking-paddleboarding/",
+      "fleet": "22 single kayaks, 14 tandem kayaks, 6 paddleboards",
+      "notes": "Launch from Marshy Creek dock, wildlife viewing"
+    },
+    {
+      "id": "kayak_008",
+      "name": "Eastern Watersports (Multi-location)",
+      "locations": [
+        {"name": "Middle River", "address": "7400 Graces Quarters Rd, Dundee Creek Marina"},
+        {"name": "Baltimore Peninsula", "address": "301 E. Cromwell St., Baltimore"},
+        {"name": "National Harbor", "address": "201 Waterfront Street, National Harbor"}
+      ],
+      "phone": "(443) 730-0300",
+      "website": "https://www.easternwatersports.com/paddlesport-rentals/",
+      "fleet": "150+ kayaks",
+      "hours": "Retail Mon-Fri 9am-5pm, Daily on-water 9am-5pm"
+    }
+  ],
+  "hunting_lease_platforms": [
+    {
+      "id": "lease_001",
+      "name": "HLRBO (Hunting Lease Realty & Business Operations)",
+      "website": "https://www.hlrbo.com/",
+      "maryland": "https://www.hlrbo.com/hunting/information/md",
+      "description": "Premier online hunting lease platform with thousands of listings",
+      "features": ["State/county search", "Species filters", "Acreage details", "Direct landowner contact"]
+    },
+    {
+      "id": "lease_002",
+      "name": "HuntingLocator.com",
+      "website": "https://huntinglocator.com/",
+      "maryland": "https://huntinglocator.com/leases/state/maryland",
+      "description": "Nation's most reputable hunting opportunity directory"
+    },
+    {
+      "id": "lease_003",
+      "name": "Base Camp Leasing",
+      "website": "https://www.basecampleasing.com/",
+      "maryland": "https://www.basecampleasing.com/searchstates/maryland_map.htm",
+      "description": "County-by-county hunting lease browsing interface"
+    },
+    {
+      "id": "lease_004",
+      "name": "LandSearch.com",
+      "website": "https://www.landsearch.com/",
+      "maryland": "https://www.landsearch.com/hunting/maryland",
+      "description": "Land sales and lease marketplace"
+    }
+  ],
+  "archery_pro_shops": [
+    {
+      "id": "archery_001",
+      "name": "GUNTRY Archery Pro Shop",
+      "location": {"address": "10705 Red Run Blvd", "city": "Owings Mills", "county": "Baltimore", "zipcode": "21117"},
+      "phone": "(443) 973-4867",
+      "website": "https://www.guntry.com/archery-pro-shop",
+      "email": "info@guntry.com",
+      "hours": "Mon 11am-8pm, Tue 10am-4pm, Wed-Thu 11am-8pm, Fri 11am-9pm, Sat-Sun 10am-9pm",
+      "services": ["Bow tuning", "Repairs", "Setup", "Indoor range", "Bow simulator"]
+    },
+    {
+      "id": "archery_002",
+      "name": "Bowhunters Den Outdoors",
+      "locations": [
+        {"name": "Finksburg", "address": "1831 Old Westminster Pike", "city": "Finksburg", "county": "Carroll", "zipcode": "21048"},
+        {"name": "Taneytown", "address": "76 Frederick St Suite D", "city": "Taneytown", "county": "Carroll", "zipcode": "21787"}
+      ],
+      "phone": "(410) 751-2494",
+      "website": "https://www.bowhuntersdenmaryland.com/",
+      "services": ["Bow tuning", "Servicing", "Tune-ups", "Expert advice"],
+      "notes": "Taneytown open by appointment"
+    },
+    {
+      "id": "archery_003",
+      "name": "Fred's Outdoors Archery",
+      "location": {"address": "2895 Crain Hwy", "city": "Waldorf", "county": "Charles", "zipcode": "20601"},
+      "phone": "(301) 645-5694 or (301) 843-3040",
+      "website": "https://fredsoutdoors.com/archery/",
+      "hours": "Mon/Wed/Fri/Sat 9am-5pm, Sun 9am-3pm",
+      "services": ["Bow tuning", "Adjustments", "String/cable changes", "20 yard indoor range"]
+    },
+    {
+      "id": "archery_004",
+      "name": "Jefferson Archery",
+      "location": {"address": "3840 Jefferson Pike", "city": "Jefferson", "county": "Frederick", "zipcode": "21755"},
+      "phone": "(301) 473-8495",
+      "website": "https://jeffersonarchery.com/",
+      "email": "info@jeffersonarchery.com",
+      "hours": "Tue-Fri 2pm-7pm, Sat 10am-4pm",
+      "services": ["Bow fitting", "Tune-ups", "String/cable changes"]
+    },
+    {
+      "id": "archery_005",
+      "name": "Macrotech Archery Pro Shop",
+      "location": {"address": "8043 Fort Smallwood Rd", "city": "Curtis Bay", "county": "Baltimore", "zipcode": "21226"},
+      "phone": "(410) 789-7777",
+      "fax": "(410) 789-5225",
+      "website": "https://www.macrotecharcherymd.com/",
+      "services": ["Bow tuning", "Custom setup"],
+      "notes": "Owner Len teaches ATA shows"
+    },
+    {
+      "id": "archery_006",
+      "name": "Tagged Out Tuning, LLC",
+      "location": {"address": "516 Harwood Rd", "city": "Harwood", "county": "Anne Arundel", "zipcode": "20776"},
+      "phone": "(443) 336-7731",
+      "website": "https://www.taggedouttuning.com/",
+      "email": "jason@taggedouttuning.com",
+      "services": ["Custom bow tuning", "String replacements", "Archery advice"],
+      "notes": "Jason duCellier, 30+ years experience"
+    },
+    {
+      "id": "archery_007",
+      "name": "3J's Archery",
+      "location": {"address": "26694 Morganza Turner Rd", "city": "Mechanicsville", "county": "St. Mary's", "zipcode": "20659"},
+      "phone": "(301) 472-1933",
+      "website": "http://www.3jsarchery.net/",
+      "hours": "Tue-Fri 11am-6pm, Sat 8am-12pm",
+      "services": ["Archery-only pro shop", "3D target course", "Setup services"],
+      "notes": "Outdoor 3D course $20 usage fee"
+    }
+  ]
+}

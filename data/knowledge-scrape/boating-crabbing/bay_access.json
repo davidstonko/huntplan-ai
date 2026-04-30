@@ -1,0 +1,136 @@
+{
+  "source_urls": [
+    "https://dnr.maryland.gov/boating/pages/water-access/boatramps.aspx",
+    "https://dnr.maryland.gov/fisheries/Pages/reefs/index.aspx",
+    "https://dnr.maryland.gov/publiclands/pages/central/susquehanna/boating.aspx",
+    "https://www.nps.gov/cajo/index.htm",
+    "https://www.visitmaryland.org/list/paddling-trails-maryland"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "water_access_guide": {
+      "description": "Maryland's Online Water Access Guide is a web application for public boat ramps, soft access (non-motorized), and transient docking",
+      "url": "https://dnr.maryland.gov/boating/pages/water-access/boatramps.aspx",
+      "note": "Majority of public access sites managed by local jurisdictions with varying fees and regulations"
+    },
+    "boat_ramps_by_county": {
+      "calvert_county": [
+        {
+          "name": "Hallowing Point Boat Ramp",
+          "address": "6904 Hallowing Lane, Prince Frederick, MD",
+          "amenities": ["Boat ramp", "Canoe launch", "Kayak launch"],
+          "type": "Public"
+        },
+        {
+          "name": "Kings Landing Park",
+          "address": "3255 Kings Landing Road, Huntingtown, MD",
+          "amenities": ["Kayak launch", "Canoe launch", "Stand-up paddleboard launch"],
+          "note": "Hand-carried vessels only",
+          "type": "Public"
+        },
+        {
+          "name": "Solomons Boat Ramp",
+          "address": "14195 S. Solomons Island Road, Solomons, MD",
+          "amenities": ["Boat ramp", "Fishing pier", "Crabbing pier"],
+          "hours": "24 hours",
+          "type": "Public"
+        }
+      ],
+      "chesapeake_beach": [
+        {
+          "name": "Chesapeake Beach Municipal Boat Ramp",
+          "address": "4055 Gordon Stinnett Ave, Chesapeake Beach, MD",
+          "trailer_parking_spots": 70,
+          "manager": "Marina West",
+          "type": "Public"
+        }
+      ]
+    },
+    "boat_ramp_fees": {
+      "statewide_registration_changes": {
+        "note": "First increase in fees in 42+ years",
+        "two_year_boat_registration": {
+          "old_fee": "$24",
+          "new_fee": "$70"
+        },
+        "certificate_of_title": {
+          "old_fee": "$2",
+          "new_fee": "$20"
+        },
+        "state_use_sticker": {
+          "old_fee": "$10",
+          "new_fee": "$70"
+        },
+        "non_motorized_vessel_option": "$12 (voluntary)"
+      },
+      "local_jurisdiction_examples": {
+        "perryville": {
+          "maryland_resident_annual": "$25",
+          "non_maryland_resident_annual": "$110"
+        },
+        "talbot_county": {
+          "maryland_resident_one_day": "$5",
+          "maryland_resident_annual": "$10",
+          "out_of_state_one_day": "$10",
+          "out_of_state_annual": "$35"
+        }
+      }
+    },
+    "captain_john_smith_trail": {
+      "name": "Captain John Smith Chesapeake National Historic Trail",
+      "total_length_miles": 3000,
+      "history": "Traces 15,000 years of culture and history, named for first European explorer of Chesapeake Bay",
+      "permit_required": false,
+      "fee_required": false,
+      "website": "www.smithtrail.net",
+      "notable_access_points": [
+        {
+          "location": "Denton, MD",
+          "facility": "Joppa Steamboat Warf (replica of 1883 terminal)",
+          "type": "Historic launch"
+        },
+        {
+          "location": "Upper Choptank and Tuckahoe Rivers",
+          "distance_miles": 80,
+          "description": "Pristine wilderness, minimal development"
+        }
+      ]
+    },
+    "artificial_reefs": {
+      "program": "Maryland Artificial Reef Initiative",
+      "partners": "60+ private, state, and federal partners",
+      "purpose": "Preserve, restore, and create fish habitat in tidewater Maryland",
+      "reef_ball_technology": {
+        "description": "Specially designed artificial reef units creating 3D habitat",
+        "deployment_method": "Gently placed on bay bottom with special cable, floated with rubber bladders in shallow water",
+        "benefits": "Attracts serious numbers of fish - great fishing locations"
+      },
+      "notable_projects": [
+        {
+          "name": "Coble Reef",
+          "size_acres": 5,
+          "composition": "Stones and rubble mix, includes old Memorial Stadium Baltimore rubble"
+        },
+        {
+          "name": "Pyramid Fish Havens",
+          "quantity": 200,
+          "design": "Provides shelter for rockfish, flounder, oyster toadfish"
+        }
+      ]
+    },
+    "kayak_and_paddling_trails": {
+      "description": "Multiple water trails suitable for first-time paddlers to experienced sailors",
+      "websites": [
+        "https://www.visitmaryland.org/list/paddling-trails-maryland",
+        "https://dnr.maryland.gov/boating/pages/mdwatertrails.aspx"
+      ],
+      "captain_john_smith_segments": [
+        {
+          "name": "Upper Choptank River",
+          "distance_miles": 80,
+          "description": "Pristine wilderness setting"
+        }
+      ]
+    }
+  }
+}

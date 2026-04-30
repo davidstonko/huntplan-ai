@@ -1,0 +1,247 @@
+================================================================================
+MARYLAND FISHING DATA - QUICK REFERENCE CARD
+================================================================================
+
+DATA LOCATION:
+  /huntmaryland-build/data/knowledge-scrape/fishing/
+
+FILES (10 JSON + 2 guides):
+  1. stocking_schedule.json      - 2026 spring trout stocking by county
+  2. striped_bass_regs.json      - CRITICAL 2026 changes (April C&R, Aug closure)
+  3. fish_advisories.json        - MDE consumption advisories (mercury, PFAS)
+  4. creel_surveys.json          - Volunteer programs, electrofishing data
+  5. license_fees.json           - All license types and costs ($32-$55)
+  6. tidal_regulations.json      - Blue crab, striped bass, tidal species
+  7. freshwater_regulations.json - Bass, trout, walleye, catfish, muskie
+  8. boat_ramps_access.json      - DNR water access tools and locations
+  9. community_reports.json      - Weekly reports, current conditions
+  10. README.md                  - Comprehensive integration guide
+  11. INDEX.json                 - Searchable index + integration checklist
+
+================================================================================
+CRITICAL 2026 CHANGES FOR APP
+================================================================================
+
+STRIPED BASS:
+  ✓ NEW April C&R (April 1-30) - first time since 2019
+  ✓ NEW August full closure (Aug 1-31)
+  ✓ May-Sept harvest: 1 fish, 19-24" slot (Chesapeake Bay)
+  ✓ Spawning closures: March 1 - May 31 (7 rivers + Upper Bay)
+
+YELLOW PERCH:
+  ✓ Creel limit REDUCED to 5 per day (was higher)
+
+SENIOR LICENSES:
+  ✓ Trout stamp NO LONGER included (must buy separately: $20)
+
+PFAS ADVISORY:
+  ✓ NEW consumption advisory for 15 fish species
+
+================================================================================
+KEY NUMBERS FOR APP DISPLAY
+================================================================================
+
+LICENSES (2026):
+  Resident annual nontidal:     $32
+  Nonresident annual nontidal:  $55
+  Trout stamp resident:         $20
+  Trout stamp nonresident:      $30
+  Chesapeake Bay resident:      $15
+  Youth (under 16):             FREE
+  Free fishing days:            June 6, 13, July 4
+
+REGULATIONS - FRESHWATER:
+  Bass (all):        12" min, 5 daily
+  Trout combo:       2 daily (brook + brown)
+  Trout other:       5 daily (put-and-take areas)
+  Walleye:           15" min, 5 daily (Deep Creek: 18-21" slot = protected)
+  Saugeye:           15" min, 5 daily
+  Muskie:            40" min, 1 daily
+  Panfish:           No size, 15 daily
+  Catfish:           No limits, year-round
+
+REGULATIONS - TIDAL:
+  Striped bass:      See striped bass section
+  Yellow perch:      5 per day (NEW 2026)
+  Blue crab:         24 male limit, April 1-Dec 15
+  Catfish:           10 per day
+  Eel:               25 per day
+  Red drum:          18-27" slot
+
+STOCKING:
+  Annual:            ~240,000 trout
+  Spring start:      Feb (southern), Mar (western)
+  Hotline:           800-688-3467 (press #1, Fridays)
+
+================================================================================
+DATA STRUCTURE EXAMPLES
+================================================================================
+
+ACCESSING STRIPED BASS DATA:
+  {
+    "chesapeake_bay": {
+      "april_2026": {"activity": "Catch-and-release only"},
+      "may_september_2026": {"harvest": true, "size_slot": "19-24"}
+    }
+  }
+
+ACCESSING LICENSE FEES:
+  {
+    "resident_annual": {"cost": "$32", "waters": "Fresh waters"},
+    "youth": {"cost": "FREE", "age": "under 16"}
+  }
+
+ACCESSING REGULATIONS:
+  {
+    "bass": {"minimum_size": "12 inches", "daily_creel": "5 fish per day"},
+    "walleye": {"special": "Deep Creek Lake 18-21 inch protected slot"}
+  }
+
+================================================================================
+APP INTEGRATION CHECKLIST
+================================================================================
+
+Fish Map:
+  [ ] Overlay stocking schedule (show by date)
+  [ ] Highlight consumption advisory zones
+  [ ] Display spawning closures (Mar-May)
+  [ ] Show boat ramp icons
+
+Fish Spots:
+  [ ] Bag limit calculator widget
+  [ ] Species regulations by water type
+  [ ] Stocking location picker
+  [ ] Save trip history
+
+AI Chat:
+  [ ] "What's the limit for [species]?"
+  [ ] "Can I fish [river] now?"
+  [ ] "When is [species] stocked?"
+  [ ] "Do I need a license?"
+
+Honey Hole:
+  [ ] Pull weekly DNR reports
+  [ ] Show current water conditions
+  [ ] Spawning closure alerts
+  [ ] Catch sharing system
+
+Resources Tab:
+  [ ] Link to eRegulations
+  [ ] Embed stocking schedule
+  [ ] Link to MDE advisory map
+  [ ] Link to DNR boat ramps tool
+  [ ] License purchase link (compass.dnr.maryland.gov)
+
+================================================================================
+API INTEGRATION OPPORTUNITIES
+================================================================================
+
+Hotline Integration (800-688-3467, press #1):
+  - Could automate scraping of weekly stocking updates
+  - Update stocking_schedule.json weekly during season
+
+MDE Interactive Map:
+  - Embed advisories directly in Fish Map
+  - Pull PFAS data for specific waterways
+
+DNR Fishing Reports:
+  - Aggregate weekly reports for Honey Hole
+  - Parse current conditions automatically
+
+Water Access GIS:
+  - Link to or embed DNR map in Boat Ramps section
+  - Show distance from user location
+
+================================================================================
+MOST IMPORTANT DATA FOR USERS
+================================================================================
+
+1. WHEN CAN I FISH?
+   - Striped bass: April (C&R only), May-Sept (harvest), skip August
+   - Trout: Feb-Mar stocking season (put-and-take)
+   - Other species: Year-round (unless noted)
+
+2. HOW MUCH CAN I KEEP?
+   - Bass: 5 fish (all types)
+   - Trout: 2 combined (brook+brown) or 5 (other types)
+   - Walleye: 5 fish (watch Deep Creek Lake slot)
+   - Striped bass: 1 fish (19-24" in Bay, 28-31" ocean)
+
+3. DO I NEED A LICENSE?
+   - Yes: $32/year (resident nontidal) or $55 (nonresident)
+   - No: Under 16 years old
+   - Maybe: Trout stamp ($20) if targeting trout
+
+4. WHERE IS IT SAFE TO EAT?
+   - Check MDE interactive map for consumption advisories
+   - Be careful: Mercury, PCBs, and PFAS in some waters
+
+5. STOCKING DATES
+   - Call 800-688-3467 for current schedule
+   - Updated Fridays during stocking season
+   - Check stocking_schedule.json for initial times
+
+================================================================================
+SOURCES (FOR VERIFICATION)
+================================================================================
+
+Official:
+  ✓ dnr.maryland.gov (all regulations, stocking, access)
+  ✓ mde.maryland.gov (consumption advisories)
+  ✓ eregulations.com/maryland (comprehensive regulatory guide)
+  ✓ compass.dnr.maryland.gov (license purchases)
+
+Reports:
+  ✓ news.maryland.gov/dnr (weekly fishing reports)
+  ✓ thefisherman.com (Chesapeake Bay reports)
+  ✓ fishtalkmag.com (regional reports)
+
+Tools:
+  ✓ Maryland Online Water Access Guide (boat ramps GIS)
+  ✓ Fishing Access Map (dedicated fishing ramps)
+  ✓ MDE Fish Advisory Interactive Map (consumption advisories)
+
+================================================================================
+WHEN TO UPDATE DATA
+================================================================================
+
+Quarterly (Seasonal):
+  - Trout stocking schedule (when new season announced)
+  - Water temperature data (monthly during winter/spring)
+  - Consumption advisories (as MDE updates)
+
+Weekly (During Stocking):
+  - Stocking schedule (Feb-May: call hotline Friday)
+  - Current fishing reports (DNR publishes weekly)
+  - Water conditions (by user submission)
+
+Yearly:
+  - License fees (effective date noted)
+  - Regulation changes (check Jan-Feb for summer changes)
+  - Stock assessment reports (published as studies complete)
+
+As Needed:
+  - Charter boat program updates
+  - Spawning closure date changes
+  - New fish consumption advisories
+
+================================================================================
+CONTACTS FOR UPDATES
+================================================================================
+
+Maryland DNR:
+  Phone: 800-688-3467 (stocking hotline - press #1)
+  Web: dnr.maryland.gov/fisheries
+  Email: Contact via website
+
+Maryland MDE:
+  Web: mde.maryland.gov/fish-consumption-advisory
+  Map: Interactive online
+
+eRegulations:
+  Web: eregulations.com/maryland/fishing (comprehensive)
+
+================================================================================
+LAST UPDATED: 2026-04-11
+STATUS: PRODUCTION READY
+================================================================================

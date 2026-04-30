@@ -1,0 +1,84 @@
+{
+  "source_url": "https://mde.maryland.gov/programs/marylander/fishandshellfish/pages/fishconsumptionadvisory.aspx",
+  "date_accessed": "2026-04-11",
+  "advisory_source": "Maryland Department of the Environment (MDE)",
+  "data": {
+    "overview": {
+      "purpose": "Recommendations to limit or avoid eating fish from specific water bodies due to contamination",
+      "responsibility": "Maryland Department of the Environment monitors fish contamination throughout Maryland",
+      "access": "Interactive map available - optimized for mobile devices with location-based widget"
+    },
+    "contaminants_monitored": {
+      "legacy_chemicals": [
+        "Methylmercury",
+        "PCBs (polychlorinated biphenyls)",
+        "Pesticides"
+      ],
+      "emerging_contaminants": [
+        "PFAS (per- and polyfluoroalkyl substances) - NEW advisory category"
+      ]
+    },
+    "fish_species_monitored": {
+      "predatory_game_fish": [
+        "Smallmouth bass",
+        "Largemouth bass",
+        "Striped bass"
+      ],
+      "panfish": [
+        "White perch",
+        "Bluegill",
+        "Black crappie"
+      ],
+      "bottom_dwelling_accumulator_fish": [
+        "Carp",
+        "Catfish",
+        "American eel"
+      ],
+      "note": "15 fish species monitored for PFAS"
+    },
+    "advisory_levels": {
+      "note": "MDE provides recommendations for different population groups",
+      "vulnerable_populations": [
+        "Children",
+        "Pregnant women",
+        "Nursing mothers"
+      ]
+    },
+    "pfas_advisory": {
+      "status": "New advisory issued covering 15 fish species",
+      "affected_waterways": "Multiple Maryland locations",
+      "recommendation": "Check interactive map for specific locations and species restrictions"
+    },
+    "tools_available": {
+      "interactive_map": {
+        "url": "Available on MDE website",
+        "features": [
+          "Species-specific advisories",
+          "Waterway-specific advisories",
+          "Location-based search",
+          "Mobile-optimized",
+          "Zoom to current location"
+        ]
+      },
+      "pdf_advisory_guide": {
+        "filename": "maryland_fish_advisories.pdf",
+        "location": "https://mde.maryland.gov/programs/marylander/fishandshellfish/documents/maryland_fish_advisories.pdf"
+      }
+    },
+    "how_to_use_advisories": {
+      "step_1": "Check interactive map for specific waterway",
+      "step_2": "Identify fish species you plan to catch",
+      "step_3": "Note any catch limits or restrictions",
+      "step_4": "Follow preparation guidelines if fish is safe to eat"
+    },
+    "technical_support": {
+      "document": "MDE Fish Consumption Advisory Technical Support Document",
+      "url": "https://mde.maryland.gov/programs/marylander/fishandshellfish/Documents/MDE_Fish_Consumption_Advisory_Technical_Support_Document.pdf",
+      "contents": "Detailed methodology for advisory development and updates"
+    },
+    "regulatory_basis": {
+      "authority": "Maryland Department of the Environment",
+      "program": "Fish and Shellfish Consumption Advisory Program"
+    }
+  }
+}

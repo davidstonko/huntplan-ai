@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "scrape_date": "2026-04-11",
+    "project": "MDHuntFishOutdoors",
+    "module": "Fish Mode - Knowledge Base",
+    "data_coverage": "Maryland freshwater and tidal fishing",
+    "total_files": 9,
+    "total_data_points": "200+ regulations, fees, locations, advisories"
+  },
+  "files": {
+    "stocking_schedule.json": {
+      "purpose": "2026 trout stocking schedule and locations",
+      "key_data": [
+        "240,000 trout annual stocking",
+        "Spring 2026 schedule with county-by-county timing",
+        "Hotline updates: 800-688-3467",
+        "Put-and-take vs delayed harvest areas",
+        "Youth-only fishing day: March 21",
+        "Opening day all anglers: March 28"
+      ],
+      "source": "https://dnr.maryland.gov/fisheries/pages/trout/stocking.aspx",
+      "size_kb": 2.3,
+      "app_usage": "Fish Map layer, Spots tab trip planning, AI chat recommendations"
+    },
+    "striped_bass_regs.json": {
+      "purpose": "Complete 2026 striped bass (rockfish) regulations - MAJOR 2026 CHANGES",
+      "key_data": [
+        "April C&R season (NEW - first time since 2019)",
+        "May-Sept harvest: 1 fish, 19-24 inch slot",
+        "August full closure",
+        "Spawning closures: March-May in 7 rivers + Upper Bay",
+        "Atlantic coast: 28-31 inch slot year-round",
+        "Charter boat FACTS program bonuses",
+        "Water temps 2-4° below normal in March 2026"
+      ],
+      "source": "https://dnr.maryland.gov/fisheries/pages/regulations/index.aspx",
+      "size_kb": 3.5,
+      "critical_info": "Yes - major 2026 regulation shift",
+      "app_usage": "Resources tab regulations, AI chat species limits, Honey Hole seasonal planning"
+    },
+    "fish_advisories.json": {
+      "purpose": "Maryland Department of Environment fish consumption advisories",
+      "key_data": [
+        "Mercury, PCBs, pesticide advisories",
+        "PFAS advisory for 15 fish species (NEW)",
+        "Interactive map on MDE website",
+        "Species monitored: bass, striped bass, white perch, catfish, eel, carp",
+        "Risk groups: children, pregnant women, nursing mothers"
+      ],
+      "source": "https://mde.maryland.gov/programs/marylander/fishandshellfish/pages/fishconsumptionadvisory.aspx",
+      "size_kb": 3.1,
+      "app_usage": "Resources tab health warnings, map overlay layer, Fish Map location flagging"
+    },
+    "creel_surveys.json": {
+      "purpose": "Maryland DNR fishery management and creel survey data",
+      "key_data": [
+        "Volunteer muskie creel survey on Potomac River",
+        "Nighttime electrofishing surveys (catfish, walleye, saugeye)",
+        "Monthly freshwater fisheries reports",
+        "Deep Creek Lake saugeye/walleye studies",
+        "Stock assessment data for management"
+      ],
+      "source": "https://dnr.maryland.gov/fisheries/pages/recreational/muskie_management.aspx",
+      "size_kb": 3.2,
+      "app_usage": "AI chat population estimates, educational content, trip planning recommendations"
+    },
+    "license_fees.json": {
+      "purpose": "Complete 2026 fishing license fee schedule",
+      "key_data": [
+        "Resident annual nontidal: $32",
+        "Nonresident annual nontidal: $55",
+        "Trout stamp: $20 (resident), $30 (nonresident)",
+        "Chesapeake Bay annual: $15 (resident)",
+        "Youth under 16: FREE",
+        "Disabled vets 100%: Free lifetime",
+        "Recreational crabbing add-on: $2",
+        "Free fishing days: June 6, 13, July 4"
+      ],
+      "source": "https://dnr.maryland.gov/pages/service_fishing_license.aspx",
+      "size_kb": 4.8,
+      "app_usage": "Resources tab license info, onboarding cost calculator, affiliate purchase links"
+    },
+    "tidal_regulations.json": {
+      "purpose": "Chesapeake Bay and tidal water fishing regulations",
+      "key_data": [
+        "Tidal/nontidal boundary definitions with example locations",
+        "Striped bass tidal regulations (mirror striped_bass_regs.json)",
+        "Blue crab: April 1 - Dec 15 season, 24 male limit, pot requirements",
+        "Yellow perch: 5 per day (2026 NEW limit)",
+        "Catfish: 10 per day",
+        "Eel: 25 per day",
+        "Red drum: 18-27 inch slot"
+      ],
+      "source": "https://www.eregulations.com/maryland/fishing/chesapeake-bay-seasons-sizes-limits",
+      "size_kb": 4.9,
+      "app_usage": "Resources regulations by water type, AI chat species responses, map boundary visualization"
+    },
+    "freshwater_regulations.json": {
+      "purpose": "Nontidal (freshwater) species fishing regulations",
+      "key_data": [
+        "Trout: Brook/brown 2 combined, other trout 5 daily (put-and-take)",
+        "Bass: 12 inch minimum, 5 per day",
+        "Catfish: No limits, year-round",
+        "Walleye: 15 inch minimum, 5 daily",
+        "Deep Creek Lake walleye: 18-21 inch protected slot",
+        "Saugeye: 15 inch minimum, 5 daily",
+        "Muskie: 40 inch minimum, 1 per day",
+        "Panfish (crappie/bluegill): No size, 15 daily"
+      ],
+      "source": "https://www.eregulations.com/maryland/fishing/freshwater-seasons-sizes-limits",
+      "size_kb": 4.7,
+      "app_usage": "Resources regulations, AI chat species identification, Trip planning bag limit calc"
+    },
+    "boat_ramps_access.json": {
+      "purpose": "Public water access and boat launch locations",
+      "key_data": [
+        "Maryland Online Water Access Guide: comprehensive GIS tool",
+        "Fishing Access Map: dedicated fishing launch search",
+        "Access types: boat ramps, soft access (kayak/canoe), transient docking, fishing piers",
+        "Example locations: Elkneck Rogues Harbor, Fishing Bay area",
+        "Managed by local jurisdictions - verify fees/permits locally"
+      ],
+      "source": "https://dnr.maryland.gov/boating/pages/water-access/boatramps.aspx",
+      "size_kb": 3.9,
+      "app_usage": "Fish Map layer, Spots tab trip planning, Honey Hole camp meeting locations"
+    },
+    "community_reports.json": {
+      "purpose": "Fishing report sources and current conditions",
+      "key_data": [
+        "Official Maryland DNR weekly reports (Fridays during season)",
+        "Regional sources: The Fisherman Magazine, On The Water, The BayNet, FishTalk Magazine",
+        "Current March-April 2026 conditions: water temps, species activity",
+        "Striped bass catch-and-release active in upper bay",
+        "White perch spawning runs in tidal rivers",
+        "Blue catfish availability high in Potomac/Patuxent/Nanticoke",
+        "Local bait shop: Clyde's Sport Shop (Halethorpe) since 1957"
+      ],
+      "source": "https://news.maryland.gov/dnr/tag/weekly-fishing-report/",
+      "size_kb": 6.0,
+      "app_usage": "Honey Hole community reports, AI chat real-time conditions, Spots weekly forecast"
+    },
+    "README.md": {
+      "purpose": "Comprehensive guide to all fishing data files and integration strategies",
+      "contents": [
+        "File-by-file overview with key data highlights",
+        "Data quality notes and source verification",
+        "Integration opportunities with Fish Mode tabs",
+        "Monetization ideas (premium stocking alerts, affiliate links, ads)",
+        "Sources summary table",
+        "Future enhancement suggestions"
+      ],
+      "size_kb": 7.5,
+      "app_usage": "Developer reference, onboarding documentation"
+    }
+  },
+  "data_summary_by_category": {
+    "trout": {
+      "stocking_schedule": "240,000 fish annually, spring 2026 by county",
+      "seasons": "Feb start (southern), Mar start (western)",
+      "special_events": "Youth-only day (March 21), Opening day (March 28)",
+      "areas": "Put-and-take vs delayed harvest",
+      "source": "stocking_schedule.json"
+    },
+    "striped_bass": {
+      "chesapeake_bay": "April C&R, May-Sept harvest (19-24 slot, 1 fish), Aug closure",
+      "spawning_closures": "March 1 - May 31 in 7 rivers + Upper Bay",
+      "atlantic_coast": "Year-round, 28-31 inch slot, 1 fish/day",
+      "charter_boats": "FACTS program allows +1 captain, +1 mate bonus",
+      "source": "striped_bass_regs.json"
+    },
+    "freshwater_species": {
+      "bass": "12 inch minimum, 5 daily",
+      "trout": "Brook/brown 2 combined, other trout 5 daily",
+      "walleye": "15 inch, 5 daily (Deep Creek: 18-21 protected slot)",
+      "catfish": "No limits, year-round",
+      "muskie": "40 inch minimum, 1 daily",
+      "source": "freshwater_regulations.json"
+    },
+    "tidal_species": {
+      "striped_bass": "See striped_bass_regs.json",
+      "blue_crab": "April 1 - Dec 15, 24 male limit, specific pot requirements",
+      "yellow_perch": "5 per day (2026 change)",
+      "catfish": "10 per day",
+      "source": "tidal_regulations.json"
+    },
+    "licenses": {
+      "resident_nontidal": "$32/year",
+      "nonresident_nontidal": "$55/year",
+      "trout_stamp": "$20 (res), $30 (nonres)",
+      "chesapeake_bay": "$15/year (resident)",
+      "youth_under_16": "FREE",
+      "source": "license_fees.json"
+    },
+    "consumption_advisories": {
+      "mercury_pcbs_pesticides": "Multiple waterways",
+      "pfas_new": "15 fish species, multiple locations",
+      "access_method": "Interactive map on MDE website",
+      "source": "fish_advisories.json"
+    },
+    "stock_assessment": {
+      "surveys": "Volunteer creel (muskie), electrofishing (walleye, saugeye, catfish)",
+      "frequency": "Ongoing, monthly reports",
+      "data_use": "Inform stocking rates, harvest regs, management plans",
+      "source": "creel_surveys.json"
+    },
+    "water_access": {
+      "boat_ramps": "Multiple ramps throughout Maryland",
+      "kayak_access": "Soft launches for non-motorized",
+      "transient_docking": "Charter boat facilities",
+      "tool": "GIS map at dnr.maryland.gov/boating/water-access",
+      "source": "boat_ramps_access.json"
+    },
+    "current_conditions": {
+      "water_temperature": "50s-60s (2-4° below normal for March)",
+      "striped_bass": "C&R active in upper bay",
+      "white_perch": "Spawning in tidal rivers",
+      "blue_catfish": "Highly available and aggressive",
+      "date": "March-April 2026",
+      "source": "community_reports.json"
+    }
+  },
+  "critical_2026_changes": [
+    "Striped bass April C&R season (NEW - first since 2019)",
+    "Striped bass August full closure (NEW - was partial)",
+    "Senior license no longer includes trout stamp (must buy separately - $20)",
+    "Yellow perch creel reduced to 5 per day (tidal waters)",
+    "PFAS fish consumption advisory (NEW for 15 species)",
+    "Charter boat FACTS program flexibility for Atlantic striped bass"
+  ],
+  "integration_checklist": {
+    "fish_map_tab": [
+      "Overlay stocking schedule locations with color coding",
+      "Display consumption advisory zones",
+      "Show boat ramp/access point locations",
+      "Highlight spawning closure rivers (March-May)"
+    ],
+    "fish_spots_tab": [
+      "Trip planner with stocking date lookups",
+      "Bag limit calculator by species",
+      "Planned trip advisor (regulations + current conditions)",
+      "Save favorite stocking locations"
+    ],
+    "ai_chat": [
+      "Species-specific regulations by name",
+      "Water type determination (tidal vs nontidal)",
+      "License requirement calculator",
+      "Stocking location recommendations",
+      "Seasonal trip planning"
+    ],
+    "honey_hole_tab": [
+      "Community fishing report feed (weekly DNR + local)",
+      "Current water conditions by user report",
+      "Spawning closure alerts",
+      "User-submitted catch photo tagging"
+    ],
+    "resources_tab": [
+      "Regulations section: eRegulations links, key limits by species",
+      "Stocking schedule: Current 2026 county list with dates",
+      "Fish advisories: MDE interactive map embed + warnings",
+      "Boat ramps: DNR map link + top 20 popular access points",
+      "Licenses: Fee schedule + link to compass.dnr.maryland.gov",
+      "Guides: Links to The Fisherman, On The Water reports"
+    ]
+  },
+  "app_monetization_opportunities": {
+    "premium_features": [
+      "Early stocking notifications (24 hrs before official)",
+      "Advanced spawning closure alerts",
+      "Personalized species recommendation by location",
+      "Export trip reports to PDF/email"
+    ],
+    "affiliate_partnerships": [
+      "Link to compass.dnr.maryland.gov (license purchases)",
+      "Bait shop promotions (Clyde's Sport Shop, regional shops)",
+      "Fishing gear retailers (via existing affiliate networks)"
+    ],
+    "advertising": [
+      "Contextual ads in Resources tab (license vendors, bait shops)",
+      "Sponsored stocking alerts (bait shop sponsorships)"
+    ],
+    "community_engagement": [
+      "User-submitted fishing reports (like DNR weekly)",
+      "Photo tagging system (catch + location)",
+      "Leaderboard for most fish species caught"
+    ]
+  },
+  "file_locations": {
+    "base_path": "/sessions/vibrant-magical-thompson/mnt/huntmaryland-build/data/knowledge-scrape/fishing/",
+    "files": [
+      "stocking_schedule.json",
+      "striped_bass_regs.json",
+      "fish_advisories.json",
+      "creel_surveys.json",
+      "license_fees.json",
+      "tidal_regulations.json",
+      "freshwater_regulations.json",
+      "boat_ramps_access.json",
+      "community_reports.json",
+      "README.md",
+      "INDEX.json (this file)"
+    ]
+  }
+}

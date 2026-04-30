@@ -14,7 +14,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'react-native';
+import RNFS from 'react-native-fs';
 import Config from '../config';
+import { stripExifMarkers, isJpeg, bytesStripped } from './exifStripper';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -153,29 +155,88 @@ async function compressImage(
       );
     }
 
-    // Since React Native doesn't have built-in image compression in the base library,
-    // we store the info for backend-side compression or future native module integration.
-    // For now, we track the original dimensions and return the original URI,
-    // but add metadata so the backend knows this came from a potentially large image.
+    // EXIF / metadata stripping (privacy policy promise — see
+    // huntmaryland-site/privacy.html §5). We re-emit the JPEG without its
+    // APPn / comment segments so GPS coordinates, camera serial, and
+    // timestamps never reach our backend. Pixel data is preserved
+    // byte-for-byte; the strip is metadata-only, not a re-encode.
+    //
+    // Non-JPEG images (e.g., PNG screenshots) are passed through unchanged
+    // by stripExifMarkers, so this is safe to apply unconditionally.
+    let strippedUri = localUri;
+    let strippedSize = originalSize;
+    try {
+      const filePath = localUri.replace(/^file:\/\//, '');
+      const base64 = await RNFS.readFile(filePath, 'base64');
+      const inputBytes = base64ToBytes(base64);
+      if (isJpeg(inputBytes)) {
+        const cleanBytes = stripExifMarkers(inputBytes);
+        const droppedBytes = bytesStripped(inputBytes, cleanBytes);
+        if (droppedBytes > 0) {
+          const cleanBase64 = bytesToBase64(cleanBytes);
+          const outPath = `${RNFS.CachesDirectoryPath}/photo-stripped-${Date.now()}.jpg`;
+          await RNFS.writeFile(outPath, cleanBase64, 'base64');
+          strippedUri = `file://${outPath}`;
+          strippedSize = cleanBytes.length;
+          if (__DEV__) {
+            console.log(
+              `[Photo] EXIF stripped: ${droppedBytes} bytes removed (${(originalSize / 1024).toFixed(1)}KB → ${(strippedSize / 1024).toFixed(1)}KB)`,
+            );
+          }
+        }
+      }
+    } catch (stripErr) {
+      // Strip failed — fall through with original URI rather than block
+      // the upload. Logged so we can spot patterns in dev.
+      if (__DEV__) console.warn('[Photo] EXIF strip skipped:', stripErr);
+    }
+
+    // React Native doesn't have built-in pixel-level compression in the
+    // base library, so we track the original dimensions for backend-side
+    // compression or future native module integration. The EXIF strip
+    // above is the only on-device size reduction we apply today.
     const metadata: CompressionMetadata = {
       originalWidth: width,
       originalHeight: height,
       originalSize: originalSize,
-      compressedSize: originalSize, // Will be updated after upload
+      compressedSize: strippedSize,
       quality: 0.7, // Target quality for future native compression
     };
 
     if (__DEV__) {
       console.log(
-        `[Photo] Compression metadata prepared (quality: ${metadata.quality}, ${(originalSize / 1024).toFixed(1)}KB)`,
+        `[Photo] Compression metadata prepared (quality: ${metadata.quality}, ${(strippedSize / 1024).toFixed(1)}KB)`,
       );
     }
 
-    return { uri: localUri, metadata };
+    return { uri: strippedUri, metadata };
   } catch (error) {
     if (__DEV__) console.warn('[Photo] Compression error, using original:', error);
     return { uri: localUri, metadata: null };
   }
+}
+
+// ── Base64 ↔ bytes helpers ─────────────────────────────────────
+//
+// React Native 0.76 exposes global atob/btoa, but they choke on large
+// strings via spread (call-stack limit). We chunk through fromCharCode in
+// 8KB windows so a 5MB photo doesn't crash the stack.
+
+function base64ToBytes(b64: string): Uint8Array {
+  const binary = global.atob ? global.atob(b64) : '';
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  const CHUNK = 0x2000; // 8KB
+  const parts: string[] = [];
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    const slice = bytes.subarray(i, Math.min(i + CHUNK, bytes.length));
+    parts.push(String.fromCharCode.apply(null, Array.from(slice) as number[]));
+  }
+  return global.btoa ? global.btoa(parts.join('')) : '';
 }
 
 // ── API Helpers ────────────────────────────────────────────────

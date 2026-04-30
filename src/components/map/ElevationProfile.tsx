@@ -18,6 +18,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Colors from '../../theme/colors';
+import { MAPBOX_ACCESS_TOKEN } from '../../config';
+
+const MAPBOX_TOKEN = MAPBOX_ACCESS_TOKEN;
 
 export interface TrackPoint {
   latitude: number;

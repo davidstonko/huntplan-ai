@@ -1,0 +1,162 @@
+{
+  "source_urls": [
+    "https://cnyhiking.com/ATinMaryland.htm",
+    "https://appalachiantrail.org/explore/hike-the-a-t/thru-hiking/shelters/",
+    "https://www.whiteblaze.net/forum/showthread.php/38354-Water-through-Maryland",
+    "https://thetrek.co/appalachian-trail/maryland/",
+    "https://www.patc.net/"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "maryland_section": {
+      "total_length_miles": 40,
+      "difficulty": "Fairly easy by AT standards",
+      "elevation_gain_feet": 1650,
+      "lowest_point": {
+        "location": "Potomac River",
+        "elevation_feet": 250
+      },
+      "highest_point": {
+        "location": "High Rock",
+        "elevation_feet": 1900
+      },
+      "state_location": "Between Virginia/West Virginia border and Pennsylvania (Mason-Dixon line)"
+    },
+    "shelters_and_camping": {
+      "spacing": "Approximately one day's hike apart",
+      "camping_rules": "Camping restricted to designated shelters and campsites only"
+    },
+    "shelters": [
+      {
+        "name": "Pine Knob Shelter",
+        "built": 1939,
+        "capacity": 5,
+        "water_source": "Spring next to shelter",
+        "water_reliability": {
+          "wet_season": "Reliable",
+          "dry_season": "Slow trickle or dry"
+        },
+        "amenity": "Privy nearby"
+      },
+      {
+        "name": "Raven Rock Shelter",
+        "type": "Designated shelter with camping",
+        "description": "Notable shelter along Maryland AT"
+      },
+      {
+        "name": "Ed Garvey Shelter",
+        "type": "Designated shelter with camping"
+      },
+      {
+        "name": "Crampton Gap Shelter",
+        "type": "Designated shelter with camping",
+        "water_source": "Spring",
+        "water_reliability": {
+          "dry_season": "Dry"
+        }
+      },
+      {
+        "name": "Ensign Cowall Shelter",
+        "type": "Designated shelter with camping",
+        "location": "Just north of Pogo",
+        "water_source": "Spring",
+        "water_reliability": {
+          "dry_season": "Little or standing water only"
+        }
+      },
+      {
+        "name": "Rocky Run Shelter",
+        "type": "Designated shelter with camping"
+      }
+    ],
+    "designated_campsites": [
+      {
+        "name": "Dahlgren Campground",
+        "location": "About 1 mile south of Old South Mountain Inn in Boonsboro",
+        "amenities": ["Shower facility", "Privy"],
+        "description": "Popular campground with full facilities"
+      },
+      {
+        "name": "Pogo Memorial Campsite",
+        "location": "3.7 miles pass by, east of trail",
+        "water_source": "Spring",
+        "water_reliability": "One of most robust springs in Maryland",
+        "type": "Memorial campground"
+      },
+      {
+        "name": "Annapolis Rock",
+        "type": "Primitive campsite area",
+        "amenities": [
+          "Primitive campsites",
+          "Privies (couple of)"
+        ],
+        "feature": "Overhanging cliff with spectacular west-facing views",
+        "trail_access": "Blue-blazed trail, 0.25 miles off main AT",
+        "popularity": "Very popular destination"
+      }
+    ],
+    "water_sources": {
+      "frost_free_spigots": [
+        "Washington Monument",
+        "Dahlgren Backpacker Campground",
+        "Crampton Gap"
+      ],
+      "spring_reliability_by_season": {
+        "wet_season": "Generally reliable",
+        "dry_season": "Variable - some springs become slow or dry"
+      },
+      "dry_season_challenges": {
+        "november_example": "Low precipitation can cause problematic water sources"
+      },
+      "most_reliable": [
+        "Pogo Campsite (most robust spring)"
+      ]
+    },
+    "seasonal_closures": {
+      "showers_restrooms": {
+        "closed_period": "October to April",
+        "note": "Usually shutdown sometime in October until April"
+      }
+    },
+    "trailheads_and_access": [
+      {
+        "location": "Route 40 near Greenbrier",
+        "coordinates": "One-quarter mile east of Greenbrier",
+        "type": "Parking lot"
+      },
+      {
+        "location": "Pen Mar",
+        "coordinates": [39.717725, -77.508274],
+        "type": "Popular trailhead"
+      },
+      {
+        "location": "Harpers Ferry",
+        "name": "Harpers Ferry National Historical Park",
+        "coordinates": [39.315802, -77.756443],
+        "type": "Visitor center and trailhead"
+      }
+    ],
+    "popular_day_hikes": [
+      {
+        "route": "Greenbrier State Park to Annapolis Rock and Black Rock",
+        "type": "Day hike option"
+      },
+      {
+        "route": "Greenbrier to Washington Monument State Park",
+        "type": "Day hike option"
+      },
+      {
+        "route": "Gathland State Park to Weverton Cliffs",
+        "type": "Day hike option"
+      }
+    ],
+    "hiking_conditions": {
+      "general": "Maryland section is relatively flat with ample campsite options",
+      "water_availability": "Ample water sources generally"
+    },
+    "resources": {
+      "organization": "Potomac Appalachian Trail Club",
+      "website": "https://www.patc.net/"
+    }
+  }
+}

@@ -9,295 +9,342 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Colors from '../theme/colors';
+import { useActivityMode } from '../context/ActivityModeContext';
+
+/**
+ * ResourcesScreen — Hunt-mode links hub.
+ *
+ * Build 9 professionalism pass: removed per-link and per-category emoji
+ * icons in favor of a moss-colored accent bar + uppercase category title.
+ * The `ResourceLink`/`ResourceCategory` interfaces no longer carry an
+ * `icon` field — the data below is the single source of truth.
+ */
 
 interface ResourceLink {
   id: string;
   title: string;
   description: string;
   url: string;
-  icon: string;
 }
 
 interface ResourceCategory {
   name: string;
-  icon: string;
   links: ResourceLink[];
 }
 
 const RESOURCES: ResourceCategory[] = [
   {
     name: 'Quick Reference',
-    icon: '📋',
     links: [
       {
         id: 'seasons-calendar',
         title: 'Hunting Seasons Calendar (PDF)',
         description: 'Official Maryland hunting seasons and dates',
         url: 'https://dnr.maryland.gov/huntersguide/Documents/Hunting_Seasons_Calendar.pdf',
-        icon: '📅',
       },
       {
         id: 'hunters-guide',
         title: 'Guide to Hunting & Trapping',
         description: 'Comprehensive hunting regulations and guidelines',
         url: 'https://dnr.maryland.gov/huntersguide/Pages/default.aspx',
-        icon: '📖',
       },
       {
         id: 'eregulations',
         title: 'eRegulations Maryland',
         description: 'Online hunting regulations and rules',
         url: 'https://www.eregulations.com/maryland/hunting',
-        icon: '⚖️',
       },
       {
         id: 'public-lands',
         title: 'Public Hunting Lands',
         description: 'Find public hunting areas in Maryland',
         url: 'https://www.eregulations.com/maryland/hunting/public-hunting-lands',
-        icon: '🏞️',
       },
       {
         id: 'free-permit',
         title: 'Free Public Hunting Permit Program (PDF)',
         description: 'Information about free hunting permits',
         url: 'https://dnr.maryland.gov/wildlife/Documents/Free-Public-Hunting-Permit-Program.pdf',
-        icon: '🎫',
       },
     ],
   },
   {
     name: 'Licensing & Permits',
-    icon: '📝',
     links: [
       {
         id: 'buy-license',
         title: 'Buy a License (Compass)',
         description: 'Purchase hunting licenses online',
         url: 'https://compass.dnr.maryland.gov/',
-        icon: '💳',
       },
       {
         id: 'license-requirements',
         title: 'License Requirements',
         description: 'Learn what licenses you need',
         url: 'https://dnr.maryland.gov/huntersguide/Pages/licenserequirements.aspx',
-        icon: '📜',
       },
       {
         id: 'hunter-education',
         title: 'Hunter Education',
         description: 'Complete your hunter safety course',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/huntereducation.aspx',
-        icon: '🎓',
       },
       {
         id: 'apprentice-license',
         title: 'Apprentice License Info',
         description: 'Hunt with an apprentice license',
         url: 'https://dnr.maryland.gov/huntersguide/Pages/apprenticelicense.aspx',
-        icon: '👤',
       },
     ],
   },
   {
     name: 'Waterfowl',
-    icon: '🦆',
     links: [
       {
         id: 'waterfowl-guide',
         title: 'Waterfowl Hunting Guide (PDF)',
-        description: 'Waterfowl hunting regulations and requirements',
+        description: 'Complete waterfowl regulations, season dates, and bag limits',
         url: 'https://dnr.maryland.gov/wildlife/Documents/Public-Hunting-Waterfowl-Regulation-Packet.pdf',
-        icon: '📘',
       },
       {
         id: 'blind-lottery',
-        title: 'Blind Lottery System',
-        description: 'Register for waterfowl blind lottery',
+        title: 'Public Blind Lottery & Daily Draw',
+        description: 'Register for seasonal blind lottery and find daily draw locations',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowlblind.aspx',
-        icon: '🎲',
+      },
+      {
+        id: 'blind-map',
+        title: 'Public Blind Locations Map',
+        description: '10+ blind sites across Eastern Shore and Chesapeake Bay',
+        url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowl.aspx',
       },
       {
         id: 'duck-stamp',
         title: 'Federal Duck Stamp',
-        description: 'Get your federal duck stamp',
+        description: 'Purchase your required federal migratory bird stamp ($25)',
         url: 'https://www.fws.gov/program/federal-duck-stamp',
-        icon: '🎟️',
       },
       {
         id: 'hip-registration',
         title: 'HIP Registration',
-        description: 'Register for Harvest Information Program',
+        description: 'Required annual Harvest Information Program registration (free)',
         url: 'https://www.fws.gov/harvestsurvey/',
-        icon: '✏️',
+      },
+      {
+        id: 'md-migratory-stamp',
+        title: 'MD Migratory Game Bird Stamp',
+        description: 'State migratory bird stamp required in addition to federal stamp',
+        url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/migratory.aspx',
+      },
+      {
+        id: 'snow-goose-conservation',
+        title: 'Snow Goose Conservation Season',
+        description: 'Liberal season: no plug required, electronic calls allowed, no bag limit',
+        url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/snowgoose.aspx',
+      },
+      {
+        id: 'nontoxic-shot',
+        title: 'Approved Non-Toxic Shot Types',
+        description: 'Steel, bismuth, tungsten and other USFWS-approved alternatives (lead prohibited)',
+        url: 'https://www.fws.gov/birds/bird-enthusiasts/hunting/nontoxic.php',
       },
     ],
   },
   {
     name: 'Deer Management',
-    icon: '🦌',
     links: [
       {
         id: 'deer-seasons',
         title: 'Deer Seasons & Bag Limits',
         description: 'Current deer hunting seasons and limits',
         url: 'https://dnr.maryland.gov/huntersguide/Pages/deerseasons.aspx',
-        icon: '📅',
       },
       {
         id: 'antler-restrictions',
         title: 'Antler Restrictions',
         description: 'Understand Maryland antler rules',
         url: 'https://dnr.maryland.gov/huntersguide/Pages/antlerrestrictions.aspx',
-        icon: '🔔',
       },
       {
         id: 'cwd-info',
         title: 'CWD Info',
         description: 'Chronic Wasting Disease information',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/cwd.aspx',
-        icon: '⚠️',
       },
       {
         id: 'deer-checkin',
         title: 'Deer Check-In (Harvest)',
         description: 'Report your harvest',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/mdcheckstation.aspx',
-        icon: '✅',
       },
       {
         id: 'managed-hunts',
         title: 'Managed Deer Hunts',
         description: 'Find managed hunting opportunities',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/manageddeerhunts.aspx',
-        icon: '🎯',
       },
     ],
   },
   {
     name: 'Turkey',
-    icon: '🦃',
     links: [
       {
         id: 'turkey-seasons',
         title: 'Turkey Seasons',
         description: 'Turkey hunting season dates and rules',
         url: 'https://dnr.maryland.gov/huntersguide/Pages/turkeyseasons.aspx',
-        icon: '📅',
       },
       {
         id: 'turkey-checkin',
         title: 'Turkey Check-In',
         description: 'Report your turkey harvest',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/turkeyharvestinfo.aspx',
-        icon: '✅',
       },
     ],
   },
   {
     name: 'Maps & Data',
-    icon: '🗺️',
     links: [
       {
         id: 'wma-map',
         title: 'Interactive WMA Map',
         description: 'Explore Wildlife Management Areas',
         url: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/allbyregion.aspx',
-        icon: '📍',
       },
       {
         id: 'imap',
         title: 'MD iMap GIS Data',
         description: 'Maryland geographic and land data',
         url: 'https://data.imap.maryland.gov/',
-        icon: '🗺️',
       },
       {
         id: 'dnr-maps',
         title: 'DNR Land Maps',
         description: 'Official Maryland DNR maps',
         url: 'https://dnr.maryland.gov/Pages/maps.aspx',
-        icon: '🗺️',
       },
       {
         id: 'harvest-stats',
         title: 'Harvest Statistics',
         description: 'View hunting harvest reports',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/HarvestReports.aspx',
-        icon: '📊',
       },
     ],
   },
   {
     name: 'Safety & Regulations',
-    icon: '🛡️',
     links: [
       {
         id: 'sunday-hunting',
         title: 'Sunday Hunting Rules',
         description: 'Regulations for hunting on Sundays',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/sundayhunt.aspx',
-        icon: '📖',
       },
       {
         id: 'shooting-ranges',
         title: 'Shooting Ranges',
         description: 'Find Maryland shooting ranges',
         url: 'https://dnr.maryland.gov/wildlife/pages/hunt_trap/shooting_ranges.aspx',
-        icon: '🎯',
       },
       {
         id: 'report-violations',
         title: 'Report Violations (NRP)',
         description: 'Report wildlife violations',
         url: 'https://dnr.maryland.gov/nrp/Pages/default.aspx',
-        icon: '📞',
       },
       {
         id: 'safety-course',
         title: 'Hunter Safety Course',
         description: 'Complete your safety training',
         url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/huntereducation.aspx',
-        icon: '🎓',
       },
     ],
   },
   {
     name: 'Community',
-    icon: '👥',
     links: [
       {
         id: 'md-sportsmen',
         title: 'Maryland Sportsmen',
         description: 'Hunting community and information',
         url: 'https://www.marylandsportsmen.com/',
-        icon: '🤝',
       },
       {
         id: 'fish-hunt-md',
         title: 'Fish & Hunt Maryland',
         description: 'Local hunting and fishing resources',
         url: 'https://fishandhuntmaryland.com/',
-        icon: '🎣',
       },
       {
         id: 'dnr-news',
         title: 'DNR News & Announcements',
         description: 'Latest hunting and wildlife news',
         url: 'https://news.maryland.gov/dnr/',
-        icon: '📢',
       },
     ],
   },
 ];
 
+/**
+ * Native in-app tools surfaced at the top of the resources screen, gated
+ * per-activity-mode via ActivityModeContext below. Routes themselves live
+ * in `ResourcesStack` (see AppNavigator.tsx), which is mounted by both
+ * Hunt and Fish tab stacks — the per-mode arrays decide which row to
+ * render so we don't pollute the wrong mode's UX.
+ *
+ * Tools that apply to multiple modes (e.g. Best Times solunar) are
+ * intentionally listed in BOTH arrays — same route, same screen, same
+ * underlying service. That keeps cross-mode parity without forcing
+ * users to mode-switch to find a feature that helps them today.
+ */
+interface InAppTool {
+  id: string;
+  title: string;
+  description: string;
+  route: string;
+  /** Letter-code chip (matches the codified professionalism pattern). */
+  code: string;
+}
+
+const HUNT_TOOLS: InAppTool[] = [
+  {
+    id: 'rut-calendar',
+    title: 'Rut Calendar',
+    description:
+      '30-day Maryland whitetail rut intensity forecast — biological windows + moon phase.',
+    route: 'RutCalendar',
+    code: 'RUT',
+  },
+  {
+    id: 'best-times-hunt',
+    title: 'Best Times (Solunar)',
+    description:
+      '7-day solunar activity rating — pick the best morning to be in the stand.',
+    route: 'BestTimes',
+    code: 'BTM',
+  },
+];
+
+const FISH_TOOLS: InAppTool[] = [
+  {
+    id: 'best-times-fish',
+    title: 'Best Times (Solunar)',
+    description:
+      '7-day solunar activity rating — pick the best tide-aligned morning to fish.',
+    route: 'BestTimes',
+    code: 'BTM',
+  },
+];
+
 export default function ResourcesScreen() {
   const [searchText, setSearchText] = useState('');
+  const navigation = useNavigation<any>();
+  const { activeMode } = useActivityMode();
 
   const handleOpenURL = (url: string, title: string) => {
-    Linking.openURL(url).catch((err) => {
+    Linking.openURL(url).catch(() => {
       Alert.alert('Error', `Could not open "${title}". Please try again.`);
     });
   };
@@ -317,13 +364,14 @@ export default function ResourcesScreen() {
     <View style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search resources..."
+          placeholder="Search resources"
           placeholderTextColor={Colors.textMuted}
           value={searchText}
           onChangeText={setSearchText}
+          maxLength={50}
+          returnKeyType="search"
         />
       </View>
 
@@ -332,6 +380,62 @@ export default function ResourcesScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
+        {activeMode === 'hunt' && searchText.trim().length === 0 ? (
+          <View style={styles.categorySection}>
+            <View style={styles.categoryHeader}>
+              <View style={styles.categoryAccent} />
+              <Text style={styles.categoryTitle}>HUNT TOOLS</Text>
+            </View>
+            {HUNT_TOOLS.map((tool) => (
+              <TouchableOpacity
+                key={tool.id}
+                style={styles.toolCard}
+                onPress={() => navigation.navigate(tool.route)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.toolCodeChip}>
+                  <Text style={styles.toolCodeText}>{tool.code}</Text>
+                </View>
+                <View style={styles.linkContent}>
+                  <Text style={styles.linkTitle}>{tool.title}</Text>
+                  <Text style={styles.linkDescription}>
+                    {tool.description}
+                  </Text>
+                </View>
+                <Text style={styles.externalIcon}>{'\u203A'}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
+
+        {activeMode === 'fish' && searchText.trim().length === 0 ? (
+          <View style={styles.categorySection}>
+            <View style={styles.categoryHeader}>
+              <View style={styles.categoryAccent} />
+              <Text style={styles.categoryTitle}>FISH TOOLS</Text>
+            </View>
+            {FISH_TOOLS.map((tool) => (
+              <TouchableOpacity
+                key={tool.id}
+                style={styles.toolCard}
+                onPress={() => navigation.navigate(tool.route)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.toolCodeChip}>
+                  <Text style={styles.toolCodeText}>{tool.code}</Text>
+                </View>
+                <View style={styles.linkContent}>
+                  <Text style={styles.linkTitle}>{tool.title}</Text>
+                  <Text style={styles.linkDescription}>
+                    {tool.description}
+                  </Text>
+                </View>
+                <Text style={styles.externalIcon}>{'\u203A'}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
+
         {filteredCategories.length === 0 ? (
           <View style={styles.noResults}>
             <Text style={styles.noResultsText}>
@@ -342,8 +446,8 @@ export default function ResourcesScreen() {
           filteredCategories.map((category) => (
             <View key={category.name} style={styles.categorySection}>
               <View style={styles.categoryHeader}>
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
-                <Text style={styles.categoryTitle}>{category.name}</Text>
+                <View style={styles.categoryAccent} />
+                <Text style={styles.categoryTitle}>{category.name.toUpperCase()}</Text>
               </View>
 
               {category.links.map((link) => (
@@ -354,15 +458,12 @@ export default function ResourcesScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.linkContent}>
-                    <View style={styles.linkHeader}>
-                      <Text style={styles.linkIcon}>{link.icon}</Text>
-                      <Text style={styles.linkTitle}>{link.title}</Text>
-                    </View>
+                    <Text style={styles.linkTitle}>{link.title}</Text>
                     <Text style={styles.linkDescription}>
                       {link.description}
                     </Text>
                   </View>
-                  <Text style={styles.externalIcon}>↗</Text>
+                  <Text style={styles.externalIcon}>{'\u2197'}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -397,10 +498,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.mud,
   },
-  searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
-  },
   searchInput: {
     flex: 1,
     paddingVertical: 10,
@@ -432,15 +529,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  categoryIcon: {
-    fontSize: 24,
-    marginRight: 8,
+  // Moss-colored vertical accent bar that replaces the per-category emoji.
+  // Gives the header a tactile, branded anchor without relying on glyphs.
+  categoryAccent: {
+    width: 3,
+    height: 14,
+    backgroundColor: Colors.moss,
+    marginRight: 10,
+    borderRadius: 2,
   },
   categoryTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
     color: Colors.moss,
-    letterSpacing: 0.3,
+    letterSpacing: 1.2,
   },
   linkCard: {
     backgroundColor: Colors.surface,
@@ -453,23 +555,39 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Colors.oak,
   },
-  linkContent: {
-    flex: 1,
-  },
-  linkHeader: {
+  toolCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.moss,
   },
-  linkIcon: {
-    fontSize: 16,
-    marginRight: 8,
+  toolCodeChip: {
+    minWidth: 44,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: Colors.moss,
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  toolCodeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.textOnAccent,
+    letterSpacing: 1,
+  },
+  linkContent: {
+    flex: 1,
   },
   linkTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: Colors.tan,
-    flex: 1,
+    marginBottom: 4,
   },
   linkDescription: {
     fontSize: 12,

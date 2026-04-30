@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import Colors from '../../theme/colors';
 import { useLocation } from '../../hooks/useLocation';
 
 interface FieldNote {
@@ -110,16 +109,16 @@ export default function FieldNotes({ onSave }: FieldNotesProps) {
 
         <View style={styles.metaInfo}>
           {locLoading ? (
-            <Text style={styles.metaText}>📍 Getting location...</Text>
+            <Text style={styles.metaText}>Getting location…</Text>
           ) : location ? (
             <Text style={styles.metaText}>
-              📍 {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+              {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
             </Text>
           ) : (
-            <Text style={styles.metaText}>📍 Location unavailable</Text>
+            <Text style={styles.metaText}>Location unavailable</Text>
           )}
           <Text style={styles.metaText}>
-            🕐 {new Date().toLocaleTimeString()}
+            {new Date().toLocaleTimeString()}
           </Text>
         </View>
 
@@ -157,7 +156,7 @@ export default function FieldNotes({ onSave }: FieldNotesProps) {
 
               {note.coordinates && (
                 <Text style={styles.noteCoords}>
-                  📍 {note.coordinates.latitude.toFixed(4)},
+                  {note.coordinates.latitude.toFixed(4)},{' '}
                   {note.coordinates.longitude.toFixed(4)}
                 </Text>
               )}
@@ -172,7 +171,7 @@ export default function FieldNotes({ onSave }: FieldNotesProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#1a1a1a',
   },
   contentContainer: {
     paddingHorizontal: 16,
@@ -184,34 +183,34 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.oak,
+    color: '#8B7355',
     textTransform: 'uppercase',
     marginBottom: 12,
     letterSpacing: 0.5,
   },
   titleInput: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: Colors.textPrimary,
+    color: '#fff',
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.mud,
+    borderColor: '#444',
   },
   bodyInput: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: Colors.textPrimary,
+    color: '#fff',
     fontSize: 14,
     height: 120,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.mud,
+    borderColor: '#444',
   },
   metaInfo: {
     flexDirection: 'row',
@@ -219,21 +218,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 12,
     paddingHorizontal: 8,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
   },
   metaText: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: '#888',
   },
   saveButton: {
-    backgroundColor: Colors.oak,
+    backgroundColor: '#8B7355',
     paddingVertical: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
   saveButtonText: {
-    color: Colors.mdWhite,
+    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -241,12 +240,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   noteCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
     padding: 12,
     marginBottom: 10,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.oak,
+    borderLeftColor: '#8B7355',
   },
   noteHeader: {
     flexDirection: 'row',
@@ -260,27 +259,27 @@ const styles = StyleSheet.create({
   noteCardTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#fff',
     marginBottom: 4,
   },
   noteTime: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: '#666',
   },
   deleteButton: {
     fontSize: 18,
-    color: Colors.danger,
+    color: '#ff6666',
     fontWeight: '600',
   },
   noteBody: {
     fontSize: 12,
-    color: Colors.textPrimary,
+    color: '#ddd',
     lineHeight: 18,
     marginBottom: 8,
   },
   noteCoords: {
     fontSize: 10,
-    color: Colors.oak,
+    color: '#8B7355',
     fontStyle: 'italic',
   },
 });

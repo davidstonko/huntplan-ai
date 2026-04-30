@@ -1,0 +1,30 @@
+{
+ "id": "md-patapsco-orange",
+ "name": "Orange Trail Loop",
+ "park": "Patapsco Valley SP Avalon",
+ "trailhead": [
+  -76.7487,
+  39.231
+ ],
+ "sources_tried": [
+  "osm_overpass_named",
+  "usgs_trails",
+  "osm_overpass_generic"
+ ],
+ "sources_returned": {
+  "osm_overpass_named": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout",
+  "usgs_trails": 147,
+  "osm_overpass_generic": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout"
+ },
+ "chosen": null,
+ "cross_audit_m": null,
+ "confidence": "none",
+ "is_approximate": true,
+ "error": "no candidate with matching name within 3km of trailhead",
+ "published_miles": 3.1,
+ "tier2_error": "overpass: All Overpass mirrors failed. Last: https://overpass.kumi.systems/api/interpreter: The read operation timed out",
+ "tier2_source": "osm_overpass_relaxed",
+ "tier2_candidates": 1459,
+ "tier2_chose": null,
+ "tier2_note": "no relaxed OSM candidate fit length+proximity"
+}

@@ -1,5 +1,5 @@
 /**
- * Weather Service Module — HuntPlan AI
+ * Weather Service Module — MDHuntFishOutdoors
  *
  * Provides weather data and hunting condition analysis for hunt planning.
  * Uses the free weather.gov API (no API key required for US locations).
@@ -541,8 +541,164 @@ class WeatherService {
     // Moderate temps: Standard dawn/dusk plus rut opportunity
     return 'Dawn and dusk remain your best windows. All-day sits can pay off in rut.';
   }
+
+  // ── 2026-04-26 (fork merge): V2.3 weather surface ──
+  // BriefingTideCard, WeatherScreen import these. Real implementations
+  // belong on NWS / NOAA backend integrations; here we ship safe stubs
+  // so the screens compile and degrade gracefully when offline.
+
+  async getAlerts(_lat: number, _lon: number): Promise<WeatherAlert[]> {
+    return [];
+  }
+
+  async getLightningStatus(_lat: number, _lon: number): Promise<LightningStatus> {
+    return {
+      nearbyStrikesLast15min: null,
+      distanceNearestMiles: null,
+      convectiveRisk: 'none',
+      advisory: 'No lightning advisory available.',
+      asOf: new Date().toISOString(),
+    };
+  }
+
+  async getMarineConditions(_lat: number, _lon: number): Promise<MarineConditions> {
+    return {
+      waveHeightFt: null,
+      waterTempF: null,
+      windSpeedMph: null,
+      windDirection: null,
+      tideStage: 'unknown',
+      nextTideTime: null,
+      nextTideType: null,
+      smallCraftAdvisory: false,
+      advisory: 'Marine conditions unavailable offline.',
+      asOf: new Date().toISOString(),
+    };
+  }
+}
+
+// 2026-04-26 (fork merge): V2.3 weather data shapes (stub-implemented above).
+
+export interface WeatherAlert {
+  id: string;
+  event: string;
+  severity: 'Extreme' | 'Severe' | 'Moderate' | 'Minor' | 'Unknown';
+  urgency: 'Immediate' | 'Expected' | 'Future' | 'Past' | 'Unknown';
+  headline: string;
+  description: string;
+  effective: string;
+  expires: string;
+  areaDesc: string;
+}
+
+export interface LightningStatus {
+  nearbyStrikesLast15min: number | null;
+  distanceNearestMiles: number | null;
+  convectiveRisk: 'none' | 'low' | 'moderate' | 'high' | 'extreme';
+  advisory: string;
+  asOf: string;
+}
+
+export interface MarineConditions {
+  waveHeightFt: number | null;
+  waterTempF: number | null;
+  windSpeedMph: number | null;
+  windDirection: string | null;
+  tideStage: 'incoming' | 'outgoing' | 'high' | 'low' | 'unknown';
+  nextTideTime: string | null;
+  nextTideType: 'high' | 'low' | null;
+  smallCraftAdvisory: boolean;
+  advisory: string;
+  asOf: string;
 }
 
 // Singleton instance exported for use throughout the app
 const weatherService = new WeatherService();
 export default weatherService;
+
+// ── Wind Matching Utilities ──
+
+import type { CardinalDirection } from '../types/scout';
+
+/** Degree values for each cardinal direction */
+const CARDINAL_DEGREES: Record<CardinalDirection, number> = {
+  N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315,
+};
+
+/**
+ * Parse a wind direction string (e.g., "NW", "North", "NNW") into degrees.
+ * Returns null if unparseable.
+ */
+export function parseWindDirectionToDegrees(dir: string): number | null {
+  const d = dir.trim().toUpperCase();
+  // Exact cardinal match
+  if (d in CARDINAL_DEGREES) return CARDINAL_DEGREES[d as CardinalDirection];
+  // Map intercardinals (NNE, etc.) to nearest cardinal
+  const MAP: Record<string, number> = {
+    N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5,
+    SE: 135, SSE: 157.5, S: 180, SSW: 202.5, SW: 225, WSW: 247.5,
+    W: 270, WNW: 292.5, NW: 315, NNW: 337.5,
+    NORTH: 0, SOUTH: 180, EAST: 90, WEST: 270,
+  };
+  return MAP[d] ?? null;
+}
+
+/**
+ * Parse a wind direction string to the nearest CardinalDirection.
+ */
+export function parseToCardinal(dir: string): CardinalDirection | null {
+  const deg = parseWindDirectionToDegrees(dir);
+  if (deg === null) return null;
+  const cardinals: CardinalDirection[] = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const index = Math.round(deg / 45) % 8;
+  return cardinals[index];
+}
+
+export type WindMatchLevel = 'ideal' | 'acceptable' | 'poor';
+
+/**
+ * Evaluate how well the current wind matches a stand's ideal wind directions.
+ *
+ * - "ideal" = current wind is one of the ideal directions (exact match)
+ * - "acceptable" = current wind is within 1 cardinal step (±45°) of an ideal direction
+ * - "poor" = current wind is 2+ steps off from all ideal directions
+ *
+ * @param currentWindDir - Current wind direction string (e.g., "NW", "NNW", "North")
+ * @param idealDirections - Array of 1-3 ideal CardinalDirection values
+ * @returns WindMatchLevel or null if current wind can't be parsed
+ */
+export function evaluateWindMatch(
+  currentWindDir: string,
+  idealDirections: CardinalDirection[],
+): WindMatchLevel | null {
+  if (!idealDirections.length) return null;
+
+  const currentDeg = parseWindDirectionToDegrees(currentWindDir);
+  if (currentDeg === null) return null;
+
+  let bestDelta = 360;
+  for (const ideal of idealDirections) {
+    const idealDeg = CARDINAL_DEGREES[ideal];
+    let delta = Math.abs(currentDeg - idealDeg);
+    if (delta > 180) delta = 360 - delta;
+    if (delta < bestDelta) bestDelta = delta;
+  }
+
+  // Exact or near-exact match (within ~22°)
+  if (bestDelta <= 22.5) return 'ideal';
+  // Within one cardinal step (within ~67°)
+  if (bestDelta <= 67.5) return 'acceptable';
+  // Everything else
+  return 'poor';
+}
+
+/**
+ * Get a human-readable recommendation for a stand based on wind match.
+ */
+export function getWindRecommendation(match: WindMatchLevel): string {
+  switch (match) {
+    case 'ideal': return 'Wind is perfect for this stand — hunt it today.';
+    case 'acceptable': return 'Wind is marginal — huntable but not ideal.';
+    case 'poor': return 'Wind is wrong for this stand — skip today.';
+  }
+}

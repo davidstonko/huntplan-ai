@@ -12,13 +12,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useScoutData } from '../../context/ScoutDataContext';
 import { useDeerCamp } from '../../context/DeerCampContext';
 import { HuntPlan, RecordedTrack, WAYPOINT_ICONS } from '../../types/scout';
 import Colors from '../../theme/colors';
-import { sharePlan, shareTrack } from '../../services/exportService';
 
 interface PlanSidebarProps {
   onNewPlan: () => void;
@@ -42,7 +40,6 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
   const { plans, deletePlan, togglePlanVisibility, tracks, deleteTrack, toggleTrackVisibility } = useScoutData();
   const { camps, importPlanToCamp, exportTrackToCamp } = useDeerCamp();
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
-  const [exportingId, setExportingId] = useState<string | null>(null);
 
   const handleExportToCamp = (plan: HuntPlan) => {
     if (camps.length === 0) {
@@ -104,37 +101,6 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
     );
   };
 
-  const handleExportPlan = async (plan: HuntPlan, format: 'gpx' | 'kml') => {
-    try {
-      setExportingId(plan.id);
-      await sharePlan(plan, format);
-      Alert.alert('Success', `Plan exported as ${format.toUpperCase()}`);
-    } catch (error: any) {
-      if (error.message && error.message.includes('dismissal')) {
-        // User cancelled
-        return;
-      }
-      Alert.alert('Export Error', `Failed to export plan: ${error.message}`);
-    } finally {
-      setExportingId(null);
-    }
-  };
-
-  const handleExportTrack = async (track: RecordedTrack, format: 'gpx' | 'kml') => {
-    try {
-      setExportingId(track.id);
-      await shareTrack(track, format);
-      Alert.alert('Success', `Track exported as ${format.toUpperCase()}`);
-    } catch (error: any) {
-      if (error.message && error.message.includes('dismissal')) {
-        return;
-      }
-      Alert.alert('Export Error', `Failed to export track: ${error.message}`);
-    } finally {
-      setExportingId(null);
-    }
-  };
-
   const toggleExpanded = (planId: string) => {
     setExpandedPlanId(expandedPlanId === planId ? null : planId);
   };
@@ -158,7 +124,6 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {plans.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>{'\uD83D\uDCCB'}</Text>
             <Text style={styles.emptyTitle}>No Plans Yet</Text>
             <Text style={styles.emptySubtitle}>
               Create a hunt plan to start marking stands, routes, and areas on the map.
@@ -182,7 +147,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                       styles.eyeIcon,
                       { backgroundColor: plan.visible ? plan.color : Colors.mud },
                     ]}>
-                      <Text style={styles.eyeText}>{plan.visible ? '\uD83D\uDC41' : '\u2014'}</Text>
+                      <Text style={styles.eyeText}>{plan.visible ? 'ON' : 'OFF'}</Text>
                     </View>
                   </TouchableOpacity>
 
@@ -228,7 +193,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                     {/* Routes */}
                     {plan.routes.map((rt) => (
                       <View key={rt.id} style={styles.annotationRow}>
-                        <Text style={styles.annotationIcon}>{'\u27A1\uFE0F'}</Text>
+                        <Text style={styles.annotationIcon}>RT</Text>
                         <Text style={styles.annotationLabel}>
                           {rt.label || 'Route'} ({Math.round(rt.distanceMeters)}m)
                         </Text>
@@ -238,7 +203,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                     {/* Areas */}
                     {plan.areas.map((area) => (
                       <View key={area.id} style={styles.annotationRow}>
-                        <Text style={styles.annotationIcon}>{'\u2B1B'}</Text>
+                        <Text style={styles.annotationIcon}>AR</Text>
                         <Text style={styles.annotationLabel}>
                           {area.label || 'Area'} ({area.areaAcres.toFixed(1)} ac)
                         </Text>
@@ -261,24 +226,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                         style={styles.actionButton}
                         onPress={() => handleExportToCamp(plan)}
                       >
-                        <Text style={styles.actionText}>to Camp</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        disabled={exportingId === plan.id}
-                        onPress={() => {
-                          Alert.alert('Export Plan', 'Choose format:', [
-                            { text: 'GPX', onPress: () => handleExportPlan(plan, 'gpx') },
-                            { text: 'KML', onPress: () => handleExportPlan(plan, 'kml') },
-                            { text: 'Cancel', style: 'cancel' },
-                          ]);
-                        }}
-                      >
-                        {exportingId === plan.id ? (
-                          <ActivityIndicator size="small" color={Colors.sage} />
-                        ) : (
-                          <Text style={styles.actionText}>Export</Text>
-                        )}
+                        <Text style={styles.actionText}>Export to Camp</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.actionButton, styles.deleteButton]}
@@ -328,7 +276,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                     styles.eyeIcon,
                     { backgroundColor: track.visible ? '#FF4444' : Colors.mud },
                   ]}>
-                    <Text style={styles.eyeText}>{track.visible ? '\uD83D\uDC41' : '\u2014'}</Text>
+                    <Text style={styles.eyeText}>{track.visible ? 'ON' : 'OFF'}</Text>
                   </View>
                 </TouchableOpacity>
 
@@ -349,24 +297,7 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
                   style={styles.actionButton}
                   onPress={() => handleExportTrackToCamp(track)}
                 >
-                  <Text style={styles.actionText}>to Camp</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  disabled={exportingId === track.id}
-                  onPress={() => {
-                    Alert.alert('Export Track', 'Choose format:', [
-                      { text: 'GPX', onPress: () => handleExportTrack(track, 'gpx') },
-                      { text: 'KML', onPress: () => handleExportTrack(track, 'kml') },
-                      { text: 'Cancel', style: 'cancel' },
-                    ]);
-                  }}
-                >
-                  {exportingId === track.id ? (
-                    <ActivityIndicator size="small" color={Colors.sage} />
-                  ) : (
-                    <Text style={styles.actionText}>Export</Text>
-                  )}
+                  <Text style={styles.actionText}>Export to Camp</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionButton, styles.deleteButton]}
@@ -457,7 +388,6 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 16,
   },
-  emptyEmoji: { fontSize: 36, marginBottom: 12 },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
@@ -494,7 +424,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eyeText: {
-    fontSize: 12,
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.4,
   },
   planInfo: {
     flex: 1,

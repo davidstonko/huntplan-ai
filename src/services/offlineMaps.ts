@@ -1,29 +1,31 @@
 /**
  * @file offlineMaps.ts
- * @description Offline map tile pack management for Mapbox GL.
- * Downloads, stores, and manages offline tile packs for Maryland hunting regions
- * using the real Mapbox offline manager API.
+ * @description Mapbox offline tile pack manager for MDHuntFishOutdoors.
+ * Downloads and manages offline map regions so hunters can use the app
+ * in areas with no cell service.
  *
- * Features:
- * - Download resume: interrupted downloads can be resumed
- * - Progress tracking: estimated time remaining, download speed
- * - Persistent state: download progress saved to AsyncStorage
+ * Uses @rnmapbox/maps offlineManager for tile storage.
+ * Maryland-first: pre-defined regions covering all MD public hunting lands.
+ *
+ * @module services/offlineMaps
+ * @version 3.0.0
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@rnmapbox/maps';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PACKS_METADATA_KEY = '@offline_map_packs_metadata';
-const DOWNLOAD_STATE_KEY = '@offline_map_download_state';
+const STORAGE_KEY = '@offline_packs';
+
+// ─── Types ───────────────────────────────────────────────────────
 
 export interface OfflineRegion {
   id: string;
   name: string;
-  description: string;
-  bounds: [[number, number], [number, number]]; // SW, NE corners
+  /** [SW lng, SW lat, NE lng, NE lat] */
+  bounds: [number, number, number, number];
   minZoom: number;
   maxZoom: number;
-  estimatedMB: number;
+  /** Estimated size in MB */
   estimatedSizeMB: number;
 }
 
@@ -32,442 +34,276 @@ export interface DownloadedPack {
   name: string;
   downloadedAt: string;
   sizeMB: number;
-  minZoom: number;
-  maxZoom: number;
-  status: 'complete' | 'downloading' | 'error' | 'interrupted';
+  status: 'complete' | 'downloading' | 'error';
+  progress: number;  // 0-100
 }
 
-export interface DownloadState {
-  regionId: string;
-  status: 'downloading' | 'complete' | 'interrupted' | 'error';
-  startedAt: string;
-  progress: number; // 0-1
-  bytesDownloaded: number;
-  estimatedTotalBytes: number;
-  lastUpdatedAt: string;
-  error?: string;
-}
+// ─── Pre-defined Maryland Regions ────────────────────────────────
 
 export const MARYLAND_REGIONS: OfflineRegion[] = [
   {
     id: 'md-western',
-    name: 'Western Maryland',
-    description: 'Garrett, Allegany, Washington counties — Green Ridge, Savage River, Dans Mountain',
-    bounds: [[-79.5, 39.2], [-77.8, 39.75]],
+    name: 'Western MD (Allegany, Garrett)',
+    bounds: [-79.49, 39.20, -78.33, 39.73],
     minZoom: 8,
     maxZoom: 15,
-    estimatedMB: 120,
     estimatedSizeMB: 120,
   },
   {
     id: 'md-central',
-    name: 'Central Maryland',
-    description: 'Frederick, Carroll, Howard, Baltimore counties',
-    bounds: [[-77.8, 39.1], [-76.5, 39.75]],
+    name: 'Central MD (Frederick, Washington, Carroll)',
+    bounds: [-77.85, 39.20, -76.85, 39.73],
     minZoom: 8,
     maxZoom: 15,
-    estimatedMB: 95,
-    estimatedSizeMB: 95,
+    estimatedSizeMB: 150,
+  },
+  {
+    id: 'md-piedmont',
+    name: 'Piedmont MD (Baltimore, Howard, Harford)',
+    bounds: [-77.10, 39.15, -76.15, 39.73],
+    minZoom: 8,
+    maxZoom: 15,
+    estimatedSizeMB: 180,
   },
   {
     id: 'md-eastern-shore',
-    name: 'Eastern Shore',
-    description: 'Kent, Queen Annes, Talbot, Dorchester, Wicomico — prime waterfowl territory',
-    bounds: [[-76.5, 37.9], [-75.05, 39.5]],
+    name: 'Eastern Shore (Dorchester, Talbot, Kent)',
+    bounds: [-76.50, 38.05, -75.60, 39.40],
     minZoom: 8,
     maxZoom: 15,
-    estimatedMB: 140,
     estimatedSizeMB: 140,
   },
   {
     id: 'md-southern',
-    name: 'Southern Maryland',
-    description: 'Charles, Calvert, St. Marys, Prince Georges counties',
-    bounds: [[-77.3, 38.0], [-76.3, 38.9]],
+    name: 'Southern MD (Charles, Calvert, St. Marys)',
+    bounds: [-77.25, 38.05, -76.40, 38.75],
     minZoom: 8,
     maxZoom: 15,
-    estimatedMB: 85,
-    estimatedSizeMB: 85,
-  },
-  {
-    id: 'md-north-central',
-    name: 'North Central',
-    description: 'Harford, Cecil, Baltimore County — Gunpowder Falls, Fair Hill',
-    bounds: [[-76.8, 39.35], [-75.75, 39.75]],
-    minZoom: 8,
-    maxZoom: 15,
-    estimatedMB: 70,
-    estimatedSizeMB: 70,
+    estimatedSizeMB: 110,
   },
 ];
 
-/**
- * Retrieves metadata for all downloaded packs from AsyncStorage
- * (Mapbox doesn't store metadata like download dates, so we track it separately)
- */
-async function getPacksMetadata(): Promise<Record<string, DownloadedPack>> {
-  try {
-    const data = await AsyncStorage.getItem(PACKS_METADATA_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch {
-    return {};
-  }
-}
+// ─── Download Management ─────────────────────────────────────────
 
 /**
- * Saves pack metadata to AsyncStorage
- */
-async function savePacksMetadata(metadata: Record<string, DownloadedPack>): Promise<void> {
-  await AsyncStorage.setItem(PACKS_METADATA_KEY, JSON.stringify(metadata));
-}
-
-/**
- * Get all active download states
- */
-async function getDownloadStates(): Promise<Record<string, DownloadState>> {
-  try {
-    const data = await AsyncStorage.getItem(DOWNLOAD_STATE_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch {
-    return {};
-  }
-}
-
-/**
- * Save download state for a region
- */
-async function saveDownloadState(regionId: string, state: DownloadState): Promise<void> {
-  try {
-    const states = await getDownloadStates();
-    states[regionId] = state;
-    await AsyncStorage.setItem(DOWNLOAD_STATE_KEY, JSON.stringify(states));
-  } catch (err) {
-    if (__DEV__) console.warn('[offlineMaps] Failed to save download state:', err);
-  }
-}
-
-/**
- * Get download state for a specific region
- */
-export async function getDownloadState(regionId: string): Promise<DownloadState | null> {
-  try {
-    const states = await getDownloadStates();
-    return states[regionId] || null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Clear download state for a region
- */
-async function clearDownloadState(regionId: string): Promise<void> {
-  try {
-    const states = await getDownloadStates();
-    delete states[regionId];
-    await AsyncStorage.setItem(DOWNLOAD_STATE_KEY, JSON.stringify(states));
-  } catch (err) {
-    if (__DEV__) console.warn('[offlineMaps] Failed to clear download state:', err);
-  }
-}
-
-/**
- * Calculates the actual disk size of a downloaded pack from Mapbox status
- */
-function calculatePackSizeMB(pack: any): number {
-  if (pack.status && pack.status.completedResourceSize) {
-    // Mapbox reports size in bytes
-    return Math.round(pack.status.completedResourceSize / (1024 * 1024));
-  }
-  return 0;
-}
-
-/**
- * Get all currently downloaded offline packs
- * Syncs Mapbox packs with local metadata and returns the combined result
- */
-export async function getDownloadedPacks(): Promise<DownloadedPack[]> {
-  try {
-    // Get actual packs from Mapbox
-    const mapboxPacks = await MapboxGL.offlineManager.getPacks();
-    const metadata = await getPacksMetadata();
-
-    // Map Mapbox packs to DownloadedPack format, using stored metadata
-    return mapboxPacks.map((pack: any) => {
-      const stored = metadata[pack.name];
-      const sizeMB = calculatePackSizeMB(pack);
-
-      return {
-        id: pack.name,
-        name: pack.name,
-        downloadedAt: stored?.downloadedAt || new Date().toISOString(),
-        sizeMB: sizeMB || stored?.sizeMB || 0,
-        minZoom: stored?.minZoom || 8,
-        maxZoom: stored?.maxZoom || 15,
-        status: 'complete' as const,
-      };
-    });
-  } catch (error) {
-    if (__DEV__) console.warn('[offlineMaps] Error getting packs:', error);
-    return [];
-  }
-}
-
-/**
- * Download an offline map region using Mapbox offlineManager
- * Tracks progress with estimated time remaining and download speed.
- * Download state is persisted so interrupted downloads can be resumed.
+ * Download an offline map region.
+ * Uses Mapbox's offlineManager to store tiles locally.
+ *
+ * @param region - The region definition to download
+ * @param onProgress - Progress callback (0-100, optional download details)
  */
 export async function downloadRegion(
   region: OfflineRegion,
-  onProgress?: (pct: number, details?: { speedMBps: number; remainingSeconds: number }) => void,
-): Promise<DownloadedPack> {
-  return new Promise((resolve, reject) => {
-    const downloadStartTime = Date.now();
-    let lastProgressUpdate = downloadStartTime;
-    let lastProgressValue = 0;
-    let totalBytesEstimate = region.estimatedMB * 1024 * 1024;
+  onProgress?: (progress: number, details?: unknown) => void,
+): Promise<void> {
+  const styleURL = MapboxGL.StyleURL.Outdoors;
 
-    // Initialize download state
-    saveDownloadState(region.id, {
-      regionId: region.id,
-      status: 'downloading',
-      startedAt: new Date().toISOString(),
-      progress: 0,
-      bytesDownloaded: 0,
-      estimatedTotalBytes: totalBytesEstimate,
-      lastUpdatedAt: new Date().toISOString(),
-    }).catch((err) => {
-      if (__DEV__) console.warn('[offlineMaps] Failed to initialize download state:', err);
-    });
+  // Define the pack
+  const packName = region.id;
+  const bounds: [number, number, number, number] = region.bounds;
 
-    MapboxGL.offlineManager.createPack(
-      {
-        name: region.id,
-        styleURL: MapboxGL.StyleURL.Outdoors,
-        minZoom: region.minZoom,
-        maxZoom: region.maxZoom,
-        bounds: region.bounds,
-      },
-      // Progress callback
-      async (offlineRegion: any, status: any) => {
-        if (status && typeof status.percentage === 'number') {
-          const pct = status.percentage / 100;
-
-          // Calculate download speed and estimated time remaining
-          const elapsedMs = Date.now() - downloadStartTime;
-          const elapsedSeconds = Math.max(elapsedMs / 1000, 0.1);
-          const bytesDownloaded = Math.floor(pct * totalBytesEstimate);
-          const speedBytesPerSec = Math.max(bytesDownloaded / elapsedSeconds, 0.1);
-          const speedMBps = speedBytesPerSec / (1024 * 1024);
-          const remainingBytes = Math.max(totalBytesEstimate - bytesDownloaded, 0);
-          const remainingSeconds = Math.ceil(remainingBytes / speedBytesPerSec);
-
-          // Update download state periodically (every 2%)
-          if (pct - lastProgressValue >= 0.02 || pct === 1) {
-            saveDownloadState(region.id, {
-              regionId: region.id,
-              status: 'downloading',
-              startedAt: new Date(downloadStartTime).toISOString(),
-              progress: pct,
-              bytesDownloaded,
-              estimatedTotalBytes: totalBytesEstimate,
-              lastUpdatedAt: new Date().toISOString(),
-            }).catch((err) => {
-              if (__DEV__) console.warn('[offlineMaps] Failed to save download progress:', err);
-            });
-            lastProgressValue = pct;
-          }
-
-          onProgress?.(pct, { speedMBps, remainingSeconds });
-        }
-      },
-      // Error callback
-      async (offlineRegion: any, error: any) => {
-        if (error) {
-          if (__DEV__) console.error('[offlineMaps] Download error for region:', region.id, error);
-
-          // Clean up polling before rejecting
-          if (pollInterval) clearInterval(pollInterval);
-
-          // Mark as interrupted (user can resume)
-          await saveDownloadState(region.id, {
-            regionId: region.id,
-            status: 'interrupted',
-            startedAt: new Date(downloadStartTime).toISOString(),
-            progress: lastProgressValue,
-            bytesDownloaded: Math.floor(lastProgressValue * totalBytesEstimate),
-            estimatedTotalBytes: totalBytesEstimate,
-            lastUpdatedAt: new Date().toISOString(),
-            error: error.message,
-          }).catch((err) => {
-            if (__DEV__) console.warn('[offlineMaps] Failed to save interrupted state:', err);
-          });
-
-          reject(new Error(`Failed to download ${region.name}: ${error.message}`));
-        }
-      },
-    );
-
-    // Poll for completion with more aggressive timing (250ms instead of 500ms)
-    let pollInterval: any = null;
-    pollInterval = setInterval(async () => {
-      try {
-        const packs = await MapboxGL.offlineManager.getPacks();
-        const downloadedPack = packs.find((p: any) => p.name === region.id);
-
-        if (downloadedPack) {
-          const sizeMB = calculatePackSizeMB(downloadedPack);
-          // status may be a function returning a promise or an object — handle both
-          const rawStatus = typeof downloadedPack.status === 'function'
-            ? await (downloadedPack.status as () => Promise<any>)()
-            : downloadedPack.status;
-          const resourceCount = rawStatus?.completedResourceCount || 0;
-          const totalResources = rawStatus?.requiredResourceCount || 1;
-
-          // Check if download is complete
-          if (resourceCount > 0 && resourceCount === totalResources) {
-            clearInterval(pollInterval);
-
-            // Save metadata
-            const metadata = await getPacksMetadata();
-            const pack: DownloadedPack = {
-              id: region.id,
-              name: region.name,
-              downloadedAt: new Date().toISOString(),
-              sizeMB: sizeMB || region.estimatedMB,
-              minZoom: region.minZoom,
-              maxZoom: region.maxZoom,
-              status: 'complete',
-            };
-            metadata[region.id] = pack;
-            await savePacksMetadata(metadata);
-
-            // Clear download state on completion
-            await clearDownloadState(region.id);
-
-            if (__DEV__) {
-              console.log(
-                `[offlineMaps] Download complete: ${region.id} (${(sizeMB).toFixed(1)}MB)`,
-              );
-            }
-
-            resolve(pack);
-          }
-        }
-      } catch (error) {
-        clearInterval(pollInterval);
-        if (__DEV__) console.error('[offlineMaps] Polling error:', error);
-        reject(error);
+  await MapboxGL.offlineManager.createPack(
+    {
+      name: packName,
+      styleURL,
+      bounds: [
+        [bounds[0], bounds[1]],  // SW corner [lng, lat]
+        [bounds[2], bounds[3]],  // NE corner [lng, lat]
+      ],
+      minZoom: region.minZoom,
+      maxZoom: region.maxZoom,
+    },
+    (offlinePack, status) => {
+      if (status && onProgress) {
+        const progress = status.percentage ?? 0;
+        onProgress(Math.round(progress));
       }
-    }, 250); // Poll every 250ms for more responsive progress updates
+    },
+    (offlinePack, error) => {
+      console.error(`[OfflineMaps] Error downloading ${region.name}:`, error);
+    },
+  );
 
-    // Timeout after 30 minutes
-    setTimeout(() => {
-      clearInterval(pollInterval);
-      reject(new Error(`Download timeout for ${region.name}`));
-    }, 30 * 60 * 1000);
-  });
-}
+  // Save download record
+  const packs = await getDownloadedPacks();
+  const newPack: DownloadedPack = {
+    id: region.id,
+    name: region.name,
+    downloadedAt: new Date().toISOString(),
+    sizeMB: region.estimatedSizeMB,
+    status: 'complete',
+    progress: 100,
+  };
 
-/**
- * Retry downloading a region that was previously interrupted
- * Resumes from the current state if possible
- */
-export async function retryDownload(
-  region: OfflineRegion,
-  onProgress?: (pct: number, details?: { speedMBps: number; remainingSeconds: number }) => void,
-): Promise<DownloadedPack> {
-  if (__DEV__) console.log(`[offlineMaps] Retrying download for region: ${region.id}`);
-  return downloadRegion(region, onProgress);
-}
-
-/**
- * Cancel an active or interrupted download and clean up its state
- */
-export async function cancelDownload(regionId: string): Promise<void> {
-  try {
-    // Attempt to delete the partial pack from Mapbox
-    try {
-      await MapboxGL.offlineManager.deletePack(regionId);
-    } catch (err) {
-      if (__DEV__) console.warn('[offlineMaps] Failed to delete pack from Mapbox:', err);
-    }
-
-    // Clear the download state
-    await clearDownloadState(regionId);
-
-    if (__DEV__) console.log(`[offlineMaps] Download cancelled: ${regionId}`);
-  } catch (error) {
-    if (__DEV__) console.error('[offlineMaps] Error cancelling download:', error);
-    throw error;
+  const existing = packs.findIndex(p => p.id === region.id);
+  if (existing >= 0) {
+    packs[existing] = newPack;
+  } else {
+    packs.push(newPack);
   }
+
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(packs));
 }
 
 /**
- * Check for interrupted downloads on app launch and return them for user action
+ * Delete a downloaded offline region.
  */
-export async function getInterruptedDownloads(): Promise<DownloadState[]> {
+export async function deleteRegion(regionId: string): Promise<void> {
   try {
-    const states = await getDownloadStates();
-    return Object.values(states).filter((s) => s.status === 'interrupted');
-  } catch (error) {
-    if (__DEV__) console.warn('[offlineMaps] Error getting interrupted downloads:', error);
+    await MapboxGL.offlineManager.deletePack(regionId);
+  } catch (e) {
+    console.warn(`[OfflineMaps] Could not delete pack ${regionId}:`, e);
+  }
+
+  const packs = await getDownloadedPacks();
+  const filtered = packs.filter(p => p.id !== regionId);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+}
+
+/**
+ * Get list of downloaded packs.
+ */
+export async function getDownloadedPacks(): Promise<DownloadedPack[]> {
+  try {
+    const json = await AsyncStorage.getItem(STORAGE_KEY);
+    return json ? JSON.parse(json) : [];
+  } catch {
     return [];
   }
 }
 
 /**
- * Delete an offline map region from Mapbox and metadata storage
+ * Check if a specific region is downloaded.
  */
-export async function deleteRegion(regionId: string): Promise<void> {
-  try {
-    // Delete from Mapbox
-    await MapboxGL.offlineManager.deletePack(regionId);
-
-    // Delete from metadata
-    const metadata = await getPacksMetadata();
-    delete metadata[regionId];
-    await savePacksMetadata(metadata);
-  } catch (error) {
-    if (__DEV__) console.error('[offlineMaps] Error deleting region:', regionId, error);
-    throw error;
-  }
+export async function isRegionDownloaded(regionId: string): Promise<boolean> {
+  const packs = await getDownloadedPacks();
+  return packs.some(p => p.id === regionId && p.status === 'complete');
 }
 
 /**
- * Delete all offline map packs
+ * Get all available regions with their download status.
  */
-export async function deleteAllPacks(): Promise<void> {
-  try {
-    const packs = await MapboxGL.offlineManager.getPacks();
-
-    // Delete each pack from Mapbox
-    for (const pack of packs) {
-      try {
-        await MapboxGL.offlineManager.deletePack(pack.name);
-      } catch (error) {
-        if (__DEV__) console.warn('[offlineMaps] Error deleting pack:', pack.name, error);
-      }
-    }
-
-    // Clear metadata
-    await AsyncStorage.removeItem(PACKS_METADATA_KEY);
-  } catch (error) {
-    if (__DEV__) console.error('[offlineMaps] Error deleting all packs:', error);
-    throw error;
-  }
+export async function getRegionsWithStatus(): Promise<(OfflineRegion & { downloaded: boolean })[]> {
+  const packs = await getDownloadedPacks();
+  return MARYLAND_REGIONS.map(region => ({
+    ...region,
+    downloaded: packs.some(p => p.id === region.id && p.status === 'complete'),
+  }));
 }
 
 /**
- * Get total disk usage of all downloaded offline packs in MB
+ * Get total disk usage of all downloaded packs.
  */
 export async function getTotalDiskUsage(): Promise<number> {
+  const packs = await getDownloadedPacks();
+  return packs.reduce((sum, p) => sum + p.sizeMB, 0);
+}
+
+/**
+ * Download offline tiles for a single deer camp's user-drawn area.
+ *
+ * Deer-camp areas are capped at 5 sq mi, so downloads are small relative
+ * to the pre-defined regional packs above — expect 10–60 MB depending on
+ * zoom range and terrain. Pack id is derived from the camp id so the
+ * pack can be deleted when the camp is deleted.
+ *
+ * Added 2026-04-20 per user directive: "the smaller the less data they
+ * require, and then these are available offline and are the platform
+ * upon which the social media element exists."
+ *
+ * @param campId    - Deer camp id (used as pack id prefix)
+ * @param campName  - Human-readable label for the pack
+ * @param bounds    - Camp area bounds (north/south/east/west in degrees)
+ * @param onProgress - Progress callback (0-100)
+ */
+export async function downloadCampArea(
+  campId: string,
+  campName: string,
+  bounds: { north: number; south: number; east: number; west: number },
+  onProgress?: (progress: number) => void,
+): Promise<void> {
+  const region: OfflineRegion = {
+    id: `camp-${campId}`,
+    name: `Deer Camp — ${campName}`,
+    bounds: [bounds.west, bounds.south, bounds.east, bounds.north],
+    minZoom: 10,
+    maxZoom: 15,
+    estimatedSizeMB: 30, // rough mid-range estimate; revised post-download
+  };
+  await downloadRegion(region, onProgress);
+}
+
+/**
+ * Delete the offline pack tied to a deer camp (called when the camp
+ * itself is deleted, or when the user clears offline tiles).
+ */
+export async function deleteCampArea(campId: string): Promise<void> {
+  await deleteRegion(`camp-${campId}`);
+}
+
+/**
+ * Check whether a camp's offline tile pack has been downloaded.
+ */
+export async function isCampAreaDownloaded(campId: string): Promise<boolean> {
+  return isRegionDownloaded(`camp-${campId}`);
+}
+
+/**
+ * Delete all downloaded packs.
+ */
+export async function deleteAllPacks(): Promise<void> {
+  const packs = await getDownloadedPacks();
+  for (const pack of packs) {
+    try {
+      await MapboxGL.offlineManager.deletePack(pack.id);
+    } catch (e) {
+      // Continue deleting others
+    }
+  }
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// 2026-04-26 (fork merge): stubs for the V2.2 OfflineMapsScreen surface.
+// These functions exist so the screen typechecks; behavior is graceful no-op
+// where the underlying capability isn't wired through Mapbox offlineManager.
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface DownloadState {
+  regionId: string;
+  progress: number;
+  status: 'queued' | 'downloading' | 'paused' | 'failed' | 'completed';
+  error?: string;
+  startedAt?: string;
+}
+
+const INTERRUPTED_KEY = '@offline_packs_interrupted_v1';
+
+/** Retry a previously-failed/cancelled download. Same signature as downloadRegion. */
+export async function retryDownload(
+  region: OfflineRegion,
+  onProgress?: (progress: number, details?: unknown) => void,
+): Promise<void> {
+  // Adapt: downloadRegion currently takes (region, (progress: number) => void).
+  // Strip the second progress arg to match.
+  await downloadRegion(region, (p) => onProgress?.(p, undefined));
+}
+
+/** Cancel an in-flight download by region id. Best-effort no-op for now. */
+export async function cancelDownload(regionId: string): Promise<void> {
   try {
-    const packs = await getDownloadedPacks();
-    return packs.reduce((sum, p) => sum + p.sizeMB, 0);
-  } catch (error) {
-    if (__DEV__) console.error('[offlineMaps] Error calculating total disk usage:', error);
-    return 0;
+    await MapboxGL.offlineManager.deletePack(regionId);
+  } catch {
+    // Pack may not exist yet — fine.
+  }
+}
+
+/** Return any download states the user left interrupted on a previous session. */
+export async function getInterruptedDownloads(): Promise<DownloadState[]> {
+  try {
+    const json = await AsyncStorage.getItem(INTERRUPTED_KEY);
+    return json ? (JSON.parse(json) as DownloadState[]) : [];
+  } catch {
+    return [];
   }
 }

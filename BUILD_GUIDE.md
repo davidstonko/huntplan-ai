@@ -1,3 +1,5 @@
+> **DEPRECATED** — This file is outdated. See [BUILD.md](../BUILD.md) for the current build and deployment guide.
+
 # HuntMaryland — iOS Build Guide
 
 ## Prerequisites

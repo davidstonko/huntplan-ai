@@ -1,0 +1,111 @@
+{
+  "source_url": "https://dnr.maryland.gov/huntersguide/Pages/BlackBearHunt.aspx",
+  "date_accessed": "2026-04-11",
+  "description": "Maryland black bear hunting data including permits, seasons, zones, and management areas",
+  "data": {
+    "black_bear_overview": {
+      "species": "Black bear (Ursus americanus)",
+      "hunting_requirement": "Special permit required - cannot be hunted with general hunting license",
+      "permit_method": "Maryland Black Bear Lottery",
+      "application_fee": 15,
+      "status": "Active hunting season with lottery management"
+    },
+    "bear_hunt_zones": {
+      "zone_1": {
+        "name": "Bear Hunt Zone 1",
+        "description": "Primary bear hunting area",
+        "counties_included": [
+          "Allegany",
+          "Frederick",
+          "Garrett",
+          "Washington"
+        ],
+        "habitat": "Forested mountainous regions"
+      },
+      "zone_2": {
+        "name": "Bear Hunt Zone 2",
+        "description": "Secondary bear hunting area",
+        "counties_included": [
+          "Frederick",
+          "Washington"
+        ],
+        "habitat": "Ridge and valley regions"
+      }
+    },
+    "bear_hunting_season": {
+      "lottery_application_period": {
+        "start_date": "July 12 (historical)",
+        "end_date": "August 31 (historical)",
+        "note": "Check current year for exact dates"
+      },
+      "application_methods": [
+        "COMPASS account online",
+        "Sport License Agent locations"
+      ],
+      "winning_results": "Posted on Maryland DNR website after drawing"
+    },
+    "bear_hunting_permits": {
+      "permit_name": "Black Bear Hunting Permit",
+      "issue_method": "Lottery-based allocation",
+      "bag_limit": "Only 1 black bear per permittee/sub-permittee hunting team",
+      "team_structure": "Permits may be held by hunting teams/groups",
+      "cost": "$15 application fee"
+    },
+    "bear_harvest_regulations": {
+      "bag_limit": 1,
+      "definition": "Only one black bear may be harvested by a permittee or sub-permittee hunting team per season",
+      "sex_restrictions": "No specific sex restriction (both males and females)",
+      "carcass_requirements": "Entire carcass must be salvaged"
+    },
+    "bear_hunting_methods": {
+      "primary_methods": [
+        "Firearms (rifle, shotgun)",
+        "Archery"
+      ],
+      "notes": "Specific method restrictions may apply by zone or season phase"
+    },
+    "bear_management_areas": {
+      "allegany_county": {
+        "name": "Allegany County Bear Management Area",
+        "zone": 1,
+        "habitat_type": "Appalachian forest"
+      },
+      "garrett_county": {
+        "name": "Garrett County Bear Management Area",
+        "zone": 1,
+        "habitat_type": "High elevation forest"
+      },
+      "washington_county": {
+        "name": "Washington County Bear Management Area",
+        "zones": [1, 2],
+        "habitat_type": "Ridge and valley"
+      },
+      "frederick_county": {
+        "name": "Frederick County Bear Management Area",
+        "zones": [1, 2],
+        "habitat_type": "Mountain ridge habitat"
+      }
+    },
+    "bear_hunting_preparation": {
+      "required_licenses": [
+        "Maryland Hunting License",
+        "Black Bear Hunting Permit (from lottery)"
+      ],
+      "stamps_needed": "Firearm or Archery Stamp (depending on hunting method)",
+      "application_documents": [
+        "COMPASS account or Sport License Agent application",
+        "$15 application fee"
+      ]
+    },
+    "bear_hunting_resources": {
+      "guide_url": "https://dnr.maryland.gov/huntersguide/Pages/BlackBearHunt.aspx",
+      "lottery_results": "https://dnr.maryland.gov/wildlife/Pages/2023-Black-Bear-Lottery-Results.aspx",
+      "season_calendar": "https://dnr.maryland.gov/wildlife/Documents/Maryland-Big-Game-calendar-24-25.pdf"
+    },
+    "historical_bear_data": {
+      "note": "Black bear populations have been reestablishing in western Maryland",
+      "recolonization": "Bears naturally expanding range from Pennsylvania and West Virginia",
+      "management": "DNR uses lottery system to manage harvest and maintain sustainable population"
+    }
+  }
+}

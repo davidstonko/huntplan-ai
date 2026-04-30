@@ -140,3 +140,58 @@ async def update_profile(
         reputation_score=user.reputation_score,
         is_verified_hunter=user.is_verified_hunter,
     )
+
+
+# ─── Admin endpoints ───────────────────────────────────────────────
+
+class UserAdminResponse(BaseModel):
+    user_id: str
+    handle: str
+    email: Optional[str] = None
+    created_at: str
+    last_active_at: Optional[str] = None
+    is_active: bool = True
+
+
+@router.get("/admin/users", response_model=list[UserAdminResponse])
+async def list_all_users(
+    has_email: Optional[bool] = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Admin endpoint: list all users with their email, handle, created_at, and last_active.
+    Requires admin privileges.
+
+    Query params:
+      ?has_email=true  — filter only users who've provided an email
+      ?has_email=false — filter only users without an email
+    """
+    from app.modules.auth.dependencies import require_admin
+    from sqlalchemy import select, and_
+
+    # Verify admin
+    await require_admin(user)
+
+    query = select(User)
+
+    if has_email is not None:
+        if has_email:
+            query = query.where(User.email.isnot(None))
+        else:
+            query = query.where(User.email.is_(None))
+
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    return [
+        UserAdminResponse(
+            user_id=str(u.id),
+            handle=u.handle,
+            email=u.email,
+            created_at=u.created_at.isoformat() if u.created_at else None,
+            last_active_at=u.last_active_at.isoformat() if u.last_active_at else None,
+            is_active=u.is_active,
+        )
+        for u in users
+    ]

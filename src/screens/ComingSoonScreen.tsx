@@ -30,7 +30,7 @@ export default function ComingSoonScreen({ route }: ComingSoonScreenProps) {
       case 'hike':
         return {
           emoji: '🥾',
-          title: 'HikeMaryland',
+          title: 'MD Hike',
           subtitle: 'Explore Maryland Trails',
           description: 'Discover the best hiking trails across Maryland.',
           features: [
@@ -45,7 +45,7 @@ export default function ComingSoonScreen({ route }: ComingSoonScreenProps) {
       case 'crab':
         return {
           emoji: '🦀',
-          title: 'CrabMaryland',
+          title: 'MD Crab',
           subtitle: 'Crabbing Guides & Data',
           description: 'All the info you need for successful crabbing in Maryland.',
           features: [
@@ -60,7 +60,7 @@ export default function ComingSoonScreen({ route }: ComingSoonScreenProps) {
       case 'boat':
         return {
           emoji: '🚤',
-          title: 'BoatMaryland',
+          title: 'MD Boat',
           subtitle: 'Boating Safety & Access',
           description: 'Everything boaters need to know in Maryland waters.',
           features: [
@@ -75,7 +75,7 @@ export default function ComingSoonScreen({ route }: ComingSoonScreenProps) {
       default:
         return {
           emoji: '🏞️',
-          title: 'OutdoorsMaryland',
+          title: 'MDHuntFishOutdoors',
           subtitle: 'Coming Soon',
           description: 'More outdoor adventures are on the way.',
           features: [],
@@ -122,7 +122,7 @@ export default function ComingSoonScreen({ route }: ComingSoonScreenProps) {
         {/* Maryland Branding Banner */}
         <View style={styles.mdBrandBanner}>
           <Text style={styles.mdBrandText}>
-            Coming Soon to OutdoorsMaryland
+            Coming Soon to MDHuntFishOutdoors
           </Text>
           <Text style={styles.mdBrandSubtext}>
             Built by a solo developer for Maryland's outdoor community
@@ -134,7 +134,7 @@ export default function ComingSoonScreen({ route }: ComingSoonScreenProps) {
           <Text style={styles.supportEmoji}>{'❤️'}</Text>
           <Text style={styles.supportTitle}>Help Us Build Faster</Text>
           <Text style={styles.supportText}>
-            OutdoorsMaryland is built by a solo developer passionate about
+            MDHuntFishOutdoors is built by a solo developer passionate about
             making Maryland's outdoor data accessible to everyone. Your support
             helps bring new features to life faster.
           </Text>

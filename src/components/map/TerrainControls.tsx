@@ -60,7 +60,9 @@ export default function TerrainControls({
         onPress={onToggle}
         activeOpacity={0.7}
       >
-        <Text style={styles.toggleIcon}>{enabled ? '🏔️' : '🗺️'}</Text>
+        <View style={[styles.toggleChip, enabled && styles.toggleChipActive]}>
+          <Text style={styles.toggleChipText}>{enabled ? '3D' : '2D'}</Text>
+        </View>
         <Text style={styles.toggleLabel}>
           {enabled ? '3D Terrain ON' : '3D Terrain OFF'}
         </Text>
@@ -96,7 +98,7 @@ export default function TerrainControls({
           {/* Hunting terrain tip */}
           <View style={styles.tipContainer}>
             <Text style={styles.tipText}>
-              {'💡'} Ridges and saddles are prime stand locations. Use 3D terrain to identify
+              Ridges and saddles are prime stand locations. Use 3D terrain to identify
               elevation features for tree stand and ground blind placement.
             </Text>
           </View>
@@ -119,8 +121,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  toggleIcon: {
-    fontSize: 16,
+  toggleChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: Colors.mud,
+    minWidth: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleChipActive: {
+    backgroundColor: Colors.moss,
+  },
+  toggleChipText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
   toggleLabel: {
     flex: 1,

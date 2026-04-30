@@ -1,0 +1,149 @@
+{
+  "source_url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/waterfowl.aspx",
+  "date_accessed": "2026-04-11",
+  "description": "Maryland waterfowl hunting data including blind lottery, zones, regulations, and bag limits",
+  "data": {
+    "waterfowl_hunting_overview": {
+      "blind_sites": {
+        "description": "Public waterfowl blind sites available to hunters",
+        "reservation_system": "Phone-based reservation system",
+        "reservation_rules": [
+          "Call maximum of 4 calendar days prior to hunt",
+          "Maximum 2 site reservations per phone call",
+          "No more than 1 reservation per day",
+          "Only hold 1 reservation per individual day"
+        ],
+        "lottery_access": "First Saturday of each duck split may be drawn by lottery at some locations"
+      },
+      "accessible_blinds": {
+        "requirement": "Requires reservations",
+        "availability": "Some locations have lottery for first Saturday"
+      }
+    },
+    "waterfowl_zones": {
+      "sea_duck_zone": {
+        "name": "Sea Duck Zone",
+        "description": "Coastal zone for sea duck hunting",
+        "species": [
+          "Scoters",
+          "Eiders",
+          "Oldsquaw/Long-tailed ducks",
+          "Mergansers"
+        ],
+        "location": "Atlantic coastal waters and bays",
+        "regulations_url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/seaducks.aspx"
+      },
+      "atlantic_flyway": {
+        "name": "Atlantic Flyway Zone",
+        "description": "Primary waterfowl migration corridor",
+        "includes": "Most of Maryland"
+      },
+      "chesapeake_bay_zones": {
+        "description": "Specialized zones within Chesapeake Bay",
+        "management": "Multiple zones with varying regulations"
+      }
+    },
+    "waterfowl_species": {
+      "ducks": {
+        "mallards": {
+          "name": "Mallards",
+          "season_type": "Open season during designated periods",
+          "hunting_method": "Over decoys, blind hunting"
+        },
+        "wood_ducks": {
+          "name": "Wood Ducks",
+          "special_regulations": "May have specific season restrictions"
+        },
+        "divers": {
+          "name": "Diver Ducks (Redheads, Ring-necks, Scaup, etc.)",
+          "hunting_method": "Offshore and deep water hunting"
+        }
+      },
+      "geese": {
+        "canada_geese": {
+          "name": "Canada Geese",
+          "season_type": "Extended season periods",
+          "hunting_locations": "State parks and WMAs with lottery"
+        },
+        "snow_geese": {
+          "name": "Snow Geese",
+          "season_notes": "May have liberal bag limits in certain areas"
+        }
+      }
+    },
+    "waterfowl_licensing": {
+      "maryland_migratory_game_bird_stamp": {
+        "cost": 9,
+        "requirement": "Required for all migratory game bird hunting",
+        "includes": "HIP registration"
+      },
+      "federal_duck_stamp": {
+        "cost": 25,
+        "requirement": "Required for waterfowl hunting",
+        "issuing_authority": "U.S. Fish and Wildlife Service"
+      },
+      "hip_registration": {
+        "name": "Harvest Information Program (HIP)",
+        "requirement": "Required for migratory game bird hunting",
+        "issued_with": "Maryland Migratory Game Bird Stamp",
+        "proof_requirement": "Must possess printed receipt"
+      }
+    },
+    "special_hunts": {
+      "managed_waterfowl_hunts": {
+        "description": "DNR-managed hunts on specific dates and locations",
+        "permit_requirement": "Free Wildlife and Heritage Services (WHS) permit required",
+        "reservation_requirement": "Reservation required for some sites",
+        "lottery": "Some locations use lottery for first Saturday access"
+      },
+      "impoundment_hunts": {
+        "deal_island_wma": {
+          "name": "Deal Island WMA Impoundment",
+          "open_seasons": [
+            {
+              "period": "Early Season",
+              "dates": "September 1-15, 2025"
+            },
+            {
+              "period": "Main Season",
+              "dates": "November 1, 2025 - February 7, 2026"
+            }
+          ],
+          "permit_required": true
+        }
+      }
+    },
+    "waterfowl_regulations": {
+      "general_regulations": [
+        "Use of non-toxic shot required",
+        "Specific shotgun gauge restrictions may apply",
+        "Hunters must be in blind or pit blind during shooting hours",
+        "Decoys permitted on most waterfowl areas",
+        "Natural cover required on some public lands"
+      ],
+      "bag_limits": {
+        "note": "Bag limits vary by species and zone",
+        "source": "Contact Maryland DNR for current season bag limits",
+        "daily_bag": "Federal and state minimums apply"
+      }
+    },
+    "waterfowl_hunting_preparation": {
+      "licensing_required": [
+        "Maryland Hunting License",
+        "Maryland Migratory Game Bird Stamp ($9)",
+        "Federal Duck Stamp ($25)",
+        "HIP Registration (included with state stamp)"
+      ],
+      "equipment_needed": [
+        "Shotgun (non-toxic shot only)",
+        "Decoys (for most areas)",
+        "Waders or boat",
+        "Safety gear"
+      ]
+    },
+    "waterfowl_public_hunting_guide": {
+      "official_guide_url": "https://dnr.maryland.gov/wildlife/Documents/Public-Hunting-Waterfowl-Regulation-Packet.pdf",
+      "content_includes": "Comprehensive waterfowl season dates, bag limits, zone descriptions"
+    }
+  }
+}

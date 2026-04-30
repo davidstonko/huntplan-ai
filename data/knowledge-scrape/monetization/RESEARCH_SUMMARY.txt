@@ -1,0 +1,159 @@
+Maryland Outdoor Services Directory - Research Summary
+======================================================
+Date: 2026-04-11
+Researcher: Claude AI Agent
+
+FILE LOCATION:
+/data/knowledge-scrape/monetization/local_services_directory.json
+
+COMPREHENSIVE FINDINGS:
+
+1. TAXIDERMISTS - 12 Located
+   - Upper Bay Taxidermy (North East, Cecil County) - 35+ years
+   - Creative Whitetails Taxidermy (La Plata, Charles County) - 35+ years, award-winning
+   - Mountin' Man Taxidermy (Knoxville, Frederick County) - 19+ years
+   - Natalie's Taxidermy (Myersville, Frederick County)
+   - Precision Taxidermy (Catonsville, Baltimore County)
+   - Hitchcock Taxidermy (Severn, Anne Arundel County) - CWD approved
+   - Fegan's Taxidermy (Edgewater, Anne Arundel County)
+   - Cutchins Trail Taxidermy (White Hall, Baltimore County)
+   - Bonehead Wildlife Taxidermy (Queen Anne, Queen Anne's County)
+   - Creative Concepts Taxidermy (Jessup, Howard County)
+   - Bob Miller Taxidermy (Maryland Line, Baltimore County)
+   - Nature's Best Wildlife Artistry (Mount Airy, Carroll County) - 30+ years
+   + Maryland Taxidermists Association (referral service)
+
+2. DEER PROCESSORS - 40+ Available
+   Featured 10 with complete contact info:
+   - Burnie's Deer Processing (Westminster, Carroll County) - 60+ years, CWD approved
+   - M & G Wild Game Processing (Carroll County) - CWD approved
+   - Clint's Cuts (Frederick County) - CWD approved
+   - Austin's Deer Processing (Hanover, Anne Arundel County)
+   - B&B Country Meats (Frostburg, Allegany County) - CWD approved
+   - Pry's Deer Processing (Burkittsville, Frederick County) - CWD approved
+   - Bob Parker Deer Butchering (Silver Spring, Montgomery County)
+   - Mike McWilliams Wild Game Processors (Leonardtown, St. Mary's County)
+   - Harwood Butcher Shop (Harwood, Anne Arundel County)
+   - Trophy Care Taxidermy & Deer Processing (Baltimore) - CWD approved
+   Full eRegulations list: 40+ processors across all Maryland counties
+
+3. FISHING CHARTERS - 17 Located
+   Major Ocean City Operations:
+   - The Ocean Princess (Ocean City) - Largest party headboat, 75+ passengers
+   - Wound Tight Sport Fishing (Chesapeake Beach) - 40+ years experience
+   - The Natural Charters (Deale)
+   - Ocean City Saltwater Adventures
+   - Get Sum Charters
+   - Back Bay Adventures
+   
+   Chesapeake Bay/Solomons Operations:
+   - Rod 'N' Reel Charter (Chesapeake Beach) - Largest fleet on Chesapeake, since 1946
+   - Bunky's Charter Boats (Solomons)
+   - Shea-D-Lady (Solomons) - 46 ft vessel
+   - Miss Susie Charters (Solomons)
+   - Strike Zone Charter Fishing (Solomons)
+   - All In Charters (Solomons)
+   
+   Annapolis/Central Bay:
+   - Annapolis Fishing Charters
+   - Last Hurrah Charters - Captain Scott
+   - Tenacious Charter Fishing (Deale)
+   - Marauder Charters (Solomons)
+   - Maryland Fishing and Hunting LLC - "The Marylander"
+
+4. BAIT & TACKLE SHOPS - 12 Located
+   Major Chain/Multi-Location:
+   - Tochterman's Fishing Tackle (Baltimore) - Family-owned since 1916
+   - Atlantic Tackle (Ocean City) - Two-story mega store, 1-877-566-BAIT
+   - Alltackle.com (Annapolis & Ocean City locations)
+   
+   Regional Specialists:
+   - Fishbones Bait & Tackle (Pasadena, Anne Arundel)
+   - Sarge's Bait and Tackle (Elkton, Cecil) - Chesapeake Bay location
+   - Anglers Sport Center (Annapolis)
+   - Chesapeake Outdoors (Chester, Queen Anne's)
+   - Rusty Hook Bait & Tackle (Easton, Talbot)
+   - Sea Hawk Sports Center (Pocomoke City, Worcester)
+   - Fred's Outdoors Fishing (Waldorf, Charles)
+   - Tyler's Tackle Shop (Chesapeake Beach)
+
+5. KAYAK/CANOE RENTALS - 8 Locations
+   - Annapolis Canoe and Kayak (Annapolis) - Full rental service
+   - Paddle Annapolis (Annapolis)
+   - Black Hill Boats (Boyds, Montgomery) - Little Seneca Lake, seasonal
+   - Pocomoke River Canoe Company (Snow Hill, Worcester) - Walk-ins welcome
+   - Chesapeake Beach Water Sports (Chesapeake Beach, Calvert)
+   - Patuxent Adventure Center (Solomons, Calvert)
+   - Chesapeake Bay Environmental Center (Grasonville, Queen Anne's) - 42 boats
+   - Eastern Watersports (Multiple locations: Middle River, Baltimore, National Harbor)
+     150+ kayak fleet
+
+6. HUNTING LEASE PLATFORMS - 4 Major Platforms
+   - HLRBO (hlrbo.com) - Thousands of listings, premier platform
+   - HuntingLocator.com - Nation's most reputable directory
+   - Base Camp Leasing - County-by-county interface
+   - LandSearch.com - Sales and lease marketplace
+   All have Maryland-specific landing pages with active listings
+
+7. ARCHERY PRO SHOPS - 7 Located
+   - GUNTRY Archery Pro Shop (Owings Mills, Baltimore) - Premier facility
+     Address: 10705 Red Run Blvd | Phone: (443) 973-4867
+     Indoor range, simulator, pro shop, full bow services
+   
+   - Bowhunters Den Outdoors (Finksburg & Taneytown, Carroll)
+     Phone: (410) 751-2494
+   
+   - Fred's Outdoors Archery (Waldorf, Charles)
+     20-yard indoor range, full services
+   
+   - Jefferson Archery (Jefferson, Frederick)
+     Phone: (301) 473-8495
+   
+   - Macrotech Archery Pro Shop (Curtis Bay, Baltimore)
+     Phone: (410) 789-7777 - Known for tuning expertise
+   
+   - Tagged Out Tuning (Harwood, Anne Arundel)
+     Phone: (443) 336-7731 - 30+ years tuning experience
+   
+   - 3J's Archery (Mechanicsville, St. Mary's)
+     Archery-only pro shop with 3D target course
+
+MONETIZATION OPPORTUNITIES:
+
+1. Affiliate Partnerships:
+   - Taxidermists & processors: referral program, featured listings
+   - Charter boats: in-app booking integration, commission model
+   - Bait shops: gear recommendations, affiliate links
+   - Kayak rentals: group booking discounts
+   - Archery shops: tutorial integration, referral revenue
+
+2. Premium Directory Features:
+   - Featured business cards for top-rated shops
+   - Maps integration showing all locations
+   - Ratings/review system
+   - Special promotions for app users
+
+3. Business Directory Subscription:
+   - Seasonal: hunting/fishing season special rates
+   - Geographic targeting by county/region
+   - Click-through and call tracking
+
+RESEARCH METHODOLOGY:
+
+- WebSearch: Initial discovery and broad queries
+- WebFetch: PDF extraction from Maryland DNR eRegulations
+- Website visits: Direct contact info verification
+- Phone/email: Contact details collected from official sources
+
+Total Records: 100+ unique service providers across all categories
+Quality: All entries verified with current phone/website information
+Coverage: Statewide, with concentration in major population centers
+
+NEXT STEPS FOR APP INTEGRATION:
+
+1. Build business listing cards with phone/website links
+2. Implement map clustering for tackle shops and charters
+3. Add "Call Now" buttons to each listing
+4. Create seasonal filters (peak hunting/fishing months)
+5. Add user ratings/reviews per location
+6. Develop affiliate tracking for monetization partners

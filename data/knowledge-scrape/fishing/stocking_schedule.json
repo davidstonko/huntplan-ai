@@ -1,0 +1,55 @@
+{
+  "source_url": "https://dnr.maryland.gov/fisheries/pages/trout/stocking.aspx",
+  "date_accessed": "2026-04-11",
+  "update_frequency": "Daily during stocking season",
+  "hotline": "800-688-3467 (press #1 for recorded weekly updates)",
+  "facebook_updates": "Fridays during stocking season",
+  "data": {
+    "program_overview": {
+      "annual_stocking": "~240,000 adult trout",
+      "percent_increase_2026": "26% over previous year",
+      "species": ["Brown trout", "Golden rainbow trout", "Rainbow trout"],
+      "counties_served": 19,
+      "waters_stocked": "100+"
+    },
+    "spring_2026_schedule": {
+      "season_start": {
+        "southern_counties": "February 2026",
+        "central_counties": "February 2026",
+        "eastern_counties": "February 2026",
+        "western_counties": {
+          "allegany_county": "March 2026",
+          "garrett_county": "March 2026 through May 2026"
+        }
+      },
+      "key_dates": {
+        "youth_only_trout_day": "March 21, 2026",
+        "youth_only_details": "Children under 16 can catch and keep up to 2 trout (except brook trout) in designated areas",
+        "opening_day_all_anglers": "March 28, 2026",
+        "opening_day_description": "Date when waters with closure periods open to all anglers"
+      }
+    },
+    "trout_types": {
+      "put_and_take_areas": {
+        "description": "Waters managed for immediate harvest opportunities",
+        "frequency": "Regular seasonal stocking"
+      },
+      "delayed_harvest_areas": {
+        "description": "Catch-and-release part of year, harvest allowed other months",
+        "purpose": "Extend angling opportunities beyond put-and-take seasons",
+        "notable_locations": ["Potomac Garrett State Forest"],
+        "gear_restrictions": "Only apply during catch-and-release periods"
+      }
+    },
+    "stocking_locations_by_type": {
+      "note": "Complete county-by-county list available in 2026 Monthly Stocking Schedule PDF",
+      "access_methods": [
+        "Visit dnr.maryland.gov/fisheries/pages/trout/stocking.aspx",
+        "Call 800-688-3467, press #1",
+        "Check weekly updates on Facebook/X Fridays",
+        "Subscribe to email news service"
+      ]
+    },
+    "weather_considerations": "All stockings subject to change based on weather or hatchery constraints"
+  }
+}

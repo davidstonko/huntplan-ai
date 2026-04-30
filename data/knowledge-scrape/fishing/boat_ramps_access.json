@@ -1,0 +1,107 @@
+{
+  "source_url": "https://dnr.maryland.gov/boating/pages/water-access/boatramps.aspx",
+  "date_accessed": "2026-04-11",
+  "alternative_access": "http://gisapps.dnr.state.md.us/PublicFishingAccess/index.html",
+  "data": {
+    "online_water_access_guide": {
+      "url": "https://dnr.maryland.gov/boating/pages/water-access/boatramps.aspx",
+      "description": "Web application providing comprehensive water access information",
+      "coverage": "Open to general public",
+      "features": [
+        "Boat ramp locations",
+        "Soft access sites (non-motorized vessels)",
+        "Transient docking facilities",
+        "Interactive mapping",
+        "Searchable database"
+      ]
+    },
+    "fishing_access_map": {
+      "url": "http://gisapps.dnr.state.md.us/PublicFishingAccess/index.html",
+      "purpose": "Dedicated resource for fishing-specific access",
+      "features": [
+        "Boat ramps suitable for fishing",
+        "Search/filter by criteria",
+        "Specific fishing access points"
+      ]
+    },
+    "management_and_jurisdiction": {
+      "note": "Majority of public water access sites managed by local jurisdictions",
+      "recommendation": "Contact managing entity for current fees, permits, regulations before visiting"
+    },
+    "access_categories": {
+      "boat_ramps": {
+        "description": "Motorized boat launching facilities",
+        "typical_use": "Larger fishing vessels, bass boats, charter boats"
+      },
+      "soft_access": {
+        "description": "Non-motorized vessel access",
+        "suitable_for": ["Kayaks", "Canoes", "Small boats"],
+        "advantage": "Often less crowded than motorized ramps"
+      },
+      "transient_docking": {
+        "description": "Short-term mooring facilities",
+        "use": "Charter boats, visiting fishermen"
+      },
+      "fishing_piers": {
+        "description": "Shore-based fishing access",
+        "note": "Check map for public piers"
+      }
+    },
+    "example_locations": [
+      {
+        "name": "Elkneck Rogues Harbor",
+        "description": "Four boat launch ramps",
+        "access_to": ["Elk River", "Chesapeake Bay", "surrounding waterways"]
+      },
+      {
+        "name": "Fishing Bay area",
+        "facilities": ["Bestpitch", "Elliot Island", "Shorter's Wharf"],
+        "note": "Public boat launching facilities convenient to Fishing Bay"
+      }
+    ],
+    "data_sources": {
+      "compilation": "State and local sources",
+      "maintained_by": "Maryland DNR Public Access, Water Trails and Recreation Planning Program",
+      "update_frequency": "Regularly updated"
+    },
+    "important_notes": {
+      "fees": "Vary by jurisdiction",
+      "permits": "May be required - check locally",
+      "regulations": "Vary by jurisdiction",
+      "recommendation": "Contact local managing entity before visit"
+    },
+    "related_resources": [
+      {
+        "name": "Atlas of Maryland Boat Ramps",
+        "type": "Reference document"
+      },
+      {
+        "name": "State Parks Fishing Information",
+        "type": "Facility-specific details"
+      },
+      {
+        "name": "Freshwater Fishing Hotspots",
+        "type": "Popular fishing locations"
+      }
+    ],
+    "water_trails": {
+      "lower_potomac": {
+        "description": "Scenic water trail with multiple access points",
+        "resource": "Guide available from DNR"
+      },
+      "middle_potomac": {
+        "description": "Multiple launch areas and overnight facilities",
+        "resource": "Guide available from DNR"
+      },
+      "upper_potomac": {
+        "note": "Check river water levels before boating",
+        "resource": "Boating tips and water level info from DNR"
+      }
+    },
+    "safety_resources": {
+      "boating_tips": "Available from DNR",
+      "water_level_checking": "Especially important for Upper Potomac River",
+      "hazard_information": "Consult with local authorities"
+    }
+  }
+}

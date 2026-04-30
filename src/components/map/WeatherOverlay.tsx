@@ -17,19 +17,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Colors from '../../theme/colors';
-import weatherService, {
-  HuntingConditions,
-  WeatherForecast,
-  PressureTrend,
-  ScentCondition,
-} from '../../services/weatherService';
-import WindDirectionIndicator from './WindDirectionIndicator';
+import weatherService, { HuntingConditions, WeatherForecast } from '../../services/weatherService';
 
 interface WeatherOverlayProps {
   latitude: number;
   longitude: number;
   visible?: boolean;
-  onWindDataChange?: (windData: { direction: string; speed: string }) => void;
 }
 
 interface WeatherState {
@@ -38,26 +31,43 @@ interface WeatherState {
   huntingConditions: HuntingConditions;
   current: Record<string, any> | null;
   error: boolean;
-  pressureValue: number | null;
-  pressureTrend: PressureTrend;
-  dewPoint: number | null;
-  scentRisk: number;
-  scentCondition: ScentCondition;
-  scentTip: string;
 }
+
+/**
+ * Map weather condition text to a fixed-width Unicode symbol.
+ * Prevents badge from changing width based on forecast wording.
+ */
+const getWeatherSymbol = (forecast: string): { symbol: string; color: string } => {
+  const f = forecast.toLowerCase();
+  if (f.includes('thunder') || f.includes('storm')) return { symbol: '\u26A1', color: '#FBBF24' };
+  if (f.includes('snow') || f.includes('sleet') || f.includes('ice') || f.includes('freez')) return { symbol: '\u2744', color: '#93C5FD' };
+  if (f.includes('rain') || f.includes('shower') || f.includes('drizzle')) return { symbol: '\u2602', color: '#60A5FA' };
+  if (f.includes('fog') || f.includes('mist') || f.includes('haz')) return { symbol: '\u2588', color: '#9CA3AF' };
+  if ((f.includes('overcast') || f.includes('cloudy')) && !f.includes('partly') && !f.includes('mostly sunny')) return { symbol: '\u2601', color: '#9CA3AF' };
+  if (f.includes('partly') || f.includes('mostly sunny') || f.includes('mostly clear')) return { symbol: '\u26C5', color: '#FCD34D' };
+  if (f.includes('clear') || f.includes('sunny') || f.includes('fair')) return { symbol: '\u2600', color: '#FBBF24' };
+  if (f.includes('wind')) return { symbol: '\u2634', color: '#93C5FD' };
+  return { symbol: '\u25CB', color: '#9CA3AF' };
+};
+
+/** Map full rating word to a compact 1-2 char label */
+const getRatingShort = (r: string | undefined): string => {
+  if (!r) return '';
+  if (r === 'Excellent') return 'A+';
+  if (r === 'Good') return 'A';
+  if (r === 'Fair') return 'B';
+  if (r === 'Poor') return 'C';
+  if (r === 'Moderate') return 'B';
+  return r.charAt(0);
+};
 
 /**
  * WeatherOverlay — Compact weather badge + expandable forecast panel.
  *
- * Collapsed: shows temp + short forecast + hunting rating
+ * Collapsed: shows temp + weather symbol + compact wind + rating letter
  * Expanded: shows 3-day forecast with wind, hunting assessment, and pressure
  */
-export default function WeatherOverlay({
-  latitude,
-  longitude,
-  visible = true,
-  onWindDataChange,
-}: WeatherOverlayProps) {
+export default function WeatherOverlay({ latitude, longitude, visible = true }: WeatherOverlayProps) {
   const [expanded, setExpanded] = useState(false);
   const [weather, setWeather] = useState<WeatherState>({
     loading: true,
@@ -65,12 +75,6 @@ export default function WeatherOverlay({
     huntingConditions: {},
     current: null,
     error: false,
-    pressureValue: null,
-    pressureTrend: 'unknown',
-    dewPoint: null,
-    scentRisk: 5,
-    scentCondition: 'moderate',
-    scentTip: 'Moderate scent conditions.',
   });
 
   const fetchWeather = useCallback(async () => {
@@ -78,36 +82,18 @@ export default function WeatherOverlay({
 
     setWeather(prev => ({ ...prev, loading: true, error: false }));
     try {
-      // Fetch both backend weather and hunting weather (for pressure data and scent conditions)
-      const backendResult = await weatherService.getBackendWeather(latitude, longitude);
-      const huntingResult = await weatherService.getHuntingWeather(latitude, longitude);
-
-      // Notify parent of wind data for wind direction indicator
-      if (backendResult.forecast.length > 0) {
-        const today = backendResult.forecast[0];
-        onWindDataChange?.({
-          direction: today.windDirection,
-          speed: today.windSpeed,
-        });
-      }
-
+      const result = await weatherService.getBackendWeather(latitude, longitude);
       setWeather({
         loading: false,
-        forecast: backendResult.forecast,
-        huntingConditions: backendResult.huntingConditions,
-        current: backendResult.current,
+        forecast: result.forecast,
+        huntingConditions: result.huntingConditions,
+        current: result.current,
         error: false,
-        pressureValue: huntingResult.pressureValue,
-        pressureTrend: huntingResult.pressureTrend,
-        dewPoint: huntingResult.dewPoint,
-        scentRisk: huntingResult.scentRisk,
-        scentCondition: huntingResult.scentCondition,
-        scentTip: huntingResult.scentTip,
       });
     } catch {
       setWeather(prev => ({ ...prev, loading: false, error: true }));
     }
-  }, [latitude, longitude, onWindDataChange]);
+  }, [latitude, longitude]);
 
   useEffect(() => {
     fetchWeather();
@@ -139,17 +125,20 @@ export default function WeatherOverlay({
 
   return (
     <View style={styles.container}>
-      {/* Collapsed badge */}
+      {/* Collapsed badge — fixed-width: temp | symbol | wind | rating */}
       <TouchableOpacity
         style={styles.badge}
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.8}
       >
-        <Text style={styles.tempText}>{today.temperature}°{today.temperatureUnit}</Text>
-        <Text style={styles.conditionText} numberOfLines={1}>{today.shortForecast}</Text>
+        <Text style={styles.tempText}>{today.temperature}°</Text>
+        <Text style={[styles.weatherSymbol, { color: getWeatherSymbol(today.shortForecast).color }]}>
+          {getWeatherSymbol(today.shortForecast).symbol}
+        </Text>
+        <Text style={styles.windCompact}>{today.windSpeed} {today.windDirection}</Text>
         {rating && (
           <View style={[styles.ratingBadge, { backgroundColor: ratingColor }]}>
-            <Text style={styles.ratingText}>{rating}</Text>
+            <Text style={styles.ratingText}>{getRatingShort(rating)}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -172,36 +161,6 @@ export default function WeatherOverlay({
                   {weather.current.barometric_pressure_mb ? ` · Pressure: ${weather.current.barometric_pressure_mb} mb` : ''}
                 </Text>
               )}
-              {/* Barometric pressure trend */}
-              {weather.pressureValue !== null && (
-                <Text style={[
-                  styles.pressureTrendText,
-                  {
-                    color: weather.pressureTrend === 'rising' ? Colors.success :
-                           weather.pressureTrend === 'falling' ? Colors.danger : Colors.textSecondary,
-                  },
-                ]}>
-                  Pressure: {weather.pressureValue.toFixed(1)} mb {
-                    weather.pressureTrend === 'rising' ? '↑' :
-                    weather.pressureTrend === 'falling' ? '↓' : '→'
-                  } {weather.pressureTrend}
-                </Text>
-              )}
-
-              {/* Scent conditions */}
-              <View style={styles.scentRow}>
-                <Text style={[
-                  styles.scentLabel,
-                  {
-                    color: weather.scentCondition === 'excellent' ? Colors.success :
-                           weather.scentCondition === 'good' ? Colors.warning :
-                           weather.scentCondition === 'moderate' ? Colors.amber : Colors.danger,
-                  },
-                ]}>
-                  Scent: {weather.scentCondition.charAt(0).toUpperCase() + weather.scentCondition.slice(1)}
-                  {weather.dewPoint !== null ? ` (${weather.dewPoint.toFixed(0)}°F dew point)` : ''}
-                </Text>
-              </View>
             </View>
           )}
 
@@ -251,19 +210,18 @@ export default function WeatherOverlay({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 50,
+    right: 12,
     zIndex: 100,
-    maxWidth: 280,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.forestDark,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    gap: 6,
+    backgroundColor: 'rgba(13, 26, 13, 0.9)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    gap: 5,
     borderWidth: 1,
     borderColor: Colors.mud,
   },
@@ -272,14 +230,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   tempText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  conditionText: {
-    fontSize: 12,
+  weatherSymbol: {
+    fontSize: 14,
+    width: 18,
+    textAlign: 'center',
+  },
+  windCompact: {
+    fontSize: 10,
     color: Colors.textSecondary,
-    flexShrink: 1,
+    fontWeight: '600',
   },
   ratingBadge: {
     borderRadius: 6,
@@ -289,11 +252,11 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 10,
     fontWeight: '700',
-    color: Colors.mdWhite,
+    color: '#fff',
   },
   expandedPanel: {
     marginTop: 4,
-    backgroundColor: Colors.forestDark,
+    backgroundColor: 'rgba(13, 26, 13, 0.95)',
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
@@ -319,7 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: Colors.overlayLight,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   assessmentText: {
     fontSize: 12,
@@ -330,7 +293,7 @@ const styles = StyleSheet.create({
   forecastSection: {
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: Colors.overlayLight,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   forecastRow: {
     flexDirection: 'row',
@@ -367,21 +330,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.oak,
     fontWeight: '600',
-  },
-  pressureTrendText: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  scentRow: {
-    marginTop: 6,
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: Colors.overlayLight,
-  },
-  scentLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 14,
   },
 });

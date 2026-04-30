@@ -1,0 +1,58 @@
+{
+  "project": "MDHuntFishOutdoors",
+  "research_mission": "Comprehensive Maryland boating, crabbing, camping, hiking, and monetization research",
+  "date_completed": "2026-04-11",
+  "status": "Complete",
+  "summary": "Extensive web research covering Maryland DNR regulations, outdoor recreation infrastructure, guide services, and affiliate opportunities to support app development for fishing, crabbing, camping, and hiking phases",
+  "data_categories": {
+    "boating_crabbing": {
+      "directory": "boating-crabbing/",
+      "files": [
+        "crabbing_regs.json",
+        "boating_safety.json",
+        "bay_access.json"
+      ]
+    },
+    "camping_hiking": {
+      "directory": "camping-hiking/",
+      "files": [
+        "state_park_campgrounds.json",
+        "primitive_camping.json",
+        "private_campgrounds.json",
+        "other_trails.json",
+        "at_trail_data.json",
+        "trail_races.json",
+        "four_states_challenge.json"
+      ]
+    },
+    "monetization": {
+      "directory": "monetization/",
+      "files": [
+        "guide_services.json",
+        "outfitters_gear_shops.json",
+        "affiliate_opportunities.json"
+      ]
+    }
+  },
+  "key_findings": {
+    "crabbing": "Recreational season April 1 - December 15, males only 5+ inches, daily limits vary by boat license status (2-6 dozen male crabs), crab pots require turtle reduction devices",
+    "boating": "Boating license required (born after July 1, 1972), vessel registration 2-year validity, at least 1 PFD per person, PWC operators 16+ with license",
+    "camping": "Maryland state parks via parkreservations.maryland.gov (365-day advance), Green Ridge 100 primitive sites ($10/night), 45+ private campgrounds including glamping options",
+    "hiking": "40 miles AT in Maryland, 6 major shelters, Catoctin Mountain Park trails, Billy Goat Trail challenging scramble, Sugarloaf Mountain quartzite views, Four States Challenge 45 miles in 24 hours",
+    "monetization": "Amazon Associates active (mdoutdoors-20), Campnab $3-7 per referral potential, 10+ fishing guides, 9+ hunting outfitters, guide service booking partnerships available"
+  },
+  "immediate_integration_opportunities": [
+    "Add crabbing regulations to Fish Mode screen",
+    "Link Campnab for campground reservation commissions",
+    "Feature Four States Challenge in Hike Mode",
+    "Embed guide service directories with booking links",
+    "Integrate artificial reef locations into Fish Map",
+    "Add glamping partnerships (Savage River Lodge, Wild Yough)"
+  ],
+  "revenue_potential": [
+    "Camping: Campnab affiliate ($3-7 per referral), ReserveAmerica partnership exploration",
+    "Gear: Amazon Associates (already active), Bass Pro/Cabela's partnership, REI affiliation",
+    "Services: Fishing guide booking commissions, hunting guide partnerships, charter boat referrals",
+    "Lodging: Airbnb glamping, KOA affiliate, Jellystone partnerships"
+  ]
+}

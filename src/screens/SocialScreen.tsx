@@ -15,6 +15,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
 import Config from '../config';
+import socialService, { SightingReport } from '../services/socialService';
 
 interface ScoutingReport {
   id: string;
@@ -112,28 +113,23 @@ export default function SocialScreen() {
   /** Fetch scouting reports from backend, fallback to local mock data */
   const fetchReports = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
-      const response = await fetch(`${Config.API_BASE_URL}/api/v1/social/social/feed?limit=30`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.reports && data.reports.length > 0) {
-          const mapped: ScoutingReport[] = data.reports.map((r: any) => ({
-            id: r.id,
-            handle: r.handle || 'Anonymous',
-            species: r.species,
-            activityLevel: r.activity_level || 'moderate',
-            county: r.county || '',
-            area: r.public_land_name || r.general_area || '',
-            bodyText: r.body || '',
-            date: r.report_date?.split('T')[0] || '',
-            upvotes: r.upvotes || 0,
-          }));
-          setReports(mapped);
-        }
+      const sightings = await socialService.getReports();
+      if (sightings && sightings.length > 0) {
+        const mapped: ScoutingReport[] = sightings.map((s: SightingReport) => ({
+          id: s.id,
+          handle: s.authorName || 'Anonymous',
+          species: s.species,
+          activityLevel: 'high',
+          county: '',
+          area: '',
+          bodyText: s.description,
+          date: s.createdAt?.split('T')[0] || '',
+          upvotes: s.likes || 0,
+        }));
+        setReports(mapped);
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[Social] Failed to fetch reports:', err);
       // Keep local mock data as fallback
     } finally {
       setLoadingFeed(false);
@@ -158,12 +154,6 @@ export default function SocialScreen() {
     }
 
     try {
-      const token = await AsyncStorage.getItem('auth_token');
-      if (!token) {
-        Alert.alert('Auth Required', 'Please ensure you are authenticated');
-        return;
-      }
-
       // Optimistic update: increment upvote count immediately
       setReports((prevReports) =>
         prevReports.map((r) =>
@@ -175,31 +165,7 @@ export default function SocialScreen() {
       setUpvotedReports((prev) => new Set([...prev, reportId]));
 
       // Make API call
-      const response = await fetch(
-        `${Config.API_BASE_URL}/api/v1/social/reports/${reportId}/upvote`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        // Revert on error
-        setReports((prevReports) =>
-          prevReports.map((r) =>
-            r.id === reportId ? { ...r, upvotes: r.upvotes - 1 } : r
-          )
-        );
-        setUpvotedReports((prev) => {
-          const next = new Set(prev);
-          next.delete(reportId);
-          return next;
-        });
-        Alert.alert('Error', 'Failed to upvote. Please try again.');
-      }
+      await socialService.likeReport(reportId);
     } catch (error) {
       // Revert on error
       setReports((prevReports) =>
@@ -212,7 +178,7 @@ export default function SocialScreen() {
         next.delete(reportId);
         return next;
       });
-      if (__DEV__) console.error('[Social] Upvote failed:', error);
+      if (__DEV__) console.warn('[Social] Upvote failed:', error);
     }
   }, [upvotedReports]);
 
@@ -883,7 +849,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

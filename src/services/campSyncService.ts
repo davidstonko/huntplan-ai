@@ -16,7 +16,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CampWebSocket, createCampWebSocket, AnnotationEvent, PhotoEvent, PresenceEvent } from './websocketService';
+import { CampWebSocket, createCampWebSocket, AnnotationEvent, PhotoEvent, PresenceEvent, ChatMessageEvent, TypingEvent, ChatReactionEvent, ChatDeleteEvent } from './websocketService';
 import { SharedAnnotation, CampPhoto } from '../types/deercamp';
 import Config from '../config';
 
@@ -57,6 +57,10 @@ export class CampSyncManager {
   public onPhotoAdded: ((event: PhotoEvent, photo: CampPhoto) => void) | null = null;
   public onMemberOnline: ((event: PresenceEvent) => void) | null = null;
   public onMemberOffline: ((event: PresenceEvent) => void) | null = null;
+  public onChatMessage: ((event: ChatMessageEvent) => void) | null = null;
+  public onTyping: ((event: TypingEvent) => void) | null = null;
+  public onChatReaction: ((event: ChatReactionEvent) => void) | null = null;
+  public onChatDelete: ((event: ChatDeleteEvent) => void) | null = null;
   public onError: ((error: string) => void) | null = null;
   public onSyncStateChanged: ((state: SyncState) => void) | null = null;
 
@@ -175,6 +179,45 @@ export class CampSyncManager {
   }
 
   /**
+   * Send a chat message to the camp (real-time only — no offline queue for chat).
+   * Returns true if sent, false if offline.
+   */
+  sendChatMessage(text: string): boolean {
+    if (this.ws?.isConnected) {
+      this.ws.sendChatMessage(text);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Send typing indicator.
+   */
+  sendTyping(): void {
+    if (this.ws?.isConnected) {
+      this.ws.sendTyping();
+    }
+  }
+
+  /**
+   * Send a reaction to a message.
+   */
+  sendChatReaction(messageId: string, emoji: string): void {
+    if (this.ws?.isConnected) {
+      this.ws.sendChatReaction(messageId, emoji);
+    }
+  }
+
+  /**
+   * Delete a chat message (sender only).
+   */
+  sendChatDelete(messageId: string): void {
+    if (this.ws?.isConnected) {
+      this.ws.sendChatDelete(messageId);
+    }
+  }
+
+  /**
    * Send location update (opt-in, real-time only).
    */
   sendLocationUpdate(lat: number, lng: number, heading?: number, speed?: number): void {
@@ -283,6 +326,22 @@ export class CampSyncManager {
         caption: event.caption,
       };
       this.onPhotoAdded?.(event, photo);
+    };
+
+    this.ws.onChatMessage = (event) => {
+      this.onChatMessage?.(event);
+    };
+
+    this.ws.onTyping = (event) => {
+      this.onTyping?.(event);
+    };
+
+    this.ws.onChatReaction = (event) => {
+      this.onChatReaction?.(event);
+    };
+
+    this.ws.onChatDelete = (event) => {
+      this.onChatDelete?.(event);
     };
 
     this.ws.onMemberOnline = (event) => {
@@ -501,4 +560,141 @@ export function resetSyncManager(): void {
     syncManagerInstance.disconnect();
   }
   syncManagerInstance = null;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// 2026-04-26 (fork merge): REST-API sync functions appended below.
+// These are imported by V2.3 DeerCampContext and operate independently of
+// the CampSyncManager class above (which handles WebSocket real-time chat).
+// Source: huntplan-ai mobile/src/services/campSyncService.ts.
+// ────────────────────────────────────────────────────────────────────────────
+
+import AsyncStorage_v23 from '@react-native-async-storage/async-storage';
+import { createAuthenticatedClient } from './authService';
+
+const SYNC_TIMESTAMP_KEY = '@camp_sync_timestamps';
+const PENDING_QUEUE_KEY = '@camp_pending_queue';
+
+const restApi = createAuthenticatedClient();
+
+interface PendingAction {
+  id: string;
+  campId: string;
+  type: 'add_annotation' | 'remove_annotation' | 'add_photo' | 'remove_photo';
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+interface SyncResult {
+  success: boolean;
+  newAnnotations: number;
+  newPhotos: number;
+  newActivity: number;
+  errors: string[];
+}
+
+export async function createCampRemote(
+  name: string,
+  centerLat: number,
+  centerLng: number,
+  linkedLandId?: string,
+): Promise<{ id: string; invite_code: string } | null> {
+  try {
+    const response = await restApi.post('/deercamp/camps', {
+      name,
+      center_lat: centerLat,
+      center_lng: centerLng,
+      linked_land_id: linkedLandId,
+    });
+    return response.data;
+  } catch (error) {
+    if (__DEV__) console.warn('[CampSync] Create camp failed:', error);
+    return null;
+  }
+}
+
+export async function joinCampRemote(
+  inviteCode: string,
+  username?: string,
+): Promise<{ camp_id: string; camp_name: string } | null> {
+  try {
+    const response = await restApi.post('/deercamp/camps/join', {
+      invite_code: inviteCode,
+      username,
+    });
+    return response.data;
+  } catch (error) {
+    if (__DEV__) console.warn('[CampSync] Join camp failed:', error);
+    return null;
+  }
+}
+
+export async function fetchCampRemote(campId: string): Promise<Record<string, unknown> | null> {
+  try {
+    const response = await restApi.get(`/deercamp/camps/${campId}`);
+    return response.data;
+  } catch (error) {
+    if (__DEV__) console.warn('[CampSync] Fetch camp failed:', error);
+    return null;
+  }
+}
+
+export async function deleteCampRemote(campId: string): Promise<boolean> {
+  try {
+    await restApi.delete(`/deercamp/camps/${campId}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function syncCamp(campId: string): Promise<SyncResult> {
+  const result: SyncResult = {
+    success: false, newAnnotations: 0, newPhotos: 0, newActivity: 0, errors: [],
+  };
+  try {
+    const ts = await _getSyncTimestamps();
+    const lastSynced = ts[campId] || null;
+    const response = await restApi.post(`/deercamp/camps/${campId}/sync`, { last_synced: lastSynced });
+    const data = response.data;
+    result.newAnnotations = data.new_annotations?.length || 0;
+    result.newPhotos = data.new_photos?.length || 0;
+    result.newActivity = data.new_activity?.length || 0;
+    result.success = true;
+    ts[campId] = data.synced_at;
+    await AsyncStorage_v23.setItem(SYNC_TIMESTAMP_KEY, JSON.stringify(ts));
+    return result;
+  } catch (error) {
+    result.errors.push(error instanceof Error ? error.message : 'Unknown error');
+    return result;
+  }
+}
+
+export async function queueAction(action: Omit<PendingAction, 'id' | 'createdAt'>): Promise<void> {
+  const queue = await _getPendingQueue();
+  queue.push({
+    ...action,
+    id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    createdAt: new Date().toISOString(),
+  });
+  await AsyncStorage_v23.setItem(PENDING_QUEUE_KEY, JSON.stringify(queue));
+}
+
+export async function getPendingCount(): Promise<number> {
+  const queue = await _getPendingQueue();
+  return queue.length;
+}
+
+async function _getPendingQueue(): Promise<PendingAction[]> {
+  try {
+    const json = await AsyncStorage_v23.getItem(PENDING_QUEUE_KEY);
+    return json ? JSON.parse(json) : [];
+  } catch { return []; }
+}
+
+async function _getSyncTimestamps(): Promise<Record<string, string>> {
+  try {
+    const json = await AsyncStorage_v23.getItem(SYNC_TIMESTAMP_KEY);
+    return json ? JSON.parse(json) : {};
+  } catch { return {}; }
 }

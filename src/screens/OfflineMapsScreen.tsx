@@ -76,7 +76,7 @@ export default function OfflineMapsScreen() {
       await downloadRegion(region, (p, details) => {
         setProgress(p);
         if (details) {
-          setDownloadDetails(details);
+          setDownloadDetails(details as DownloadProgress);
         }
       });
       await refresh();
@@ -97,7 +97,7 @@ export default function OfflineMapsScreen() {
       await retryDownload(region, (p, details) => {
         setProgress(p);
         if (details) {
-          setDownloadDetails(details);
+          setDownloadDetails(details as DownloadProgress);
         }
       });
       await refresh();

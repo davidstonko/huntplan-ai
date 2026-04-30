@@ -1,0 +1,61 @@
+{
+  "source_urls": [
+    "https://parkreservations.maryland.gov/",
+    "https://dnr.maryland.gov/publiclands/pages/campinginfo.aspx",
+    "https://www.parkdayuse.maryland.gov/"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "reservations_system": {
+      "online_platform": "parkreservations.maryland.gov",
+      "available_24_7": true,
+      "advance_booking_days": 365,
+      "phone_number_us": "1-888-432-2267",
+      "phone_number_international": "301-687-8160",
+      "operated_by": "ReserveAmerica"
+    },
+    "camping_types_available": [
+      "Traditional campgrounds with electric, sewer, water hookups",
+      "Primitive camping in state forests",
+      "Cabins and cottages",
+      "RV sites",
+      "Group camping areas"
+    ],
+    "campground_amenities": [
+      "Restrooms with flush toilets",
+      "Vault toilets (primitive areas)",
+      "Hot showers",
+      "Picnic tables",
+      "Fire rings",
+      "Water hookups",
+      "Electric hookups (RV sites)",
+      "Dump stations",
+      "Sewer hookups"
+    ],
+    "primitive_camping": {
+      "availability": "First-come, first-serve in state forests",
+      "minimal_amenities": true
+    },
+    "fees": {
+      "note": "Rates vary by campground, campsite type, and season",
+      "recommendation": "Check specific park website for exact pricing"
+    },
+    "notable_parks": [
+      {
+        "name": "Assateague Island State Park",
+        "camping_type": "Mixed facility",
+        "note": "Popular for wildlife viewing"
+      },
+      {
+        "name": "Deep Creek Lake State Park",
+        "camping_type": "Full facility",
+        "note": "Western Maryland mountain location"
+      },
+      {
+        "name": "Elk Neck State Park",
+        "camping_type": "Full facility",
+        "note": "Waterfront camping"
+      }
+    ]
+  }
+}

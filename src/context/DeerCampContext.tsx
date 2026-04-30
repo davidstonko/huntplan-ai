@@ -1,136 +1,272 @@
 /**
- * DeerCampContext — Manages collaborative shared maps (Deer Camps).
- * WatermelonDB-backed persistence with AsyncStorage migration (V2+).
- * WebSocket real-time sync with REST fallback (Phase 3+).
+ * DeerCampContext — Manages collaborative shared maps called Deer Camps.
+ *
+ * Core state for team hunting and fishing camps. Each camp is a shared collaborative map
+ * where members can add annotations (waypoints, routes, areas, tracks), upload photos,
+ * and see activity from all teammates in real-time.
+ *
+ * V3 upgrade: Now integrates with campSyncService for backend synchronization.
+ * - Offline-first: all mutations apply locally first, then queue for sync
+ * - syncCamp() pulls new data from server when online
+ * - joinCampByCode() joins remote camps via invite codes
+ * - Auto-sync on app foreground (when network available)
+ *
+ * Deer Camps can:
+ * - Import scouting plans from the Scout tab (converts all annotations into shared ones)
+ * - Export saved GPS tracks as shared annotations
+ * - Display color-coded member contributions and activity feed
+ * - Manage member roster (add/remove)
+ * - Sync with backend for real-time collaboration
+ *
+ * Persistence: AsyncStorage-backed locally + backend sync via campSyncService.
+ *
+ * Data flow:
+ * - DeerCampScreen: Lists camps, renders camp map with all shared annotations
+ * - ScoutDataContext: Plans/tracks exported to camps via importPlanToCamp/exportTrackToCamp
+ * - AnnotationLayer: Renders all camp annotations (shared by all members)
+ * - campSyncService: Offline queue → push pending → pull new from server
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { database } from '../db';
-import DeerCampModel from '../db/models/DeerCampModel';
-import CampMemberModel from '../db/models/CampMemberModel';
-import SharedAnnotationModel from '../db/models/SharedAnnotationModel';
-import CampPhotoModel from '../db/models/CampPhotoModel';
-import ActivityFeedModel from '../db/models/ActivityFeedModel';
+import { AppState, AppStateStatus } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import {
   DeerCamp,
   CampMember,
   SharedAnnotation,
   CampPhoto,
   ActivityFeedItem,
+  CampArea,
+  OfflineTileStatus,
+  CampDocument,
   MEMBER_COLORS,
 } from '../types/deercamp';
 import { HuntPlan, RecordedTrack } from '../types/scout';
-import { getSyncManager, resetSyncManager, SyncState } from '../services/campSyncService';
+import {
+  syncCamp as syncCampRemote,
+  createCampRemote,
+  joinCampRemote,
+  fetchCampRemote,
+  deleteCampRemote,
+  queueAction,
+  getPendingCount,
+} from '../services/campSyncService';
 
 const STORAGE_KEY = '@deer_camps';
+// 2026-04-27: Schema version sentinel. Bump when DeerCamp shape changes
+// in a way migrateCamps can't recover from. The version-key parallel to
+// STORAGE_KEY lets us branch in load logic without touching the data.
+const STORAGE_VERSION_KEY = '@deer_camps_schema_version';
+const CURRENT_SCHEMA_VERSION = 2;
 const CURRENT_USER_KEY = '@current_user';
-const MIGRATION_FLAG = '@wmdb_migration_done';
 
+/**
+ * DeerCampContextType — Contract for Deer Camp state and mutations.
+ * @interface
+ */
 interface DeerCampContextType {
+  /** Array of all camps owned by or joined by the current user */
   camps: DeerCamp[];
+  /** ID of the current local user (generated on first launch) */
   currentUserId: string;
+  /** Display name of the current user (defaults to 'Me' in V2) */
   currentUsername: string;
-  syncState: SyncState | null; // Current WebSocket/sync state
 
-  // Camp CRUD
-  createCamp: (name: string, centerPoint: { lat: number; lng: number }, linkedLandId?: string) => DeerCamp;
+  // ── Camp CRUD ──
+  /**
+   * Create a new Deer Camp with the current user as admin.
+   *
+   * 2026-04-20 contract change: callers must supply the rectangular `area`
+   * the user drew in CampAreaPickerScreen. centerPoint + defaultZoom are
+   * derived from that area and stored for back-compat. offlineTileStatus
+   * defaults to 'none' — users opt in to offline tiles via the camp detail
+   * screen's "Download offline map" button.
+   *
+   * @param name - Camp name (e.g., "Opening Weekend 2026")
+   * @param area - User-drawn rectangular bounds (anchors shared map + offline tiles)
+   * @param linkedLandId - Optional link to a public hunting land (reserved for future)
+   * @returns The created camp
+   */
+  createCamp: (name: string, area: CampArea, linkedLandId?: string) => DeerCamp;
+  /** Delete a camp and all its annotations/photos (permanent) */
   deleteCamp: (campId: string) => void;
+  /** Retrieve a single camp by ID */
   getCamp: (campId: string) => DeerCamp | undefined;
+  /**
+   * Update the offline tile status for a camp (download lifecycle).
+   * Called by the offline-download service as the pack moves through
+   * 'none' → 'downloading' → 'ready' | 'error'.
+   */
+  setCampOfflineStatus: (campId: string, status: OfflineTileStatus) => void;
+  /**
+   * Return the camp's share-link invite code. If the camp doesn't have
+   * one yet (created before 2026-04-28 eager-generation), generate one,
+   * persist it, and return it. Idempotent for camps that already have
+   * a code. Returns null if the campId isn't found. Mirrors the lazy
+   * pattern in `GroupCampContext.shareGroupCampInvite`.
+   */
+  ensureCampInviteCode: (campId: string) => string | null;
 
-  // Members
+  // ── Moderator tools (admin-only UX, enforced at the call site) ──
+  /** Rename a camp (admin action). Logs to the activity feed. */
+  renameCamp: (campId: string, newName: string) => void;
+  /**
+   * Update a camp's moderator description. Pass an empty string to clear it.
+   * Logs to the activity feed only when the description actually changed.
+   */
+  updateCampDescription: (campId: string, description: string) => void;
+  /**
+   * Attach a document or reference photo to a camp (admin action).
+   * The caller supplies the full CampDocument (including a freshly-generated
+   * id) so the UI can optimistically render before any network upload.
+   */
+  addCampDocument: (campId: string, document: CampDocument) => void;
+  /** Remove a camp document by id (admin action). */
+  removeCampDocument: (campId: string, documentId: string) => void;
+
+  // ── Members ──
+  /**
+   * Add a user to a camp by username.
+   * V2: Creates local user record. V3+: Will invite real users and sync.
+   */
   addMember: (campId: string, username: string) => void;
+  /** Remove a member from a camp (admin action) */
   removeMember: (campId: string, userId: string) => void;
 
-  // Annotations
+  // ── Annotations (waypoints, routes, areas, tracks) ──
+  /**
+   * Add a shared annotation to a camp.
+   * Annotations include waypoints, routes, areas, and tracks — all color-coded by creator.
+   */
   addAnnotation: (campId: string, annotation: SharedAnnotation) => void;
+  /** Remove a shared annotation from a camp */
   removeAnnotation: (campId: string, annotationId: string) => void;
 
-  // Photos
+  // ── Photos ──
+  /**
+   * Add a geotagged photo to a camp with optional caption.
+   * Full image upload deferred to V3+; V2 stores metadata only.
+   */
   addPhoto: (campId: string, photo: CampPhoto) => void;
+  /** Remove a photo from a camp */
   removePhoto: (campId: string, photoId: string) => void;
 
-  // Import from Scout
+  // ── Import/Export from Scout ──
+  /**
+   * Import a scout plan into a camp, converting all plan annotations
+   * (waypoints, routes, areas, parking point) into shared annotations.
+   * Creates a single activity feed entry.
+   */
   importPlanToCamp: (campId: string, plan: HuntPlan) => void;
+  /**
+   * Export a saved GPS track to a camp as a shared annotation.
+   * Tracks are independent of plans and can be shared standalone.
+   */
   exportTrackToCamp: (campId: string, track: RecordedTrack) => void;
 
-  // Real-time sync
-  syncCamp: (campId: string) => Promise<void>;
-  disconnectSync: () => void;
-  syncNow: () => Promise<void>;
+  // ── V3 Sync Functions ──
+  /** Sync a camp with the backend. Returns true on success. */
+  syncCamp: (campId: string) => Promise<boolean>;
+  /** Join a remote camp using an invite code */
+  joinCampByCode: (inviteCode: string) => Promise<boolean>;
+  /** Whether a sync is currently in progress */
+  isSyncing: boolean;
+  /** Number of pending offline actions queued for sync */
+  pendingActions: number;
 }
 
 const DeerCampContext = createContext<DeerCampContextType | undefined>(undefined);
 
+/**
+ * generateId — Lightweight unique ID generator for camps, members, and annotations.
+ * Uses timestamp (base36) + random string for reasonable uniqueness.
+ * @returns {string} A unique ID
+ */
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
 }
 
 /**
- * Convert WatermelonDB models to plain JS DeerCamp objects for React state.
+ * generateInviteCode — 6-character alphanumeric invite code for share-link URLs.
+ *
+ * Locked at 6 chars to match the format the server uses + the regex in
+ * `services/deepLinkRouter.ts`'s `parseLink()` (`[a-zA-Z0-9]+` of any length,
+ * but the existing UI assumes ~6). Mirrors the helper in `GroupCampContext.tsx`.
+ *
+ * 2026-04-28: added so that newly-created local camps surface the
+ * "Share Link via Messages" button immediately. Live audit caught that
+ * `createCamp` was leaving `inviteCode` undefined → Share Link button
+ * always alerted "No Share Code Yet" until the camp round-tripped through
+ * the server. See live_audit_2026_04_28.md.
+ *
+ * @returns {string} 6-character UPPERCASE alphanumeric code (e.g. "AB12CD")
  */
-async function modelToDeerCamp(campModel: DeerCampModel): Promise<DeerCamp> {
-  const membersModels = await campModel.members.fetch();
-  const annotationsModels = await campModel.annotations.fetch();
-  const photosModels = await campModel.photos.fetch();
-  const feedModels = await campModel.activityFeed.fetch();
+function generateInviteCode(): string {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 
-  const members: CampMember[] = membersModels.map((m: CampMemberModel) => ({
-    userId: m.userId,
-    username: m.username,
-    role: m.role as 'admin' | 'member',
-    color: m.color,
-    joinedAt: m.joinedAt.toISOString(),
-  }));
-
-  const annotations: SharedAnnotation[] = annotationsModels.map((a: SharedAnnotationModel) => ({
-    id: a.id,
-    type: a.annotationType as 'waypoint' | 'route' | 'area' | 'note' | 'track',
-    createdBy: a.createdBy,
-    createdAt: a.createdAt.toISOString(),
-    data: a.data,
-    importedFromPlanId: a.importedFromPlanId || undefined,
-  }));
-
-  const photos: CampPhoto[] = photosModels.map((p: CampPhotoModel) => ({
-    id: p.id,
-    uploadedBy: p.uploadedBy,
-    uploadedAt: p.createdAt.toISOString(),
-    imageUri: p.uri,
-    lat: p.lat,
-    lng: p.lng,
-    caption: p.caption || undefined,
-  }));
-
-  const activityFeed: ActivityFeedItem[] = feedModels.map((f: ActivityFeedModel) => ({
-    id: f.id,
-    userId: f.userId,
-    username: f.username,
-    action: f.action,
-    timestamp: f.createdAt.toISOString(),
-    annotationId: f.annotationId || undefined,
-    photoId: f.photoId || undefined,
-  }));
-
-  return {
-    id: campModel.id,
-    name: campModel.name,
-    createdAt: campModel.createdAt.toISOString(),
-    createdBy: campModel.createdBy,
-    linkedLandId: campModel.linkedLandId || undefined,
-    centerPoint: {
-      lat: campModel.centerLat,
-      lng: campModel.centerLng,
-    },
-    defaultZoom: campModel.defaultZoom,
-    members,
-    annotations,
-    photos,
-    activityFeed,
-  };
+/**
+ * addFeedItem — Helper to create an activity feed entry for a camp action.
+ *
+ * Used to log when members add annotations, photos, import plans, etc.
+ * Feed is displayed in the ActivityFeedPanel on the camp map.
+ *
+ * @param camp - The camp being updated (for timestamp)
+ * @param userId - ID of the user performing the action
+ * @param username - Display name of the user
+ * @param action - Human-readable action string (e.g., "added a waypoint", "imported plan \"Morning Scout\"")
+ * @param annotationId - Optional ID of related annotation (for linking feed to map items)
+ * @param photoId - Optional ID of related photo
+ * @returns {ActivityFeedItem} New feed entry
+ */
+/**
+ * Migrate deer camps persisted before the 2026-04-20 schema change.
+ *
+ * Older camps were stored with only `centerPoint` + `defaultZoom` — they
+ * lacked `area` and `offlineTileStatus`. We backfill a default area
+ * centered on the stored centerPoint. The default area is ~1 sq mi
+ * (0.014° × 0.020°), which is well under the 5 sq mi cap and matches
+ * a mid-size private lease.
+ *
+ * This is a one-time read-side migration: the next setCamps() write
+ * persists the upgraded records. Idempotent — rerunning on already-
+ * migrated camps is a no-op.
+ */
+function migrateCamps(raw: unknown): DeerCamp[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((c: any) => {
+    // Back-compat: area + offlineTileStatus were added 2026-04-20; description
+    // + documents were added later the same day for moderator tooling. Older
+    // records may be missing any subset of these fields.
+    const cp = c?.centerPoint ?? { lat: 39.0458, lng: -76.6413 };
+    let area: CampArea;
+    if (c && c.area) {
+      area = c.area;
+    } else {
+      // ~1 sq mi default (0.014° lat × 0.020° lng at MD's mid-latitude)
+      const halfLat = 0.007;
+      const halfLng = 0.010;
+      area = {
+        north: cp.lat + halfLat,
+        south: cp.lat - halfLat,
+        east: cp.lng + halfLng,
+        west: cp.lng - halfLng,
+        areaSqMi: 1.0,
+      };
+    }
+    return {
+      ...c,
+      area,
+      offlineTileStatus: (c?.offlineTileStatus ?? 'none') as OfflineTileStatus,
+      description: typeof c?.description === 'string' ? c.description : '',
+      documents: Array.isArray(c?.documents) ? c.documents : [],
+    } as DeerCamp;
+  });
 }
 
 function addFeedItem(
+  camp: DeerCamp,
   userId: string,
   username: string,
   action: string,
@@ -148,267 +284,398 @@ function addFeedItem(
   };
 }
 
+/**
+ * DeerCampProvider — React context provider for Deer Camp state.
+ *
+ * Manages creation, updates, deletion, and shared annotations for Deer Camps.
+ * Handles AsyncStorage persistence: camps are loaded on mount and persisted on every change.
+ * Also manages the current user's ID and username (generated locally on first launch).
+ *
+ * @param {ReactNode} children - Child components
+ * @returns {JSX.Element}
+ *
+ * @example
+ * <DeerCampProvider>
+ *   <DeerCampScreen />
+ * </DeerCampProvider>
+ */
 export function DeerCampProvider({ children }: { children: ReactNode }) {
   const [camps, setCamps] = useState<DeerCamp[]>([]);
+  const campsRef = useRef<DeerCamp[]>([]);
+  // Keep ref in sync so AppState listener always reads latest camps
+  useEffect(() => { campsRef.current = camps; }, [camps]);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [currentUsername, setCurrentUsername] = useState<string>('');
+  /** Flag to prevent persisting before initial load completes */
   const [loaded, setLoaded] = useState(false);
-  const [syncState, setSyncState] = useState<SyncState | null>(null);
-  const [activeSyncCampId, setActiveSyncCampId] = useState<string>('');
+  /** V3: Sync state */
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [pendingActions, setPendingActions] = useState(0);
+  const appState = useRef(AppState.currentState);
 
-  // ── Load from WatermelonDB (with AsyncStorage migration) ──
+  // ── Load from AsyncStorage on mount ──
+  // Restore data from persistent storage on app start
   useEffect(() => {
     (async () => {
       try {
-        // Check if migration has been done
-        const migrationDone = await AsyncStorage.getItem(MIGRATION_FLAG);
-
-        // Load user profile
-        let userId = '';
-        let username = '';
-        const userJson = await AsyncStorage.getItem(CURRENT_USER_KEY);
+        const [campsJson, userJson, schemaVersionStr] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(CURRENT_USER_KEY),
+          AsyncStorage.getItem(STORAGE_VERSION_KEY),
+        ]);
+        if (campsJson) {
+          // 2026-04-27: try/catch around JSON.parse so corrupted storage
+          // doesn't crash the load. We log + reset rather than throw —
+          // worst case the user loses local-only camp state which is
+          // recoverable post backend-sync (Phase 3+).
+          try {
+            const parsed = JSON.parse(campsJson);
+            const storedVersion = schemaVersionStr ? parseInt(schemaVersionStr, 10) : 1;
+            if (storedVersion > CURRENT_SCHEMA_VERSION) {
+              // User has a NEWER schema than this build supports — likely
+              // came from a later install + downgrade. Don't blow it away;
+              // just skip-load and surface a console.warn.
+              console.warn(
+                `DeerCampContext: stored schema v${storedVersion} > app v${CURRENT_SCHEMA_VERSION}; skipping load to avoid data loss`,
+              );
+            } else {
+              setCamps(migrateCamps(parsed));
+              if (storedVersion !== CURRENT_SCHEMA_VERSION) {
+                await AsyncStorage.setItem(
+                  STORAGE_VERSION_KEY,
+                  String(CURRENT_SCHEMA_VERSION),
+                );
+              }
+            }
+          } catch (parseErr) {
+            console.warn('DeerCampContext: corrupted storage, starting fresh', parseErr);
+            setCamps([]);
+          }
+        }
         if (userJson) {
+          // Load existing user identity
           const user = JSON.parse(userJson);
-          userId = user.id || '';
-          username = user.username || '';
+          setCurrentUserId(user.id || '');
+          setCurrentUsername(user.username || '');
         } else {
-          // Generate a local user ID for V2
+          // V2: Generate a local user on first launch. V3+ will use real authentication.
           const localId = generateId();
           const localUser = { id: localId, username: 'Me' };
           await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(localUser));
-          userId = localId;
-          username = 'Me';
+          setCurrentUserId(localId);
+          setCurrentUsername('Me');
         }
-
-        setCurrentUserId(userId);
-        setCurrentUsername(username);
-
-        // Migrate from AsyncStorage to WatermelonDB if needed
-        if (!migrationDone) {
-          const campsJson = await AsyncStorage.getItem(STORAGE_KEY);
-          if (campsJson) {
-            try {
-              const oldCamps: DeerCamp[] = JSON.parse(campsJson);
-              await migrateOldCampsToWMDB(oldCamps, userId);
-              if (__DEV__) console.log('[DeerCampContext] Migrated', oldCamps.length, 'camps to WatermelonDB');
-            } catch (e) {
-              if (__DEV__) console.warn('[DeerCampContext] Migration failed:', e);
-            }
-          }
-        }
-
-        // Load camps from WatermelonDB
-        const campModels = await database.get<DeerCampModel>('deer_camps').query().fetch();
-        const loadedCamps = await Promise.all(campModels.map(modelToDeerCamp));
-        setCamps(loadedCamps);
-
-        // Set migration flag AFTER successful load
-        if (!migrationDone) {
-          await AsyncStorage.setItem(MIGRATION_FLAG, 'true');
-        }
-
-        if (__DEV__) console.log('[DeerCampContext] Loaded', loadedCamps.length, 'camps from WatermelonDB');
+        // Load pending action count
+        const pending = await getPendingCount();
+        setPendingActions(pending);
       } catch (e) {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to load from database:', e);
+        console.warn('DeerCampContext: Failed to load from storage', e);
       }
+      // Mark load complete so persistence effects can begin
       setLoaded(true);
     })();
-
-    // Cleanup on unmount
-    return () => {
-      resetSyncManager();
-    };
   }, []);
 
-  // ── Migration helper ──
-  const migrateOldCampsToWMDB = async (oldCamps: DeerCamp[], userId: string) => {
-    await database.write(async () => {
-      for (const camp of oldCamps) {
-        // Create camp record
-        const campRecord = await database.get<DeerCampModel>('deer_camps').create((c) => {
-          c._raw.id = camp.id;
-          c.name = camp.name;
-          c.createdBy = camp.createdBy;
-          c.linkedLandId = camp.linkedLandId || null;
-          c.centerLat = camp.centerPoint.lat;
-          c.centerLng = camp.centerPoint.lng;
-          c.defaultZoom = camp.defaultZoom;
-          c.inviteCode = null;
-          c.createdAt = new Date(camp.createdAt);
-          c.updatedAt = new Date();
-        });
+  // Persist camps to AsyncStorage whenever camps change (after initial load).
+  // 2026-04-27: also stamps the schema version so a future downgrade detects
+  // an incompatible store and refuses to overwrite it (see load path above).
+  useEffect(() => {
+    if (!loaded) return;
+    Promise.all([
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(camps)),
+      AsyncStorage.setItem(STORAGE_VERSION_KEY, String(CURRENT_SCHEMA_VERSION)),
+    ]).catch(console.warn);
+  }, [camps, loaded]);
 
-        // Create members
-        for (const member of camp.members) {
-          await database.get<CampMemberModel>('camp_members').create((m) => {
-            m.campId = camp.id;
-            m.userId = member.userId;
-            m.username = member.username;
-            m.role = member.role;
-            m.color = member.color;
-            m.joinedAt = new Date(member.joinedAt);
-          });
-        }
-
-        // Create annotations
-        for (const annotation of camp.annotations) {
-          await database.get<SharedAnnotationModel>('shared_annotations').create((a) => {
-            a._raw.id = annotation.id;
-            a.campId = camp.id;
-            a.annotationType = annotation.type;
-            a.createdBy = annotation.createdBy;
-            a.dataJson = JSON.stringify(annotation.data);
-            a.importedFromPlanId = annotation.importedFromPlanId || null;
-            a.createdAt = new Date(annotation.createdAt);
-          });
-        }
-
-        // Create photos
-        for (const photo of camp.photos) {
-          await database.get<CampPhotoModel>('camp_photos').create((p) => {
-            p._raw.id = photo.id;
-            p.campId = camp.id;
-            p.uploadedBy = photo.uploadedBy;
-            p.username = photo.uploadedBy;
-            p.uri = photo.imageUri;
-            p.thumbnailUri = null;
-            p.lat = photo.lat;
-            p.lng = photo.lng;
-            p.caption = photo.caption || null;
-            p.createdAt = new Date(photo.uploadedAt);
-          });
-        }
-
-        // Create activity feed items
-        for (const feed of camp.activityFeed) {
-          await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-            f._raw.id = feed.id;
-            f.campId = camp.id;
-            f.userId = feed.userId;
-            f.username = feed.username;
-            f.action = feed.action;
-            f.annotationId = feed.annotationId || null;
-            f.photoId = feed.photoId || null;
-            f.createdAt = new Date(feed.timestamp);
-          });
+  // ── V3: Auto-sync when app comes to foreground ──
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        // App came to foreground — try to sync all camps
+        const netState = await NetInfo.fetch();
+        if (netState.isConnected) {
+          for (const camp of campsRef.current) {
+            try {
+              await syncCampRemote(camp.id);
+            } catch {
+              // Silently fail — offline-first
+            }
+          }
+          const pending = await getPendingCount();
+          setPendingActions(pending);
         }
       }
+      appState.current = nextAppState;
     });
-  };
 
-  // ── Camp CRUD ──
+    return () => subscription.remove();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — sync reads camps via ref-like setCamps
+
+  // ── Camp CRUD Operations ──
+
+  /**
+   * Create a new Deer Camp with the current user as the admin member.
+   * Initializes with empty annotations, photos, and an activity feed entry.
+   * Each member is assigned a distinct color from MEMBER_COLORS rotation.
+   */
   const createCamp = useCallback(
-    (name: string, centerPoint: { lat: number; lng: number }, linkedLandId?: string): DeerCamp => {
+    (name: string, area: CampArea, linkedLandId?: string): DeerCamp => {
       const now = new Date().toISOString();
-      const campId = generateId();
-      const adminMember: CampMember = {
-        userId: currentUserId,
-        username: currentUsername || 'Me',
-        role: 'admin',
-        color: MEMBER_COLORS[0],
-        joinedAt: now,
+      // Derive centerPoint from the area's centroid for back-compat (camp-map
+      // code that hasn't been migrated to read `area` directly still gets a
+      // sensible default camera target).
+      const centerPoint = {
+        lat: (area.north + area.south) / 2,
+        lng: (area.east + area.west) / 2,
       };
-      const creationFeedItem: ActivityFeedItem = {
-        id: generateId(),
-        userId: currentUserId,
-        username: currentUsername || 'Me',
-        action: `created "${name}"`,
-        timestamp: now,
-      };
-
       const newCamp: DeerCamp = {
-        id: campId,
+        id: generateId(),
         name,
         createdAt: now,
         createdBy: currentUserId,
         linkedLandId,
+        // 2026-04-28: eagerly generate the share-link invite code at create
+        // time so the Share Link via Messages button works on the very
+        // first tap, without needing a server roundtrip. See
+        // generateInviteCode JSDoc + live_audit_2026_04_28.md.
+        inviteCode: generateInviteCode(),
+        area,
         centerPoint,
         defaultZoom: 13,
-        members: [adminMember],
+        offlineTileStatus: 'none',
+        description: '',
+        documents: [],
+        // Start with creator as admin
+        members: [
+          {
+            userId: currentUserId,
+            username: currentUsername || 'Me',
+            role: 'admin',
+            color: MEMBER_COLORS[0],
+            joinedAt: now,
+          },
+        ],
         annotations: [],
         photos: [],
-        activityFeed: [creationFeedItem],
+        // Activity feed logs all camp actions (imports, uploads, etc.)
+        activityFeed: [
+          {
+            id: generateId(),
+            userId: currentUserId,
+            username: currentUsername || 'Me',
+            action: `created "${name}" (${area.areaSqMi.toFixed(2)} sq mi)`,
+            timestamp: now,
+          },
+        ],
       };
-
-      // Write to WatermelonDB
-      database.write(async () => {
-        const campModel = await database.get<DeerCampModel>('deer_camps').create((c) => {
-          c._raw.id = campId;
-          c.name = name;
-          c.createdBy = currentUserId;
-          c.linkedLandId = linkedLandId || null;
-          c.centerLat = centerPoint.lat;
-          c.centerLng = centerPoint.lng;
-          c.defaultZoom = 13;
-          c.inviteCode = null;
-          c.createdAt = new Date(now);
-          c.updatedAt = new Date();
-        });
-
-        // Create admin member
-        await database.get<CampMemberModel>('camp_members').create((m) => {
-          m.campId = campId;
-          m.userId = currentUserId;
-          m.username = currentUsername || 'Me';
-          m.role = 'admin';
-          m.color = MEMBER_COLORS[0];
-          m.joinedAt = new Date(now);
-        });
-
-        // Create creation feed item
-        await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-          f._raw.id = creationFeedItem.id;
-          f.campId = campId;
-          f.userId = currentUserId;
-          f.username = currentUsername || 'Me';
-          f.action = creationFeedItem.action;
-          f.annotationId = null;
-          f.photoId = null;
-          f.createdAt = new Date(now);
-        });
-      }).catch((e) => {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to create camp in WMDB:', e);
-      });
-
       setCamps((prev) => [...prev, newCamp]);
       return newCamp;
     },
     [currentUserId, currentUsername]
   );
 
-  const deleteCamp = useCallback((campId: string) => {
-    // Remove from WatermelonDB
-    database.write(async () => {
-      const campModel = await database.get<DeerCampModel>('deer_camps').find(campId);
-      await campModel.destroyPermanently();
-    }).catch((e) => {
-      if (__DEV__) console.warn('[DeerCampContext] Failed to delete camp in WMDB:', e);
-    });
+  /**
+   * Update a camp's offlineTileStatus. Used by the offline-download flow
+   * to walk the camp through downloading → ready (or error).
+   */
+  const setCampOfflineStatus = useCallback(
+    (campId: string, status: OfflineTileStatus) => {
+      setCamps((prev) =>
+        prev.map((camp) => (camp.id === campId ? { ...camp, offlineTileStatus: status } : camp))
+      );
+    },
+    []
+  );
 
+  /**
+   * 2026-04-28: Lazily generate + persist an invite code for camps that
+   * don't have one (created before eager-generation landed). New camps
+   * created after 2026-04-28 always have one already, so this returns
+   * the existing code without mutating state.
+   *
+   * Implemented as a synchronous getter that uses the functional setCamps
+   * form to fetch + mutate atomically. The returned code is also captured
+   * outside the updater so the caller (Share Link button) can use it
+   * immediately without waiting for a re-render.
+   *
+   * Returns null if the campId isn't found.
+   */
+  const ensureCampInviteCode = useCallback((campId: string): string | null => {
+    let resolvedCode: string | null = null;
+    setCamps((prev) => {
+      const target = prev.find((c) => c.id === campId);
+      if (!target) {
+        resolvedCode = null;
+        return prev;
+      }
+      if (target.inviteCode) {
+        resolvedCode = target.inviteCode;
+        return prev; // no mutation
+      }
+      const newCode = generateInviteCode();
+      resolvedCode = newCode;
+      return prev.map((c) => (c.id === campId ? { ...c, inviteCode: newCode } : c));
+    });
+    return resolvedCode;
+  }, []);
+
+  // ── Moderator tools (admin-only at the UI layer) ──
+
+  /**
+   * Rename a camp. Admin-only at the UI layer; the context does not police
+   * role because membership/role lookups are easiest at the call site and
+   * DeerCampScreen already derives "am I admin" once per screen.
+   */
+  const renameCamp = useCallback(
+    (campId: string, newName: string) => {
+      const trimmed = newName.trim();
+      if (!trimmed) return;
+      setCamps((prev) =>
+        prev.map((camp) => {
+          if (camp.id !== campId) return camp;
+          if (camp.name === trimmed) return camp;
+          const feedItem = addFeedItem(
+            camp,
+            currentUserId,
+            currentUsername,
+            `renamed camp to "${trimmed}"`
+          );
+          return {
+            ...camp,
+            name: trimmed,
+            activityFeed: [feedItem, ...camp.activityFeed],
+          };
+        })
+      );
+    },
+    [currentUserId, currentUsername]
+  );
+
+  /**
+   * Update a camp's moderator-authored description. A no-op if the text
+   * matches the stored description (so idle save-clicks don't spam the feed).
+   */
+  const updateCampDescription = useCallback(
+    (campId: string, description: string) => {
+      setCamps((prev) =>
+        prev.map((camp) => {
+          if (camp.id !== campId) return camp;
+          if ((camp.description ?? '') === description) return camp;
+          const feedItem = addFeedItem(
+            camp,
+            currentUserId,
+            currentUsername,
+            description.trim().length === 0
+              ? 'cleared the camp description'
+              : 'updated the camp description'
+          );
+          return {
+            ...camp,
+            description,
+            activityFeed: [feedItem, ...camp.activityFeed],
+          };
+        })
+      );
+    },
+    [currentUserId, currentUsername]
+  );
+
+  /**
+   * Attach a moderator-supplied document (lease PDF, property-map scan,
+   * hero photo, etc.). The caller generates `document.id` and fills in
+   * `addedBy` / `addedAt` — the context just stores the record and logs it.
+   */
+  const addCampDocument = useCallback(
+    (campId: string, document: CampDocument) => {
+      setCamps((prev) =>
+        prev.map((camp) => {
+          if (camp.id !== campId) return camp;
+          const feedItem = addFeedItem(
+            camp,
+            currentUserId,
+            currentUsername,
+            `attached "${document.title}"`
+          );
+          return {
+            ...camp,
+            documents: [...(camp.documents ?? []), document],
+            activityFeed: [feedItem, ...camp.activityFeed],
+          };
+        })
+      );
+    },
+    [currentUserId, currentUsername]
+  );
+
+  /** Remove a camp document by id. Admin-only at the UI layer. */
+  const removeCampDocument = useCallback(
+    (campId: string, documentId: string) => {
+      setCamps((prev) =>
+        prev.map((camp) => {
+          if (camp.id !== campId) return camp;
+          const removed = (camp.documents ?? []).find((d) => d.id === documentId);
+          const feedItem = addFeedItem(
+            camp,
+            currentUserId,
+            currentUsername,
+            `removed "${removed?.title ?? 'a document'}"`
+          );
+          return {
+            ...camp,
+            documents: (camp.documents ?? []).filter((d) => d.id !== documentId),
+            activityFeed: [feedItem, ...camp.activityFeed],
+          };
+        })
+      );
+    },
+    [currentUserId, currentUsername]
+  );
+
+  /**
+   * Delete a camp and all its annotations, photos, and activity history.
+   * This is permanent.
+   */
+  const deleteCamp = useCallback((campId: string) => {
     setCamps((prev) => prev.filter((c) => c.id !== campId));
   }, []);
 
+  /**
+   * Retrieve a single camp by ID.
+   * @returns The camp if found, undefined otherwise
+   */
   const getCamp = useCallback(
     (campId: string) => camps.find((c) => c.id === campId),
     [camps]
   );
 
-  // ── Members ──
+  // ── Member Management ──
+
+  /**
+   * Add a new member to a camp by username.
+   * Assigns the next color in rotation. Creates activity feed entry.
+   * Username-based identity mirrors the rest of the app; server-side
+   * multi-device sync is handled by the shared camp sync infrastructure.
+   */
   const addMember = useCallback(
     (campId: string, username: string) => {
-      const now = new Date().toISOString();
       setCamps((prev) =>
         prev.map((camp) => {
           if (camp.id !== campId) return camp;
-          const memberColor = MEMBER_COLORS[camp.members.length % MEMBER_COLORS.length];
+          // Rotate through colors so each member has distinct color
+          const memberColor = MEMBER_COLORS?.length
+            ? MEMBER_COLORS[camp.members.length % MEMBER_COLORS.length]
+            : '#808080';
           const newMember: CampMember = {
             userId: generateId(),
             username,
             role: 'member',
             color: memberColor,
-            joinedAt: now,
+            joinedAt: new Date().toISOString(),
           };
-          const feedItem = addFeedItem(currentUserId, currentUsername, `invited ${username}`);
+          const feedItem = addFeedItem(camp, currentUserId, currentUsername, `invited ${username}`);
           return {
             ...camp,
             members: [...camp.members, newMember],
@@ -416,69 +683,49 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
           };
         })
       );
-
-      // Write to WatermelonDB
-      database.write(async () => {
-        const camp = await database.get<DeerCampModel>('deer_camps').find(campId);
-        const memberColor = MEMBER_COLORS[camp.members.length % MEMBER_COLORS.length];
-        const newUserId = generateId();
-
-        await database.get<CampMemberModel>('camp_members').create((m) => {
-          m.campId = campId;
-          m.userId = newUserId;
-          m.username = username;
-          m.role = 'member';
-          m.color = memberColor;
-          m.joinedAt = new Date();
-        });
-
-        await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-          f._raw.id = generateId();
-          f.campId = campId;
-          f.userId = currentUserId;
-          f.username = currentUsername;
-          f.action = `invited ${username}`;
-          f.annotationId = null;
-          f.photoId = null;
-          f.createdAt = new Date();
-        });
-      }).catch((e) => {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to add member in WMDB:', e);
-      });
     },
     [currentUserId, currentUsername]
   );
 
+  /**
+   * Remove a member from a camp (admin action).
+   * Creates activity feed entry logging the removal.
+   */
   const removeMember = useCallback((campId: string, userId: string) => {
     setCamps((prev) =>
-      prev.map((camp) =>
-        camp.id === campId
-          ? { ...camp, members: camp.members.filter((m) => m.userId !== userId) }
-          : camp
-      )
+      prev.map((camp) => {
+        if (camp.id !== campId) return camp;
+        const removedMember = camp.members.find((m) => m.userId === userId);
+        const feedItem = addFeedItem(
+          camp,
+          currentUserId,
+          currentUsername,
+          `removed ${removedMember?.username || 'a member'}`
+        );
+        return {
+          ...camp,
+          members: camp.members.filter((m) => m.userId !== userId),
+          activityFeed: [feedItem, ...camp.activityFeed],
+        };
+      })
     );
+  }, [currentUserId, currentUsername]);
 
-    // Remove from WatermelonDB
-    database.write(async () => {
-      const Q = require('@nozbe/watermelondb').Q;
-      const members = await database.get<CampMemberModel>('camp_members')
-        .query(Q.and(Q.where('camp_id', campId), Q.where('user_id', userId)))
-        .fetch();
-      for (const member of members) {
-        await member.destroyPermanently();
-      }
-    }).catch((e) => {
-      if (__DEV__) console.warn('[DeerCampContext] Failed to remove member in WMDB:', e);
-    });
-  }, []);
+  // ── Annotations (waypoints, routes, areas, tracks) ──
 
-  // ── Annotations ──
+  /**
+   * Add a shared annotation to a camp.
+   * Annotations are color-coded by createdBy user and visible to all members.
+   * Creates activity feed entry.
+   */
   const addAnnotation = useCallback(
     (campId: string, annotation: SharedAnnotation) => {
+      // Apply locally first (offline-first)
       setCamps((prev) =>
         prev.map((camp) => {
           if (camp.id !== campId) return camp;
           const feedItem = addFeedItem(
+            camp,
             currentUserId,
             currentUsername,
             `added a ${annotation.type}`,
@@ -491,61 +738,65 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
           };
         })
       );
-
-      // Write to WatermelonDB
-      database.write(async () => {
-        await database.get<SharedAnnotationModel>('shared_annotations').create((a) => {
-          a._raw.id = annotation.id;
-          a.campId = campId;
-          a.annotationType = annotation.type;
-          a.createdBy = annotation.createdBy;
-          a.dataJson = JSON.stringify(annotation.data);
-          a.importedFromPlanId = annotation.importedFromPlanId || null;
-          a.createdAt = new Date(annotation.createdAt);
-        });
-
-        await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-          f._raw.id = generateId();
-          f.campId = campId;
-          f.userId = currentUserId;
-          f.username = currentUsername;
-          f.action = `added a ${annotation.type}`;
-          f.annotationId = annotation.id;
-          f.photoId = null;
-          f.createdAt = new Date();
-        });
-      }).catch((e) => {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to add annotation in WMDB:', e);
-      });
+      // Queue for backend sync
+      queueAction({
+        campId,
+        type: 'add_annotation',
+        payload: {
+          annotation_type: annotation.type,
+          data: annotation.data,
+          imported_from_plan_id: annotation.importedFromPlanId,
+        },
+      }).then(() => getPendingCount().then(setPendingActions)).catch(console.warn);
     },
     [currentUserId, currentUsername]
   );
 
+  /**
+   * Remove a shared annotation from a camp by ID.
+   * Creates activity feed entry logging the removal.
+   */
   const removeAnnotation = useCallback((campId: string, annotationId: string) => {
     setCamps((prev) =>
-      prev.map((camp) =>
-        camp.id === campId
-          ? { ...camp, annotations: camp.annotations.filter((a) => a.id !== annotationId) }
-          : camp
-      )
+      prev.map((camp) => {
+        if (camp.id !== campId) return camp;
+        const removed = camp.annotations.find((a) => a.id === annotationId);
+        const feedItem = addFeedItem(
+          camp,
+          currentUserId,
+          currentUsername,
+          `removed a ${removed?.type || 'annotation'}`,
+          annotationId
+        );
+        return {
+          ...camp,
+          annotations: camp.annotations.filter((a) => a.id !== annotationId),
+          activityFeed: [feedItem, ...camp.activityFeed],
+        };
+      })
     );
+    // Queue for backend sync
+    queueAction({
+      campId,
+      type: 'remove_annotation',
+      payload: { annotationId },
+    }).then(() => getPendingCount().then(setPendingActions)).catch(console.warn);
+  }, [currentUserId, currentUsername]);
 
-    // Remove from WatermelonDB
-    database.write(async () => {
-      const annotation = await database.get<SharedAnnotationModel>('shared_annotations').find(annotationId);
-      await annotation.destroyPermanently();
-    }).catch((e) => {
-      if (__DEV__) console.warn('[DeerCampContext] Failed to remove annotation in WMDB:', e);
-    });
-  }, []);
+  // ── Photos (geotagged) ──
 
-  // ── Photos ──
+  /**
+   * Add a geotagged photo to a camp with optional caption.
+   * V2: Stores metadata only (lat, lng, caption). Full image upload deferred to V3+.
+   * Creates activity feed entry.
+   */
   const addPhoto = useCallback(
     (campId: string, photo: CampPhoto) => {
       setCamps((prev) =>
         prev.map((camp) => {
           if (camp.id !== campId) return camp;
           const feedItem = addFeedItem(
+            camp,
             currentUserId,
             currentUsername,
             'uploaded a photo',
@@ -559,120 +810,123 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
           };
         })
       );
-
-      // Write to WatermelonDB
-      database.write(async () => {
-        await database.get<CampPhotoModel>('camp_photos').create((p) => {
-          p._raw.id = photo.id;
-          p.campId = campId;
-          p.uploadedBy = photo.uploadedBy;
-          p.username = photo.uploadedBy;
-          p.uri = photo.imageUri;
-          p.thumbnailUri = null;
-          p.lat = photo.lat;
-          p.lng = photo.lng;
-          p.caption = photo.caption || null;
-          p.createdAt = new Date(photo.uploadedAt);
-        });
-
-        await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-          f._raw.id = generateId();
-          f.campId = campId;
-          f.userId = currentUserId;
-          f.username = currentUsername;
-          f.action = 'uploaded a photo';
-          f.annotationId = null;
-          f.photoId = photo.id;
-          f.createdAt = new Date();
-        });
-      }).catch((e) => {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to add photo in WMDB:', e);
-      });
+      // Queue for backend sync
+      queueAction({
+        campId,
+        type: 'add_photo',
+        payload: {
+          image_key: photo.imageUri,
+          lat: photo.lat,
+          lng: photo.lng,
+          caption: photo.caption,
+        },
+      }).then(() => getPendingCount().then(setPendingActions)).catch(console.warn);
     },
     [currentUserId, currentUsername]
   );
 
+  /**
+   * Remove a photo from a camp by ID.
+   * Creates activity feed entry logging the removal.
+   */
   const removePhoto = useCallback((campId: string, photoId: string) => {
     setCamps((prev) =>
-      prev.map((camp) =>
-        camp.id === campId
-          ? { ...camp, photos: camp.photos.filter((p) => p.id !== photoId) }
-          : camp
-      )
+      prev.map((camp) => {
+        if (camp.id !== campId) return camp;
+        const feedItem = addFeedItem(
+          camp,
+          currentUserId,
+          currentUsername,
+          'removed a photo',
+          undefined,
+          photoId
+        );
+        return {
+          ...camp,
+          photos: camp.photos.filter((p) => p.id !== photoId),
+          activityFeed: [feedItem, ...camp.activityFeed],
+        };
+      })
     );
+  }, [currentUserId, currentUsername]);
 
-    // Remove from WatermelonDB
-    database.write(async () => {
-      const photo = await database.get<CampPhotoModel>('camp_photos').find(photoId);
-      await photo.destroyPermanently();
-    }).catch((e) => {
-      if (__DEV__) console.warn('[DeerCampContext] Failed to remove photo in WMDB:', e);
-    });
-  }, []);
+  // ── Import/Export from Scout Tab ──
 
-  // ── Import plan from Scout ──
+  /**
+   * Import a scout plan into a camp, converting all plan annotations into shared ones.
+   *
+   * Imports:
+   * - All waypoints (as 'waypoint' type)
+   * - Parking point (as a 'waypoint' type)
+   * - All routes (as 'route' type)
+   * - All areas (as 'area' type)
+   *
+   * Each imported annotation is tagged with importedFromPlanId for traceability.
+   * Creates a single activity feed entry for the import.
+   */
   const importPlanToCamp = useCallback(
     (campId: string, plan: HuntPlan) => {
-      const now = new Date().toISOString();
-      const newAnnotations: SharedAnnotation[] = [];
-
-      // Import waypoints
-      plan.waypoints.forEach((wp) => {
-        newAnnotations.push({
-          id: generateId(),
-          type: 'waypoint',
-          createdBy: currentUserId,
-          createdAt: now,
-          data: wp,
-          importedFromPlanId: plan.id,
-        });
-      });
-
-      // Import parking point as a waypoint
-      if (plan.parkingPoint) {
-        newAnnotations.push({
-          id: generateId(),
-          type: 'waypoint',
-          createdBy: currentUserId,
-          createdAt: now,
-          data: plan.parkingPoint,
-          importedFromPlanId: plan.id,
-        });
-      }
-
-      // Import routes
-      plan.routes.forEach((route) => {
-        newAnnotations.push({
-          id: generateId(),
-          type: 'route',
-          createdBy: currentUserId,
-          createdAt: now,
-          data: route,
-          importedFromPlanId: plan.id,
-        });
-      });
-
-      // Import areas
-      plan.areas.forEach((area) => {
-        newAnnotations.push({
-          id: generateId(),
-          type: 'area',
-          createdBy: currentUserId,
-          createdAt: now,
-          data: area,
-          importedFromPlanId: plan.id,
-        });
-      });
-
-      const feedItem = addFeedItem(
-        currentUserId,
-        currentUsername,
-        `imported plan "${plan.name}"`
-      );
-
       setCamps((prev) =>
         prev.map((camp) => {
           if (camp.id !== campId) return camp;
+          const now = new Date().toISOString();
+          const newAnnotations: SharedAnnotation[] = [];
+
+          // Import waypoints (stand locations, water sources, etc.)
+          (plan.waypoints ?? []).forEach((wp) => {
+            newAnnotations.push({
+              id: generateId(),
+              type: 'waypoint',
+              createdBy: currentUserId,
+              createdAt: now,
+              data: wp,
+              importedFromPlanId: plan.id,
+            });
+          });
+
+          // Import parking point as a special waypoint
+          if (plan.parkingPoint) {
+            newAnnotations.push({
+              id: generateId(),
+              type: 'waypoint',
+              createdBy: currentUserId,
+              createdAt: now,
+              data: plan.parkingPoint,
+              importedFromPlanId: plan.id,
+            });
+          }
+
+          // Import routes (polylines like approach trails)
+          (plan.routes ?? []).forEach((route) => {
+            newAnnotations.push({
+              id: generateId(),
+              type: 'route',
+              createdBy: currentUserId,
+              createdAt: now,
+              data: route,
+              importedFromPlanId: plan.id,
+            });
+          });
+
+          // Import areas (polygons like hot zones)
+          (plan.areas ?? []).forEach((area) => {
+            newAnnotations.push({
+              id: generateId(),
+              type: 'area',
+              createdBy: currentUserId,
+              createdAt: now,
+              data: area,
+              importedFromPlanId: plan.id,
+            });
+          });
+
+          const feedItem = addFeedItem(
+            camp,
+            currentUserId,
+            currentUsername,
+            `imported plan "${plan.name}"`
+          );
+
           return {
             ...camp,
             annotations: [...camp.annotations, ...newAnnotations],
@@ -680,61 +934,36 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
           };
         })
       );
-
-      // Write to WatermelonDB
-      database.write(async () => {
-        // Write all annotations
-        for (const annotation of newAnnotations) {
-          await database.get<SharedAnnotationModel>('shared_annotations').create((a) => {
-            a._raw.id = annotation.id;
-            a.campId = campId;
-            a.annotationType = annotation.type;
-            a.createdBy = annotation.createdBy;
-            a.dataJson = JSON.stringify(annotation.data);
-            a.importedFromPlanId = annotation.importedFromPlanId || null;
-            a.createdAt = new Date(annotation.createdAt);
-          });
-        }
-
-        // Write feed item
-        await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-          f._raw.id = feedItem.id;
-          f.campId = campId;
-          f.userId = currentUserId;
-          f.username = currentUsername;
-          f.action = feedItem.action;
-          f.annotationId = null;
-          f.photoId = null;
-          f.createdAt = new Date();
-        });
-      }).catch((e) => {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to import plan in WMDB:', e);
-      });
     },
     [currentUserId, currentUsername]
   );
 
-  // ── Export a saved track to a camp ──
+  /**
+   * Export a saved GPS track to a camp as a shared annotation.
+   *
+   * Tracks can be exported independently (unlike plans which import all annotations).
+   * Useful for sharing recorded hiking/scouting routes with the team.
+   * Creates activity feed entry.
+   */
   const exportTrackToCamp = useCallback(
     (campId: string, track: RecordedTrack) => {
-      const now = new Date().toISOString();
-      const annotationId = generateId();
-      const annotation: SharedAnnotation = {
-        id: annotationId,
-        type: 'track',
-        createdBy: currentUserId,
-        createdAt: now,
-        data: track,
-      };
-      const feedItem = addFeedItem(
-        currentUserId,
-        currentUsername,
-        `shared track "${track.name}"`
-      );
-
       setCamps((prev) =>
         prev.map((camp) => {
           if (camp.id !== campId) return camp;
+          const now = new Date().toISOString();
+          const annotation: SharedAnnotation = {
+            id: generateId(),
+            type: 'track',
+            createdBy: currentUserId,
+            createdAt: now,
+            data: track,
+          };
+          const feedItem = addFeedItem(
+            camp,
+            currentUserId,
+            currentUsername,
+            `shared track "${track.name}"`
+          );
           return {
             ...camp,
             annotations: [...camp.annotations, annotation],
@@ -742,171 +971,72 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
           };
         })
       );
-
-      // Write to WatermelonDB
-      database.write(async () => {
-        await database.get<SharedAnnotationModel>('shared_annotations').create((a) => {
-          a._raw.id = annotationId;
-          a.campId = campId;
-          a.annotationType = 'track';
-          a.createdBy = currentUserId;
-          a.dataJson = JSON.stringify(track);
-          a.importedFromPlanId = null;
-          a.createdAt = new Date(now);
-        });
-
-        await database.get<ActivityFeedModel>('activity_feed').create((f) => {
-          f._raw.id = feedItem.id;
-          f.campId = campId;
-          f.userId = currentUserId;
-          f.username = currentUsername;
-          f.action = feedItem.action;
-          f.annotationId = null;
-          f.photoId = null;
-          f.createdAt = new Date();
-        });
-      }).catch((e) => {
-        if (__DEV__) console.warn('[DeerCampContext] Failed to export track in WMDB:', e);
-      });
     },
     [currentUserId, currentUsername]
   );
 
-  // ── Real-time sync methods ──
+  // ── V3 Sync Functions ──
 
   /**
-   * Connect to WebSocket sync for a specific camp.
-   * Called when user opens a camp in map view.
+   * Sync a specific camp with the backend.
+   * Pushes pending offline actions, then pulls new data since last sync.
+   * @returns true if sync succeeded
    */
   const syncCamp = useCallback(
-    async (campId: string) => {
-      if (activeSyncCampId === campId) {
-        if (__DEV__) console.log(`[DeerCampContext] Already syncing camp ${campId}`);
-        return;
+    async (campId: string): Promise<boolean> => {
+      setIsSyncing(true);
+      try {
+        const result = await syncCampRemote(campId);
+        if (result.success) {
+          // Refresh camp data from server
+          const serverCamp = await fetchCampRemote(campId);
+          if (serverCamp) {
+            setCamps((prev) =>
+              prev.map((c) => (c.id === campId ? { ...c, ...serverCamp } : c))
+            );
+          }
+        }
+        const pending = await getPendingCount();
+        setPendingActions(pending);
+        return result.success;
+      } catch (e) {
+        console.warn('[DeerCamp] Sync failed:', e);
+        return false;
+      } finally {
+        setIsSyncing(false);
       }
+    },
+    []
+  );
 
-      // Disconnect previous sync if any
-      if (activeSyncCampId) {
-        const manager = getSyncManager();
-        manager.disconnect();
+  /**
+   * Join a remote camp using an invite code.
+   * Fetches the camp from server and adds it to local state.
+   * @returns true if join succeeded
+   */
+  const joinCampByCode = useCallback(
+    async (inviteCode: string): Promise<boolean> => {
+      try {
+        const result = await joinCampRemote(inviteCode, currentUsername);
+        if (!result) return false;
+
+        // Fetch full camp data from server
+        const serverCamp = await fetchCampRemote(result.camp_id);
+        if (serverCamp) {
+          // Add to local camps if not already present
+          setCamps((prev) => {
+            const exists = prev.some((c) => c.id === result.camp_id);
+            if (exists) return prev;
+            return [...prev, serverCamp as unknown as DeerCamp];
+          });
+        }
+        return true;
+      } catch (e) {
+        console.warn('[DeerCamp] Join by code failed:', e);
+        return false;
       }
-
-      setActiveSyncCampId(campId);
-      const manager = getSyncManager();
-
-      // Wire up WebSocket event handlers
-      manager.onAnnotationAdd = (event, annotation) => {
-        if (__DEV__) console.log(`[DeerCampContext] Real-time annotation added: ${annotation.id}`);
-        addAnnotation(campId, annotation);
-      };
-
-      manager.onAnnotationUpdate = (event, annotation) => {
-        if (__DEV__) console.log(`[DeerCampContext] Real-time annotation updated: ${annotation.id}`);
-        // Update annotation in local state
-        setCamps((prev) =>
-          prev.map((camp) => {
-            if (camp.id !== campId) return camp;
-            return {
-              ...camp,
-              annotations: camp.annotations.map((a) =>
-                a.id === annotation.id ? annotation : a
-              ),
-            };
-          })
-        );
-      };
-
-      manager.onAnnotationDelete = (annotationId) => {
-        if (__DEV__) console.log(`[DeerCampContext] Real-time annotation deleted: ${annotationId}`);
-        removeAnnotation(campId, annotationId);
-      };
-
-      manager.onPhotoAdded = (event, photo) => {
-        if (__DEV__) console.log(`[DeerCampContext] Real-time photo added: ${photo.id}`);
-        addPhoto(campId, photo);
-      };
-
-      manager.onMemberOnline = (event) => {
-        if (__DEV__) console.log(`[DeerCampContext] Member online: ${event.user_id}`);
-        // Update presence in UI — optional: show "X members online" indicator
-      };
-
-      manager.onMemberOffline = (event) => {
-        if (__DEV__) console.log(`[DeerCampContext] Member offline: ${event.user_id}`);
-      };
-
-      manager.onError = (error) => {
-        if (__DEV__) console.error(`[DeerCampContext] Sync error: ${error}`);
-      };
-
-      manager.onSyncStateChanged = (state) => {
-        setSyncState(state);
-      };
-
-      // Connect to the camp
-      await manager.connect(campId);
     },
-    [activeSyncCampId, addAnnotation, removeAnnotation, addPhoto]
-  );
-
-  /**
-   * Disconnect from active camp sync.
-   */
-  const disconnectSync = useCallback(() => {
-    if (activeSyncCampId) {
-      const manager = getSyncManager();
-      manager.disconnect();
-      setActiveSyncCampId('');
-      setSyncState(null);
-    }
-  }, [activeSyncCampId]);
-
-  /**
-   * Manually trigger a sync with the backend.
-   * Useful for forcing a pull of new data.
-   */
-  const syncNow = useCallback(async () => {
-    const manager = getSyncManager();
-    await manager.syncNow();
-  }, []);
-
-  /**
-   * Wire up annotation/photo methods to send changes via sync manager.
-   */
-  const addAnnotationWithSync = useCallback(
-    (campId: string, annotation: SharedAnnotation) => {
-      // Add to local state
-      addAnnotation(campId, annotation);
-
-      // Send to server (real-time or queued if offline)
-      const manager = getSyncManager();
-      manager.sendAnnotationAdd(annotation).catch((err) => { if (__DEV__) console.warn('[DeerCampContext]', err); });
-    },
-    [addAnnotation]
-  );
-
-  const removeAnnotationWithSync = useCallback(
-    (campId: string, annotationId: string) => {
-      // Remove from local state
-      removeAnnotation(campId, annotationId);
-
-      // Send to server (real-time or queued if offline)
-      const manager = getSyncManager();
-      manager.sendAnnotationDelete(annotationId).catch((err) => { if (__DEV__) console.warn('[DeerCampContext]', err); });
-    },
-    [removeAnnotation]
-  );
-
-  const addPhotoWithSync = useCallback(
-    (campId: string, photo: CampPhoto) => {
-      // Add to local state
-      addPhoto(campId, photo);
-
-      // Send to server (real-time or queued if offline)
-      const manager = getSyncManager();
-      manager.sendPhotoAdded(photo).catch((err) => { if (__DEV__) console.warn('[DeerCampContext]', err); });
-    },
-    [addPhoto]
+    [currentUsername]
   );
 
   return (
@@ -915,21 +1045,27 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
         camps,
         currentUserId,
         currentUsername,
-        syncState,
         createCamp,
+        setCampOfflineStatus,
+        ensureCampInviteCode,
+        renameCamp,
+        updateCampDescription,
+        addCampDocument,
+        removeCampDocument,
         deleteCamp,
         getCamp,
         addMember,
         removeMember,
-        addAnnotation: addAnnotationWithSync,
-        removeAnnotation: removeAnnotationWithSync,
-        addPhoto: addPhotoWithSync,
+        addAnnotation,
+        removeAnnotation,
+        addPhoto,
         removePhoto,
         importPlanToCamp,
         exportTrackToCamp,
         syncCamp,
-        disconnectSync,
-        syncNow,
+        joinCampByCode,
+        isSyncing,
+        pendingActions,
       }}
     >
       {children}
@@ -937,6 +1073,23 @@ export function DeerCampProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * useDeerCamp — Custom hook to access Deer Camp state and mutation functions.
+ *
+ * Provides access to all camps, current user identity, and functions to create,
+ * update, delete, and import/export camp data. Throws if called outside DeerCampProvider.
+ *
+ * @returns {DeerCampContextType} All camp state and mutators
+ * @throws {Error} If used outside DeerCampProvider
+ *
+ * @example
+ * const { camps, createCamp, addMember, importPlanToCamp } = useDeerCamp();
+ * const camp = createCamp('Opening Weekend', {
+ *   north: 39.51, south: 39.49, east: -76.99, west: -77.01, areaSqMi: 1.0,
+ * });
+ * addMember(camp.id, 'JoeHunter');
+ * importPlanToCamp(camp.id, scoutPlan);
+ */
 export function useDeerCamp(): DeerCampContextType {
   const ctx = useContext(DeerCampContext);
   if (!ctx) throw new Error('useDeerCamp must be used within DeerCampProvider');

@@ -1,5 +1,5 @@
 /**
- * OutdoorsMaryland - Woodland & Maryland Flag Color Palette
+ * MDHuntFishOutdoors - Woodland & Maryland Flag Color Palette
  *
  * Base palette inspired by natural woodland environments combined with
  * Maryland state flag colors (red, gold, black, white).
@@ -94,6 +94,24 @@ const Colors = {
   mdBlack: '#1C1C1C',
   /** Calvert white/cream */
   mdWhite: '#F5F5DC',
+
+  // ── Fishing / Water Colors ──
+  /** Deep water blue for fishing UI */
+  water: '#1565C0',
+  /** Light water blue for accents */
+  waterLight: '#42A5F5',
+  /** Deep red for hunting UI accents */
+  blood: '#8B0000',
+
+  // ── Additional Utility ──
+  /** Brass/gold for premium badges */
+  brass: '#B5A642',
+  /** Corn yellow for highlights */
+  corn: '#FBE7A1',
+  /** Deep forest for camp backgrounds */
+  forest: '#1B4332',
+  /** Sand beige for light backgrounds */
+  sand: '#DEC5A0',
 } as const;
 
 export type ColorKey = keyof typeof Colors;

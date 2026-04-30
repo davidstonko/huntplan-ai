@@ -1,0 +1,472 @@
+{
+  "_comment": "Trailhead-only entries for foot trails whose polylines we could not pull from USGS (Layer 37 has gaps) or OSM Overpass (504 Gateway Timeout on 2026-04-19). Trailhead lat/lon are the published parking-lot coordinates from the managing agency (DNR, NPS, county). Users see a pin + data; no polyline renders.",
+  "trails": [
+    {
+      "id": "md-maryland-heights-trail",
+      "name": "Maryland Heights Trail",
+      "park": "Harpers Ferry National Historical Park",
+      "county": "Washington",
+      "type": "loop",
+      "difficulty": "strenuous",
+      "lengthMi": 4.5,
+      "elevationGainFt": 1100,
+      "estDurationMin": 180,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.3274,
+      "trailheadLon": -77.7296,
+      "coordinates": null,
+      "description": "The classic Harpers Ferry viewpoint hike \u2014 a strenuous climb up the Maryland side of the Potomac to the Overlook Cliff, with a panoramic view of the confluence of the Potomac and Shenandoah. Rocky, steep, worth every step.",
+      "tags": [
+        "overlook",
+        "strenuous",
+        "civil-war",
+        "cliff"
+      ],
+      "highlights": [
+        "Overlook Cliff (Maryland Heights summit view)",
+        "Stone Fort ruins",
+        "100-pounder cannon battery",
+        "Panoramic view of three states from Overlook"
+      ],
+      "officialUrl": "https://www.nps.gov/hafe/planyourvisit/maryland-heights.htm",
+      "parkingNotes": "Park at the C&O Canal Sandy Hook lot off US-340 and walk across the Goodloe Byron Pedestrian Bridge, OR park in Harpers Ferry and walk across the railroad bridge. No parking directly at the trailhead on the MD side."
+    },
+    {
+      "id": "md-at-annapolis-rocks",
+      "name": "Annapolis Rocks (AT Spur)",
+      "park": "South Mountain State Park",
+      "county": "Washington",
+      "type": "out-and-back",
+      "difficulty": "moderate",
+      "lengthMi": 5.2,
+      "elevationGainFt": 750,
+      "estDurationMin": 180,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.5392,
+      "trailheadLon": -77.5878,
+      "coordinates": null,
+      "description": "The most popular overnight destination on Maryland's section of the Appalachian Trail. A 2.5-mile climb from US-40 to a quartzite cliff overlook facing west over Greenbrier and the Cumberland Valley.",
+      "tags": [
+        "overlook",
+        "cliff",
+        "AT",
+        "backpacking"
+      ],
+      "highlights": [
+        "Annapolis Rocks cliff overlook",
+        "PATC-maintained designated campsites",
+        "Black Rock Cliffs (0.8 mi further north)",
+        "Western-facing sunset view"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/western/southmountain.aspx",
+      "parkingNotes": "US-40 AT crossing trailhead parking. Fills by 10 AM on fall weekends. Overflow parking on the shoulder is not recommended."
+    },
+    {
+      "id": "md-at-weverton-cliffs",
+      "name": "Weverton Cliffs (AT Spur)",
+      "park": "South Mountain State Park",
+      "county": "Washington",
+      "type": "out-and-back",
+      "difficulty": "strenuous",
+      "lengthMi": 1.4,
+      "elevationGainFt": 500,
+      "estDurationMin": 75,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.3282,
+      "trailheadLon": -77.6776,
+      "coordinates": null,
+      "description": "Short but steep climb from the C&O Canal Towpath up to the southernmost overlook on Maryland's Appalachian Trail. Dramatic view up the Potomac water gap.",
+      "tags": [
+        "overlook",
+        "cliff",
+        "AT",
+        "strenuous"
+      ],
+      "highlights": [
+        "Weverton Cliffs overlook",
+        "Potomac water gap view",
+        "Switchback climb through laurel"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/western/southmountain.aspx",
+      "parkingNotes": "Weverton Road AT parking lot off US-340. Very small lot (12 spaces); alternative: park at Knoxville or walk from the C&O Brunswick lot."
+    },
+    {
+      "id": "md-calvert-cliffs-red-trail",
+      "name": "Calvert Cliffs \u2014 Red Trail",
+      "park": "Calvert Cliffs State Park",
+      "county": "Calvert",
+      "type": "out-and-back",
+      "difficulty": "moderate",
+      "lengthMi": 3.6,
+      "elevationGainFt": 200,
+      "estDurationMin": 120,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 38.3958,
+      "trailheadLon": -76.4366,
+      "coordinates": null,
+      "description": "The Chesapeake Bay cliff beach hike. 1.8 miles one way through forest and wetland to the fossil-rich cliff beach \u2014 world-class shark-tooth hunting at low tide.",
+      "tags": [
+        "beach",
+        "cliff",
+        "family-friendly",
+        "fossils"
+      ],
+      "highlights": [
+        "Calvert Cliffs beach (Miocene fossil shark teeth)",
+        "Grays Creek Marsh boardwalk",
+        "Observation platform"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/southern/calvertcliffs.aspx",
+      "parkingNotes": "Service fee per vehicle. Parking lot can fill on summer weekends by 11 AM."
+    },
+    {
+      "id": "md-rocks-king-queen-seat",
+      "name": "King and Queen Seat Trail",
+      "park": "Rocks State Park",
+      "county": "Harford",
+      "type": "out-and-back",
+      "difficulty": "moderate",
+      "lengthMi": 1.2,
+      "elevationGainFt": 250,
+      "estDurationMin": 45,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.6392,
+      "trailheadLon": -76.4128,
+      "coordinates": null,
+      "description": "Short steep scramble to the dramatic quartzite outcrop of the King and Queen Seat \u2014 one of the most photographed overlooks in Maryland.",
+      "tags": [
+        "rock-scramble",
+        "overlook",
+        "short"
+      ],
+      "highlights": [
+        "King and Queen Seat rock outcrop",
+        "Deer Creek valley view",
+        "Quartzite boulder scramble"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/central/rocks.aspx",
+      "parkingNotes": "Hills Grove parking lot off MD-24. Service fee per vehicle."
+    },
+    {
+      "id": "md-rocks-kilgore-falls",
+      "name": "Kilgore Falls Trail",
+      "park": "Falling Branch / Rocks State Park",
+      "county": "Harford",
+      "type": "out-and-back",
+      "difficulty": "easy",
+      "lengthMi": 0.6,
+      "elevationGainFt": 80,
+      "estDurationMin": 25,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.7095,
+      "trailheadLon": -76.4011,
+      "coordinates": null,
+      "description": "Short walk to the 17-foot Kilgore Falls, Maryland's second-tallest free-falling waterfall. Popular swimming hole in summer.",
+      "tags": [
+        "waterfall",
+        "swimming-hole",
+        "family-friendly"
+      ],
+      "highlights": [
+        "17-ft Kilgore Falls",
+        "Swimming hole at the base",
+        "Used in The Lord of the Rings (Sharkey's End scene)"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/central/rocks.aspx",
+      "parkingNotes": "Falling Branch entrance has timed-entry reservations required on peak summer weekends (May 15 \u2013 Oct 15). Reserve via park site."
+    },
+    {
+      "id": "md-soldiers-delight-choate",
+      "name": "Choate Mine Trail \u2014 Soldiers Delight",
+      "park": "Soldiers Delight Natural Environment Area",
+      "county": "Baltimore",
+      "type": "loop",
+      "difficulty": "easy",
+      "lengthMi": 2.1,
+      "elevationGainFt": 140,
+      "estDurationMin": 75,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.4086,
+      "trailheadLon": -76.8352,
+      "coordinates": null,
+      "description": "Loop through one of the rarest ecosystems in the East \u2014 serpentine barrens, home to grassland and pitch pine endemic to this 1,900-acre reserve.",
+      "tags": [
+        "serpentine-barrens",
+        "rare-ecosystem",
+        "loop"
+      ],
+      "highlights": [
+        "Choate Chrome Mine ruins",
+        "Serpentine barrens grassland",
+        "Pitch pine savanna",
+        "Wildflower displays (spring and summer)"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/central/soldiersdelight.aspx",
+      "parkingNotes": "Overlook Drive parking lot. Free. Visitor center open weekends."
+    },
+    {
+      "id": "md-seneca-creek-greenway",
+      "name": "Seneca Creek Greenway Trail",
+      "park": "Seneca Creek State Park",
+      "county": "Montgomery",
+      "type": "point-to-point",
+      "difficulty": "moderate",
+      "lengthMi": 16.5,
+      "elevationGainFt": 1200,
+      "estDurationMin": 420,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.1117,
+      "trailheadLon": -77.2397,
+      "coordinates": null,
+      "description": "16.5-mile stream-valley footpath from Rockville to the Potomac at Riley's Lock, following Seneca Creek through mixed hardwood forest.",
+      "tags": [
+        "stream",
+        "long-distance",
+        "forest"
+      ],
+      "highlights": [
+        "Seneca Creek stream valley",
+        "Potomac confluence at Riley's Lock",
+        "Clopper Lake side-connection",
+        "Multiple bridge crossings"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/central/SenecaCreek.aspx",
+      "parkingNotes": "Multiple trailheads \u2014 most common are Schaeffer Farms, Clopper Lake, and Riley's Lock (C&O MP 22). Riley's Lock lot fills by 10 AM."
+    },
+    {
+      "id": "md-gunpowder-hereford-north",
+      "name": "Hereford Gunpowder North Trail",
+      "park": "Gunpowder Falls State Park \u2014 Hereford Area",
+      "county": "Baltimore",
+      "type": "out-and-back",
+      "difficulty": "moderate",
+      "lengthMi": 5.2,
+      "elevationGainFt": 450,
+      "estDurationMin": 180,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.6205,
+      "trailheadLon": -76.6884,
+      "coordinates": null,
+      "description": "Popular trout-stream footpath along the Big Gunpowder Falls in the Hereford Area. Catch-and-release fly fishing is top-tier here.",
+      "tags": [
+        "river",
+        "fishing",
+        "trout-stream"
+      ],
+      "highlights": [
+        "Prettyboy Dam tailrace",
+        "Masemore Road access (trout stream)",
+        "Rocky river crossings"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/central/Gunpowder.aspx",
+      "parkingNotes": "Masemore Road lot is the classic access. Free, but limited parking \u2014 alternate at Falls Road."
+    },
+    {
+      "id": "md-susquehanna-mason-dixon",
+      "name": "Mason-Dixon Trail (MD Segment)",
+      "park": "Susquehanna State Park",
+      "county": "Harford",
+      "type": "out-and-back",
+      "difficulty": "strenuous",
+      "lengthMi": 8.0,
+      "elevationGainFt": 900,
+      "estDurationMin": 300,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.6106,
+      "trailheadLon": -76.1469,
+      "coordinates": null,
+      "description": "Rugged bluff-top footpath along the Susquehanna River, part of the 199-mile Mason-Dixon Trail from Whiskey Springs (PA) to Chadds Ford (PA).",
+      "tags": [
+        "river",
+        "bluff",
+        "long-distance"
+      ],
+      "highlights": [
+        "Susquehanna River bluff overlooks",
+        "Conowingo Dam views",
+        "Historic Rock Run Mill"
+      ],
+      "officialUrl": "https://dnr.maryland.gov/publiclands/Pages/central/Susquehanna.aspx",
+      "parkingNotes": "Rock Run Mill / Stafford Road lots. Conowingo Dam overlook has separate Exelon parking."
+    },
+    {
+      "id": "md-assateague-life-of-dunes",
+      "name": "Life of the Dunes Trail",
+      "park": "Assateague Island National Seashore",
+      "county": "Worcester",
+      "type": "loop",
+      "difficulty": "easy",
+      "lengthMi": 1.0,
+      "elevationGainFt": 20,
+      "estDurationMin": 40,
+      "dogFriendly": false,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 38.235,
+      "trailheadLon": -75.1389,
+      "coordinates": null,
+      "description": "Short loop through the dune ecosystem with interpretive signage. Wild ponies frequently visible.",
+      "tags": [
+        "beach",
+        "dune",
+        "interpretive",
+        "family-friendly"
+      ],
+      "highlights": [
+        "Wild ponies (often on trail)",
+        "Dune ecosystem interpretation",
+        "Bayside views"
+      ],
+      "officialUrl": "https://www.nps.gov/asis/planyourvisit/hiking.htm",
+      "parkingNotes": "Assateague Island NS entrance fee or park pass. Parking at North Beach lot."
+    },
+    {
+      "id": "md-assateague-life-of-marsh",
+      "name": "Life of the Marsh Trail",
+      "park": "Assateague Island National Seashore",
+      "county": "Worcester",
+      "type": "loop",
+      "difficulty": "easy",
+      "lengthMi": 0.5,
+      "elevationGainFt": 5,
+      "estDurationMin": 20,
+      "dogFriendly": false,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 38.2306,
+      "trailheadLon": -75.1506,
+      "coordinates": null,
+      "description": "Short boardwalk loop through salt marsh with interpretive signage. Bird-watching hotspot.",
+      "tags": [
+        "marsh",
+        "boardwalk",
+        "birding",
+        "family-friendly",
+        "ada-accessible"
+      ],
+      "highlights": [
+        "Salt marsh boardwalk",
+        "Migratory bird viewing (spring/fall)",
+        "Sinepuxent Bay views"
+      ],
+      "officialUrl": "https://www.nps.gov/asis/planyourvisit/hiking.htm",
+      "parkingNotes": "Assateague Island NS entrance fee or park pass. Marsh trailhead parking lot."
+    },
+    {
+      "id": "md-sugarloaf-mountain-loop",
+      "name": "Sugarloaf Mountain Loop (Blue Trail)",
+      "park": "Sugarloaf Mountain",
+      "county": "Frederick",
+      "type": "loop",
+      "difficulty": "moderate",
+      "lengthMi": 5.5,
+      "elevationGainFt": 850,
+      "estDurationMin": 210,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.2647,
+      "trailheadLon": -77.3947,
+      "coordinates": null,
+      "description": "The full Sugarloaf circuit \u2014 5.5-mile blue-blazed loop around and over the summit of Sugarloaf Mountain, with four overlook viewpoints. Privately owned but open to the public.",
+      "tags": [
+        "summit",
+        "overlook",
+        "loop"
+      ],
+      "highlights": [
+        "West View overlook",
+        "East View overlook",
+        "Summit cairn",
+        "White Rocks"
+      ],
+      "officialUrl": "https://www.sugarloafmd.com",
+      "parkingNotes": "East View Parking (lower) or West View Parking (upper). Free, donations accepted. Gate closes 1 hour before sunset."
+    },
+    {
+      "id": "md-catoctin-cat-rock",
+      "name": "Cat Rock (Catoctin)",
+      "park": "Catoctin Mountain Park",
+      "county": "Frederick",
+      "type": "out-and-back",
+      "difficulty": "moderate",
+      "lengthMi": 3.4,
+      "elevationGainFt": 700,
+      "estDurationMin": 150,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.6342,
+      "trailheadLon": -77.4647,
+      "coordinates": null,
+      "description": "Less-crowded alternative to Hog Rock \u2014 quartzite outcrop with excellent views west across the Monocacy Valley.",
+      "tags": [
+        "overlook",
+        "rock-formation"
+      ],
+      "highlights": [
+        "Cat Rock quartzite outcrop",
+        "West-facing Monocacy Valley view",
+        "Mature oak-hickory forest"
+      ],
+      "officialUrl": "https://www.nps.gov/cato/planyourvisit/hiking.htm",
+      "parkingNotes": "Park at the Owens Creek picnic area lot or Visitor Center. Free."
+    },
+    {
+      "id": "md-catoctin-chimney-rock",
+      "name": "Chimney Rock & Wolf Rock Loop",
+      "park": "Catoctin Mountain Park",
+      "county": "Frederick",
+      "type": "loop",
+      "difficulty": "strenuous",
+      "lengthMi": 3.5,
+      "elevationGainFt": 900,
+      "estDurationMin": 180,
+      "dogFriendly": true,
+      "seasonOpenMonth": null,
+      "seasonCloseMonth": null,
+      "trailheadLat": 39.64,
+      "trailheadLon": -77.4481,
+      "coordinates": null,
+      "description": "Classic Catoctin loop combining two of the park's signature rock outcrops \u2014 Chimney Rock and Wolf Rock \u2014 in a single strenuous circuit.",
+      "tags": [
+        "overlook",
+        "rock-formation",
+        "loop"
+      ],
+      "highlights": [
+        "Chimney Rock quartzite pinnacle",
+        "Wolf Rock talus field",
+        "Panoramic east-facing view"
+      ],
+      "officialUrl": "https://www.nps.gov/cato/planyourvisit/hiking.htm",
+      "parkingNotes": "Visitor Center parking. Free; NPS park pass not required for day use."
+    },
+    {
+      "id": "md-patapsco-mckeldin-switchback",
+      "name": "Patapsco Valley \u2014 McKeldin Switchback Loop",
+      "trailheadLat": 39.3618,
+      "trailheadLon": -76.8876
+    }
+  ]
+}

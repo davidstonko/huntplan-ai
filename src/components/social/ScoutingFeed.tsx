@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import Colors from '../../theme/colors';
 
 interface ScoutingReport {
   id: string;
@@ -24,66 +23,76 @@ interface ScoutingFeedProps {
   reports: ScoutingReport[];
 }
 
-const getActivityEmoji = (level: string) => {
+/**
+ * Map activity level → { label, color } pair for the species badge chip.
+ * Replaces earlier emoji-per-level set as part of the Build 9 brand
+ * pass: text-coded with a color anchor reads more professional at small
+ * sizes and is screen-reader friendly.
+ */
+const getActivityPill = (level: string): { label: string; color: string } => {
   switch (level) {
     case 'high':
-      return '🔥';
+      return { label: 'HIGH', color: '#C62828' };
     case 'moderate':
-      return '⚡';
+      return { label: 'MOD', color: '#EF6C00' };
     case 'low':
-      return '💤';
+      return { label: 'LOW', color: '#546E7A' };
     default:
-      return '❌';
+      return { label: 'NONE', color: '#424242' };
   }
 };
 
 export default function ScoutingFeed({ reports }: ScoutingFeedProps) {
-  const renderReport = ({ item }: { item: ScoutingReport }) => (
-    <View style={styles.reportCard}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.handle}>{item.handle}</Text>
-          <Text style={styles.date}>{item.date}</Text>
-        </View>
-        <Text style={styles.upvotes}>👍 {item.upvotes}</Text>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.speciesBadge}>
-          <Text style={styles.species}>{item.species}</Text>
-          <Text style={styles.activityEmoji}>
-            {getActivityEmoji(item.activityLevel)}
+  const renderReport = ({ item }: { item: ScoutingReport }) => {
+    const pill = getActivityPill(item.activityLevel);
+    return (
+      <View style={styles.reportCard}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.handle}>{item.handle}</Text>
+            <Text style={styles.date}>{item.date}</Text>
+          </View>
+          <Text style={styles.upvotes}>
+            {item.upvotes} {item.upvotes === 1 ? 'upvote' : 'upvotes'}
           </Text>
         </View>
 
-        <Text style={styles.location}>
-          📍 {item.area}, {item.county} County
-        </Text>
+        <View style={styles.content}>
+          <View style={styles.speciesBadge}>
+            <Text style={styles.species}>{item.species}</Text>
+            <View style={[styles.activityPill, { backgroundColor: pill.color }]}>
+              <Text style={styles.activityPillText}>{pill.label}</Text>
+            </View>
+          </View>
 
-        <Text style={styles.body}>{item.bodyText}</Text>
-      </View>
+          <Text style={styles.location}>
+            {item.area}, {item.county} County
+          </Text>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionText}>👍 Upvote</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionText}>💬 Reply</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionText}>🚩 Report</Text>
-        </TouchableOpacity>
+          <Text style={styles.body}>{item.bodyText}</Text>
+        </View>
+
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionText}>Upvote</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionText}>Reply</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionText}>Report</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   if (reports.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyIcon}>📝</Text>
         <Text style={styles.emptyTitle}>No scouting reports yet</Text>
         <Text style={styles.emptyText}>
-          Be the first to share scouting intel with the community
+          Be the first to share scouting intel with the community.
         </Text>
       </View>
     );
@@ -107,12 +116,12 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   reportCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 8,
     padding: 14,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.oak,
+    borderLeftColor: '#8B7355',
   },
   header: {
     flexDirection: 'row',
@@ -123,16 +132,16 @@ const styles = StyleSheet.create({
   handle: {
     fontSize: 13,
     fontWeight: '600',
-    color: Colors.oak,
+    color: '#8B7355',
     marginBottom: 2,
   },
   date: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: '#666',
   },
   upvotes: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#aaa',
   },
   content: {
     marginBottom: 10,
@@ -145,27 +154,35 @@ const styles = StyleSheet.create({
   species: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: '#fff',
     marginRight: 6,
   },
-  activityEmoji: {
-    fontSize: 16,
+  activityPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  activityPillText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.6,
   },
   location: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#aaa',
     marginBottom: 8,
   },
   body: {
     fontSize: 13,
-    color: Colors.textPrimary,
+    color: '#ddd',
     lineHeight: 18,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     borderTopWidth: 1,
-    borderTopColor: Colors.mud,
+    borderTopColor: '#333',
     paddingTop: 8,
   },
   actionButton: {
@@ -173,7 +190,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 11,
-    color: Colors.oak,
+    color: '#8B7355',
     fontWeight: '500',
   },
   emptyContainer: {
@@ -182,19 +199,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  emptyIcon: {
-    fontSize: 60,
-    marginBottom: 16,
-  },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#fff',
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#999',
     textAlign: 'center',
   },
 });

@@ -1,0 +1,123 @@
+{
+  "source_url": "https://www.eregulations.com/maryland/hunting/furbearer-hunting-trapping",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "Small Game Seasons",
+      "description": "Small game mammal and bird hunting seasons",
+      "overall_season": "Early September through end of February",
+      "species": [
+        {
+          "name": "Rabbits",
+          "type": "Mammal",
+          "season_dates": "Early September to February 28",
+          "bag_limit": "Variable by region",
+          "method": "Hunting and trapping"
+        },
+        {
+          "name": "Squirrels",
+          "type": "Mammal",
+          "season_dates": "September 6 to February 28",
+          "bag_limit": "6 per day",
+          "notes": "Delmarva fox squirrel protected - cannot be hunted",
+          "method": "Hunting"
+        },
+        {
+          "name": "Pheasants",
+          "type": "Bird",
+          "season_dates": "Varies by area - stocking events typically November",
+          "description": "Do-it-yourself hunts with stocked pheasants on public lands",
+          "stocking_date_2025": "November 22-23, 2025",
+          "locations": "12 Wildlife Management Areas and 2 state forests",
+          "eligibility": [
+            "Apprentice license holders",
+            "Junior license holders",
+            "First-time full season license buyers",
+            "Previously lapsed license holders"
+          ],
+          "cost": "Free to apply and participate"
+        },
+        {
+          "name": "Ruffed Grouse",
+          "type": "Bird",
+          "season_dates": "Variable by region"
+        },
+        {
+          "name": "Quail",
+          "type": "Bird",
+          "season_dates": "Variable by region"
+        },
+        {
+          "name": "Crow",
+          "type": "Bird",
+          "season_dates": "Variable by region"
+        }
+      ]
+    },
+    {
+      "category": "Furbearer Trapping",
+      "description": "Species and regulations for furbearer hunting and trapping",
+      "trap_only_species": [
+        "Beaver",
+        "Long-tailed Weasel",
+        "Mink",
+        "Muskrat",
+        "River Otter"
+      ],
+      "legal_restrictions": "It is illegal to shoot these species - trap only",
+      "permit_requirement": "Furbearer permit required to trap any fur bearing mammal",
+      "seasons": "Variable by species and county group",
+      "tagging_requirements": [
+        {
+          "species": "Fisher",
+          "requirement": "Pelt or unskinned carcass must be tagged within 15 days after season close"
+        },
+        {
+          "species": "River Otter",
+          "requirement": "Pelt or unskinned carcass must be tagged within 15 days after season close",
+          "additional": "Whole, skinned carcass must be submitted to Wildlife and Heritage Service if harvested in Allegany and Garrett counties"
+        }
+      ]
+    },
+    {
+      "category": "Furbearer Species Details",
+      "species": [
+        {
+          "name": "Muskrat",
+          "status": "Trappable",
+          "county_groups": 3,
+          "notes": "Different season dates by county group"
+        },
+        {
+          "name": "Mink",
+          "status": "Trappable",
+          "county_groups": 3,
+          "notes": "Different season dates by county group"
+        },
+        {
+          "name": "River Otter",
+          "status": "Trappable",
+          "county_groups": "Multiple with different seasons",
+          "notes": "High value fur, special handling requirements"
+        },
+        {
+          "name": "Beaver",
+          "status": "Trappable only",
+          "notes": "Cannot be shot, must use traps"
+        }
+      ]
+    },
+    {
+      "category": "Hunter Information",
+      "sources": [
+        "eRegulations.com/maryland",
+        "Maryland DNR Hunting and Trapping Guide"
+      ],
+      "contact": "Maryland DNR Wildlife and Heritage Service",
+      "reference_documents": [
+        "Maryland Furbearer Hunting Season Calendar",
+        "Maryland Guide to Hunting and Trapping 2025-2026"
+      ]
+    }
+  ]
+}

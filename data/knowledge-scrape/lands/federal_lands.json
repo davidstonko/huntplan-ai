@@ -1,0 +1,189 @@
+{
+  "source_url": "https://www.fws.gov/refuge/blackwater",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "refuge": "Blackwater National Wildlife Refuge",
+      "location": "Eastern Maryland, Dorchester County",
+      "size_acres": 15000,
+      "habitat": [
+        "Tidal marsh (one-third of Maryland's tidal wetlands)",
+        "Forest",
+        "Shallow water"
+      ],
+      "plant_diversity": "High",
+      "animal_diversity": "High",
+      "hunting_opportunities": true
+    },
+    {
+      "refuge_name": "Blackwater National Wildlife Refuge",
+      "hunting_program": "Comprehensive deer hunting program",
+      "species_available": [
+        "Sika Deer",
+        "White-tailed Deer"
+      ],
+      "seasons_offered": [
+        {
+          "type": "Archery",
+          "duration": "12+ weeks (September through January)"
+        },
+        {
+          "type": "Muzzleloader",
+          "duration": "Up to 10 days"
+        },
+        {
+          "type": "Shotgun",
+          "duration": "Up to 8 days"
+        },
+        {
+          "type": "Spring Turkey",
+          "status": "Available"
+        },
+        {
+          "type": "Waterfowl",
+          "status": "Available"
+        }
+      ],
+      "permit_requirement": "Refuge hunting permit from Recreation.gov",
+      "permit_fee": "$6.00 reservation fee",
+      "discount": "Half-price for Interagency Senior Pass or Access Pass holders",
+      "required_documents": [
+        "Valid Maryland hunting license and stamps",
+        "Government-issued photo identification",
+        "Valid refuge hunting permit from Recreation.gov"
+      ],
+      "application_process": "Online application system at Recreation.gov",
+      "location_type": "Nearly 15,000 acres open for deer hunting September-January"
+    },
+    {
+      "refuge_name": "Blackwater National Wildlife Refuge",
+      "recent_changes": "2026 Hunting Plan Updates",
+      "new_regulations": [
+        {
+          "effective_date": "September 1, 2026",
+          "change": "Non-lead ammunition requirement"
+        },
+        {
+          "year": 2025,
+          "change": "Straight wall cartridges authorized for shotgun hunts"
+        },
+        {
+          "year": 2025,
+          "change": "Incidental take of coyotes allowed"
+        },
+        {
+          "year": 2025,
+          "change": "Early teal season added"
+        }
+      ]
+    },
+    {
+      "refuge": "Eastern Neck National Wildlife Refuge",
+      "location": "Kent County, Chesapeake Bay",
+      "size_acres": 2285,
+      "habitat": "Island providing waterfowl habitat",
+      "waterfowl_species": [
+        "Tundra Swans",
+        "Ducks",
+        "Geese"
+      ],
+      "seasonal_use": "Important wintering habitat for thousands of waterfowl",
+      "historical_note": "Visitor center originally a private hunting lodge"
+    },
+    {
+      "refuge_name": "Eastern Neck National Wildlife Refuge",
+      "hunting_programs": [
+        {
+          "program": "Mentored Spring Turkey Hunt",
+          "age_requirement": "12-16 years old",
+          "requirement": "First-time youth hunters only",
+          "partnership": "National Wild Turkey Federation",
+          "season": "April",
+          "number_of_participants": "Limited",
+          "application": "Free to apply",
+          "selection": "Random draw"
+        },
+        {
+          "program": "Fall Deer Hunting",
+          "status": "Available seasonally",
+          "type": "White-tailed deer"
+        }
+      ]
+    },
+    {
+      "refuge_name": "Eastern Neck National Wildlife Refuge",
+      "recreation_areas": [
+        {
+          "name": "Tundra Swan Boardwalk",
+          "activity": "Fishing",
+          "access": "Public"
+        },
+        {
+          "name": "Ingleside Recreation Area",
+          "activity": "Fishing",
+          "access": "Public",
+          "seasonal": "Closed seasonally"
+        },
+        {
+          "name": "Bogles Wharf",
+          "activity": "Fishing",
+          "access": "Public"
+        }
+      ]
+    },
+    {
+      "refuge": "Patuxent Research Refuge",
+      "location": "Prince George's and Montgomery Counties, Central Maryland",
+      "management": "U.S. Fish and Wildlife Service",
+      "primary_purpose": "Research and wildlife refuge",
+      "hunting_status": "Limited seasonal hunting (varies by zone)",
+      "fishing_status": "Available seasonally"
+    },
+    {
+      "category": "Federal Refuge System Overview",
+      "description": "U.S. Fish and Wildlife Service refuges in Maryland",
+      "number_of_refuges": 3,
+      "primary_purposes": [
+        "Wildlife conservation",
+        "Habitat preservation",
+        "Public hunting and fishing recreation",
+        "Research (Patuxent)"
+      ]
+    },
+    {
+      "category": "Hunting Permits and Requirements",
+      "description": "General requirements for federal refuge hunting",
+      "required_items": [
+        "Valid state hunting license",
+        "Federal refuge permit",
+        "All required state stamps and licenses",
+        "Government-issued photo ID"
+      ],
+      "application": "Varies by refuge - check individual refuge websites"
+    },
+    {
+      "category": "Recent Management Changes",
+      "description": "2025-2026 hunting plan updates for Chesapeake Marshlands complex",
+      "refuges_affected": [
+        "Blackwater NWR",
+        "Eastern Neck NWR"
+      ],
+      "changes_summary": [
+        "Non-lead ammunition effective September 2026",
+        "Expanded weapon options",
+        "New species options (coyotes)",
+        "Early season opportunities (teal)"
+      ]
+    },
+    {
+      "category": "Contact and Information",
+      "source": "U.S. Fish and Wildlife Service",
+      "website": "fws.gov",
+      "refuge_websites": [
+        "https://www.fws.gov/refuge/blackwater",
+        "https://www.fws.gov/refuge/eastern-neck",
+        "https://www.fws.gov/refuge/patuxent-research"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "source_url": "https://news.maryland.gov/dnr/tag/weekly-fishing-report/",
+  "date_accessed": "2026-04-11",
+  "data": {
+    "official_maryland_dnr_reports": {
+      "frequency": "Weekly",
+      "publisher": "Maryland Department of Natural Resources",
+      "distribution": [
+        "Weekly report on news.maryland.gov",
+        "Regional and species-specific reports"
+      ],
+      "access": "https://news.maryland.gov/dnr/tag/weekly-fishing-report/"
+    },
+    "recent_april_2026_reports": [
+      {
+        "date": "April 10, 2026",
+        "title": "Maryland Fishing Report for Friday, April 10, 2026",
+        "source": "The Southern Maryland Chronicle"
+      },
+      {
+        "date": "April 6, 2026",
+        "title": "Maryland Fishing Report - April 2026",
+        "source": "The Southern Maryland Chronicle"
+      },
+      {
+        "date": "April 1, 2026",
+        "title": "Maryland Fishing Report - April 1",
+        "source": "Official DNR",
+        "highlights": "Striped bass catch-and-release season opens, water temperatures and species activity"
+      }
+    ],
+    "march_2026_reports": [
+      {
+        "date": "March 26, 2026",
+        "title": "Maryland and Chesapeake Bay Fishing Report",
+        "source": "On The Water",
+        "content": "Pre-season conditions, water temperature trends"
+      },
+      {
+        "date": "March 25, 2026",
+        "title": "Maryland Fishing Report - March 25",
+        "source": "Official DNR"
+      },
+      {
+        "date": "March 21, 2026",
+        "title": "Maryland Fishing Report",
+        "source": "The BayNet",
+        "note": "Post Youth-Only Trout Day report"
+      },
+      {
+        "date": "March 19, 2026",
+        "title": "Maryland and Chesapeake Bay Fishing Report",
+        "source": "On The Water"
+      },
+      {
+        "date": "March 13, 2026",
+        "title": "Maryland Fishing Report",
+        "source": "The BayNet"
+      },
+      {
+        "date": "March 4, 2026",
+        "title": "Maryland Fishing Report - March 4",
+        "source": "Official DNR",
+        "highlights": "Early spring conditions"
+      }
+    ],
+    "fishing_report_sources": [
+      {
+        "name": "The Fisherman Magazine",
+        "focus": "Delaware, Maryland & Chesapeake Bay",
+        "url": "https://www.thefisherman.com/area/delaware-maryland-chesapeake-bay/",
+        "coverage": "Professional fishing journalism"
+      },
+      {
+        "name": "On The Water",
+        "coverage": "Maryland and Chesapeake Bay reports",
+        "frequency": "Regular updates"
+      },
+      {
+        "name": "The BayNet",
+        "location": "Southern Maryland",
+        "coverage": "Local fishing conditions"
+      },
+      {
+        "name": "The Southern Maryland Chronicle",
+        "coverage": "Regional fishing reports",
+        "frequency": "Multiple per month"
+      },
+      {
+        "name": "FishTalk Magazine",
+        "coverage": "Chesapeake Bay regions by section",
+        "segments": [
+          "Upper Bay",
+          "Middle Bay",
+          "Lower Bay/Virginia Waters"
+        ]
+      }
+    ],
+    "current_conditions_march_2026": {
+      "water_temperature": {
+        "upper_rivers": "Upper 50s to low 60s",
+        "small_streams": "Upper 50s",
+        "note": "2-4 degrees below 5-year average"
+      },
+      "striped_bass": {
+        "status": "Pre-spawn staging",
+        "locations": [
+          "Upper bay regions",
+          "Tidal river channels"
+        ],
+        "activity": "Catch-and-release fishing active",
+        "technique": "Tandem bucktail rigs, sassy shads, large soft plastics"
+      },
+      "white_perch": {
+        "activity": "Spawning runs",
+        "locations": [
+          "Chester River",
+          "Sassafras River",
+          "Bush River",
+          "Gunpowder River",
+          "Magothy River"
+        ],
+        "baits": "Small jig heads, grass shrimp, lip-hooked minnows, bloodworm"
+      },
+      "blue_catfish": {
+        "status": "Highly available",
+        "locations": [
+          "Tidal Potomac",
+          "Patuxent River",
+          "Nanticoke River"
+        ],
+        "behavior": "Aggressive feeding",
+        "baits": "Cut bait, scented baits"
+      }
+    },
+    "local_bait_and_tackle_shops": [
+      {
+        "name": "Clyde's Sport Shop",
+        "location": "2307 Hammonds Ferry Rd, Halethorpe, MD 21227",
+        "phone": "(410) 242-6108",
+        "hours": {
+          "monday_friday": "6:00 am - 9:00 pm",
+          "saturday": "5:00 am - 9:00 pm",
+          "sunday": "6:00 am - 5:00 pm"
+        },
+        "established": "1957",
+        "services": [
+          "Live bait",
+          "Fishing rods and reels",
+          "Hunting licenses",
+          "Saltwater and freshwater bait",
+          "Full-service sporting goods"
+        ],
+        "reputation": "Family-owned, knowledgeable staff"
+      }
+    ],
+    "fishing_forecast_resources": [
+      {
+        "name": "Maryland DNR Fishing Report",
+        "frequency": "Weekly (Fridays during peak season)",
+        "format": "Text report with species-by-species updates"
+      },
+      {
+        "name": "Social Media Updates",
+        "platforms": ["Facebook", "X (Twitter)"],
+        "frequency": "Weekly",
+        "day": "Fridays"
+      },
+      {
+        "name": "Trout Stocking Hotline",
+        "phone": "800-688-3467",
+        "extension": "1",
+        "frequency": "Updated weekly (Fridays during stocking)",
+        "content": "Recorded trout stocking updates"
+      }
+    ],
+    "community_engagement": {
+      "fishing_photos": "Users can submit fishing photos to Maryland DNR for weekly report",
+      "volunteer_surveys": "Opportunity to participate in creel surveys",
+      "contact": "Submit via Maryland DNR Fisheries page or social media"
+    },
+    "reporting_seasonal_pattern": {
+      "peak_reporting": "March-May (spring season opening)",
+      "summer_reporting": "June-August (reduced frequency, hot water closures)",
+      "fall_reporting": "September-October (resumed activity)",
+      "winter_reporting": "November-February (specialized reports)"
+    }
+  }
+}

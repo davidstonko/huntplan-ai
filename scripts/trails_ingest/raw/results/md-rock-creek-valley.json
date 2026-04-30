@@ -1,0 +1,30 @@
+{
+ "id": "md-rock-creek-valley",
+ "name": "Valley Trail",
+ "park": "Rock Creek Regional Park",
+ "trailhead": [
+  -77.1144,
+  39.1063
+ ],
+ "sources_tried": [
+  "osm_overpass_named",
+  "usgs_trails",
+  "osm_overpass_generic"
+ ],
+ "sources_returned": {
+  "osm_overpass_named": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout",
+  "usgs_trails": 0,
+  "osm_overpass_generic": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout"
+ },
+ "chosen": null,
+ "cross_audit_m": null,
+ "confidence": "none",
+ "is_approximate": true,
+ "error": "no candidate with matching name within 3km of trailhead",
+ "published_miles": 5.0,
+ "tier2_error": "overpass: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout",
+ "tier2_source": "osm_overpass_relaxed",
+ "tier2_candidates": 2937,
+ "tier2_chose": null,
+ "tier2_note": "no relaxed OSM candidate fit length+proximity"
+}

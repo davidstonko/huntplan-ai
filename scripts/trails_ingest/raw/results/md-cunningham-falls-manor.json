@@ -1,0 +1,135 @@
+{
+ "id": "md-cunningham-falls-manor",
+ "name": "Old Misery Trail",
+ "park": "Cunningham Falls SP Manor",
+ "trailhead": [
+  -77.4523,
+  39.5801
+ ],
+ "sources_tried": [
+  "osm_overpass_named",
+  "usgs_trails",
+  "osm_overpass_generic"
+ ],
+ "sources_returned": {
+  "osm_overpass_named": 3,
+  "usgs_trails": 105,
+  "osm_overpass_generic": 110
+ },
+ "chosen": {
+  "name": "Cunningham Falls Manor Camping Area",
+  "polyline": [
+   [
+    -77.4352,
+    39.59081
+   ],
+   [
+    -77.434938,
+    39.591425
+   ],
+   [
+    -77.434761,
+    39.591761
+   ],
+   [
+    -77.434736,
+    39.59196
+   ],
+   [
+    -77.434793,
+    39.592142
+   ],
+   [
+    -77.435112,
+    39.592424
+   ],
+   [
+    -77.435466,
+    39.592563
+   ],
+   [
+    -77.435924,
+    39.592642
+   ],
+   [
+    -77.436514,
+    39.592586
+   ],
+   [
+    -77.437465,
+    39.592832
+   ],
+   [
+    -77.437874,
+    39.592769
+   ],
+   [
+    -77.438223,
+    39.592636
+   ],
+   [
+    -77.43849,
+    39.592335
+   ],
+   [
+    -77.438537,
+    39.592087
+   ],
+   [
+    -77.438265,
+    39.591326
+   ],
+   [
+    -77.438068,
+    39.591073
+   ],
+   [
+    -77.437814,
+    39.590928
+   ],
+   [
+    -77.437544,
+    39.590826
+   ],
+   [
+    -77.436671,
+    39.59069
+   ],
+   [
+    -77.436291,
+    39.590687
+   ],
+   [
+    -77.4352,
+    39.59081
+   ]
+  ],
+  "length_m": 922.4,
+  "length_mi": 0.573,
+  "published_mi": 1.0,
+  "source": "osm_overpass",
+  "source_tags": {
+   "backcountry": "no",
+   "caravans": "yes",
+   "group_only": "no",
+   "internet_access": "no",
+   "name": "Cunningham Falls Manor Camping Area",
+   "operator": "Maryland Department of Natural Resources",
+   "reservation": "recommended",
+   "tents": "yes",
+   "tourism": "camp_site",
+   "website": "https://dnr.maryland.gov/publiclands/Pages/western/CunninghamFalls/Camping.aspx"
+  }
+ },
+ "cross_audit_m": [
+  210.2,
+  382.5,
+  432.4,
+  270.8,
+  210.2
+ ],
+ "confidence": "low",
+ "is_approximate": true,
+ "error": null,
+ "published_miles": 1.0
+}

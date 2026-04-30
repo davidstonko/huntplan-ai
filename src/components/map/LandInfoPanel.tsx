@@ -70,6 +70,14 @@ export default function LandInfoPanel({ land, onClose }: LandInfoPanelProps) {
         )}
       </View>
 
+      <View style={styles.boundaryDisclaimer}>
+        <Text style={styles.boundaryDisclaimerText}>
+          {'\u26A0'} Boundaries shown are approximate and derived from MD DNR public GIS.
+          Always confirm property lines, parking, and access rules on the official DNR
+          website or posted signs before entering.
+        </Text>
+      </View>
+
       {land.website_url ? (
         <TouchableOpacity
           style={styles.linkButton}
@@ -197,5 +205,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.sage,
     fontWeight: '600',
+  },
+  boundaryDisclaimer: {
+    backgroundColor: '#3A2F1A',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 2,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.mdGold || '#C9A227',
+  },
+  boundaryDisclaimerText: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    lineHeight: 16,
+    fontStyle: 'italic',
   },
 });

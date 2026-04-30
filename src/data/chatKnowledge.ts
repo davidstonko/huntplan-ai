@@ -26,6 +26,12 @@ import {
   getLandsByCounty,
   DATA_STATS,
 } from './marylandPublicLands';
+import {
+  servicesForRegion,
+  servicesForSpecies,
+  type LocalService,
+} from './marylandLocalServices';
+import { CURATED_HUNTING_GEAR } from './curatedHuntingGear';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -42,10 +48,210 @@ export interface ChatResponse {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * 2026-04-27: Hunt-mode local-pros augmentation. Mirrors the fishing
+ * chat pattern but joins on regions (counties, named areas) and species
+ * (sika, whitetail, goose, duck, bear) instead of waterbodies. Up to 3
+ * services rendered as a markdown bullet list at the end of any
+ * response that mentions a known region or species.
+ */
+const HUNT_REGION_TOKENS: ReadonlyArray<readonly [string, string]> = [
+  // Eastern Shore counties
+  ['dorchester', 'Dorchester County'],
+  ['kent county', 'Kent County'],
+  ['queen anne', "Queen Anne's County"],
+  ['talbot', 'Talbot County'],
+  ['eastern shore', 'Eastern Shore'],
+  // Western counties
+  ['garrett', 'Garrett County'],
+  ['allegany', 'Allegany County'],
+  ['western maryland', 'Western Maryland'],
+  ['western md', 'Western Maryland'],
+  ['frederick county', 'Frederick County'],
+  // Central
+  ['baltimore county', 'Baltimore County'],
+  ['carroll', 'Carroll County'],
+  ['howard county', 'Howard County'],
+  ['anne arundel', 'Anne Arundel County'],
+  ['harford', 'Harford County'],
+  ['baltimore metro', 'Baltimore Metro'],
+  // Conowingo corridor
+  ['conowingo', 'Conowingo area'],
+];
+
+const HUNT_SPECIES_TOKENS: ReadonlyArray<readonly [string, string]> = [
+  ['sika', 'Sika Deer'],
+  ['whitetail', 'Whitetail'],
+  ['white-tail', 'Whitetail'],
+  ['white tail', 'Whitetail'],
+  ['goose', 'Canada Goose'],
+  ['geese', 'Canada Goose'],
+  ['snow goose', 'Snow Goose'],
+  ['duck', 'Duck'],
+  ['waterfowl', 'Duck'],
+  ['turkey', 'Turkey'],
+  ['bear', 'Bear'],
+  ['sea duck', 'Sea Duck'],
+];
+
+function detectHuntContext(q: string): { region?: string; species?: string } {
+  const ctx: { region?: string; species?: string } = {};
+  for (const [token, canonical] of HUNT_REGION_TOKENS) {
+    if (q.includes(token)) {
+      ctx.region = canonical;
+      break;
+    }
+  }
+  for (const [token, canonical] of HUNT_SPECIES_TOKENS) {
+    if (q.includes(token)) {
+      ctx.species = canonical;
+      break;
+    }
+  }
+  return ctx;
+}
+
+/**
+ * Append a "Local pros" footer for hunt-mode responses. Joins on region
+ * first (more specific), falls back to species if no region match. The
+ * union prevents the same business from listing twice when both match.
+ */
+function augmentWithHuntLocalPros(
+  response: ChatResponse,
+  userQuery: string,
+): ChatResponse {
+  const ctx = detectHuntContext(userQuery.toLowerCase());
+  if (!ctx.region && !ctx.species) return response;
+  const seen = new Set<string>();
+  const collected: LocalService[] = [];
+  if (ctx.region) {
+    for (const s of servicesForRegion(ctx.region)) {
+      if (!seen.has(s.id)) {
+        seen.add(s.id);
+        collected.push(s);
+        if (collected.length >= 3) break;
+      }
+    }
+  }
+  if (collected.length < 3 && ctx.species) {
+    for (const s of servicesForSpecies(ctx.species)) {
+      if (!seen.has(s.id)) {
+        seen.add(s.id);
+        collected.push(s);
+        if (collected.length >= 3) break;
+      }
+    }
+  }
+  if (collected.length === 0) return response;
+  const headerWater = ctx.region ?? ctx.species ?? 'Maryland';
+  const footer =
+    `\n\n**Local pros for ${headerWater}:**\n` +
+    collected
+      .map((p) => {
+        const phone = p.phone ? ` · ${p.phone}` : '';
+        const url = p.website ? ` · ${p.website}` : '';
+        return `• **${p.name}** (${p.category.replace('-', ' ')}, ${p.city})${phone}${url}`;
+      })
+      .join('\n');
+  return {
+    ...response,
+    text: response.text + footer,
+    citations: [
+      ...(response.citations ?? []),
+      'marylandLocalServices.ts (verified-2026 listings)',
+    ],
+  };
+}
+
+/**
+ * 2026-04-29: AI gear-suggestion monetization for Hunt mode.
+ * Mirrors the fishing pattern (augmentWithGearSuggestions in
+ * fishingChatKnowledge.ts). When a chat query mentions a species /
+ * weapon-method / accessory category, append a "What we use" footer
+ * with top 3 picks from CURATED_HUNTING_GEAR (Amazon affiliate links,
+ * mdoutdoors1-20 tag).
+ *
+ * Detection map:
+ *   - whitetail / deer / saddle / treestand → 'whitetail_saddle' or 'hunting_stands_blinds'
+ *   - turkey / spring → 'spring_turkey'
+ *   - sika → 'sika_deer'
+ *   - bear → 'bear_hunting'
+ *   - waterfowl / duck / goose → 'hunting_calls_decoys'
+ *   - optics / binoculars / scope / rangefinder → 'hunting_optics_observation'
+ *   - clothing / camo / base layer → 'hunting_clothing_layers'
+ *   - call / decoy → 'hunting_calls_decoys'
+ *   - knife / pack / accessory → 'hunting_accessories_tools'
+ */
+const HUNT_GEAR_CATEGORY_TOKENS: ReadonlyArray<readonly [readonly string[], string]> = [
+  [['saddle', 'tree saddle'], 'whitetail_saddle'],
+  [['treestand', 'tree stand', 'climbing stand', 'ladder stand', 'ground blind'], 'hunting_stands_blinds'],
+  [['turkey', 'gobbler', 'spring season'], 'spring_turkey'],
+  [['sika'], 'sika_deer'],
+  [['bear'], 'bear_hunting'],
+  [['call', 'decoy', 'duck call', 'goose call', 'turkey call', 'grunt'], 'hunting_calls_decoys'],
+  [['binocular', 'scope', 'rangefinder', 'spotting', 'optic'], 'hunting_optics_observation'],
+  [['camo', 'base layer', 'jacket', 'pant', 'clothing', 'merino'], 'hunting_clothing_layers'],
+  [['knife', 'pack', 'backpack', 'accessory'], 'hunting_accessories_tools'],
+  // Fallback for whitetail/deer questions: surface saddle gear as the
+  // creator-pick category (David runs saddle setups, mostly).
+  [['whitetail', 'deer'], 'whitetail_saddle'],
+];
+
+function detectHuntGearCategory(q: string): string | null {
+  for (const [tokens, categoryId] of HUNT_GEAR_CATEGORY_TOKENS) {
+    if (tokens.some((t) => q.includes(t))) return categoryId;
+  }
+  return null;
+}
+
+function augmentWithHuntGearSuggestions(
+  response: ChatResponse,
+  userQuery: string,
+): ChatResponse {
+  const categoryId = detectHuntGearCategory(userQuery.toLowerCase());
+  if (!categoryId) return response;
+  const category = CURATED_HUNTING_GEAR.find((c) => c.id === categoryId);
+  if (!category || category.items.length === 0) return response;
+  const ranked = [...category.items].sort((a, b) => {
+    const aScore = (a.essential ? 2 : 0) + (a.creatorPick ? 1 : 0);
+    const bScore = (b.essential ? 2 : 0) + (b.creatorPick ? 1 : 0);
+    return bScore - aScore;
+  });
+  const picks = ranked.slice(0, 3);
+  const footer =
+    `\n\n**What we use (${category.title}):**\n` +
+    picks
+      .map((g) => {
+        const tag = g.creatorPick ? ' ⭐ By David' : '';
+        return `• [${g.name}](${g.url})${tag} — ${g.description} (${g.price})`;
+      })
+      .join('\n') +
+    `\n\n_Affiliate links — purchases support MDHuntFishOutdoors._`;
+  return {
+    ...response,
+    text: response.text + footer,
+    citations: [
+      ...(response.citations ?? []),
+      `curatedHuntingGear.ts — ${category.title}`,
+    ],
+  };
+}
+
+/**
  * Main entry point for AI chat queries.
  * Analyzes the user's query and returns a contextual, data-driven response.
+ *
+ * 2026-04-29: chain-augmented with two enhancements (mirroring fishing):
+ *   1. augmentWithHuntLocalPros — splices "Local pros" footer for known counties/species
+ *   2. augmentWithHuntGearSuggestions — splices "What we use" footer with
+ *      Amazon affiliate links from CURATED_HUNTING_GEAR (David's monetization)
  */
 export function getSmartResponse(userQuery: string): ChatResponse {
+  const raw = getSmartResponseRaw(userQuery);
+  const withPros = augmentWithHuntLocalPros(raw, userQuery);
+  return augmentWithHuntGearSuggestions(withPros, userQuery);
+}
+
+function getSmartResponseRaw(userQuery: string): ChatResponse {
   const q = userQuery.toLowerCase().trim();
 
   // Detect intent and route to appropriate handler
@@ -83,6 +289,70 @@ export function getSmartResponse(userQuery: string): ChatResponse {
 
   if (isRutQuery(q)) {
     return handleRutQuery(userQuery);
+  }
+
+  if (isCWDQuery(q)) {
+    return handleCWDQuery(userQuery);
+  }
+
+  if (isHarvestDataQuery(q)) {
+    return handleHarvestDataQuery(userQuery);
+  }
+
+  if (isLicenseFeeQuery(q)) {
+    return handleLicenseFeeQuery(userQuery);
+  }
+
+  if (isBearHuntingQuery(q)) {
+    return handleBearHuntingQuery(userQuery);
+  }
+
+  if (isTurkeyQuery(q)) {
+    return handleTurkeyQuery(userQuery);
+  }
+
+  if (isSpecialHuntsQuery(q)) {
+    return handleSpecialHuntsQuery(userQuery);
+  }
+
+  if (isFederalLandsQuery(q)) {
+    return handleFederalLandsQuery(userQuery);
+  }
+
+  if (isWaterfowlQuery(q)) {
+    return handleWaterfowlQuery(userQuery);
+  }
+
+  if (isManagedHuntQuery(q)) {
+    return handleManagedHuntQuery(userQuery);
+  }
+
+  if (isHarvestReportingQuery(q)) {
+    return handleHarvestReportingQuery(userQuery);
+  }
+
+  if (isHunterEducationQuery(q)) {
+    return handleHunterEducationQuery(userQuery);
+  }
+
+  if (isDogTrainingQuery(q)) {
+    return handleDogTrainingQuery(userQuery);
+  }
+
+  if (isAccessibleHuntingQuery(q)) {
+    return handleAccessibleHuntingQuery(userQuery);
+  }
+
+  if (isPublicPermitQuery(q)) {
+    return handlePublicPermitQuery(userQuery);
+  }
+
+  if (isSmallGameQuery(q)) {
+    return handleSmallGameQuery(userQuery);
+  }
+
+  if (isSikaDeerQuery(q)) {
+    return handleSikaDeerQuery(userQuery);
   }
 
   // Default: helpful fallback
@@ -129,6 +399,70 @@ function isPlanningQuery(q: string): boolean {
 
 function isRutQuery(q: string): boolean {
   return /rut|breeding|estrus|doe|doe cycle|seeking|pre-rut|post-rut|peak rut|second rut|buck behavior|chasing|scrape|rub line/.test(q);
+}
+
+function isCWDQuery(q: string): boolean {
+  return /cwd|chronic wasting|disease|cwdma|spine|backbone|deboned|carcass transport/.test(q);
+}
+
+function isHarvestDataQuery(q: string): boolean {
+  return /harvest|statistics|how many|deer harvest|total deer|antlered|antlerless|harvest report/.test(q);
+}
+
+function isLicenseFeeQuery(q: string): boolean {
+  return /license cost|how much|license fee|price|resident|nonresident|senior|junior|apprentice|stamp cost/.test(q);
+}
+
+function isBearHuntingQuery(q: string): boolean {
+  return /bear|black bear|bear hunting|bear permit|bear zone|bear lottery/.test(q);
+}
+
+function isTurkeyQuery(q: string): boolean {
+  return /turkey|gobbler|tom|wild turkey|turkey season|turkey harvest/.test(q);
+}
+
+function isSpecialHuntsQuery(q: string): boolean {
+  return /special hunt|lottery|mentored|chesapeake forest|deal island|military base|fort meade|patuxent|apg/.test(q);
+}
+
+function isFederalLandsQuery(q: string): boolean {
+  return /blackwater|federal|refuge|national wildlife|eastern neck|patuxent|nwf/.test(q);
+}
+
+function isWaterfowlQuery(q: string): boolean {
+  return /waterfowl|duck|goose|geese|blind|midwinter survey|diving duck|canada geese|teal|mallard|waterfowl hunt/.test(q);
+}
+
+function isManagedHuntQuery(q: string): boolean {
+  return /managed hunt|urban archery|controlled hunt|anne arundel|seneca creek|wye island|lottery hunt/.test(q);
+}
+
+function isHarvestReportingQuery(q: string): boolean {
+  return /report harvest|check station|report deer|tag|confirmation|harvest report|compass\.dnr/.test(q);
+}
+
+function isHunterEducationQuery(q: string): boolean {
+  return /hunter education|hunter safety|hunter ed|safety course|apprentice|learnhunting/.test(q);
+}
+
+function isDogTrainingQuery(q: string): boolean {
+  return /dog training|retriever|bird dog|dog area|mckee-beshers|indian springs/.test(q);
+}
+
+function isAccessibleHuntingQuery(q: string): boolean {
+  return /disabled|ada|accessible|wheelchair|disability|mobility|universal disability/.test(q);
+}
+
+function isPublicPermitQuery(q: string): boolean {
+  return /public land permit|free permit|state land|wma permit|display parking/.test(q);
+}
+
+function isSmallGameQuery(q: string): boolean {
+  return /rabbit|squirrel|pheasant|small game|dove|quail|grouse|delmarva fox squirrel/.test(q);
+}
+
+function isSikaDeerQuery(q: string): boolean {
+  return /sika|sika deer|elk|asian elk|eastern shore|fishing bay|taylor's island/.test(q);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -596,6 +930,529 @@ function handleRutQuery(userQuery: string): ChatResponse {
       'Best rut hunting strategies',
       'Peak rut dates in November',
       'How to use doe estrus scent',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CWD (CHRONIC WASTING DISEASE) HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleCWDQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Chronic Wasting Disease (CWD) in Maryland**\n\n' +
+      '**Affected Counties (CWDMA):**\n' +
+      '• Allegany\n' +
+      '• Baltimore\n' +
+      '• Carroll\n' +
+      '• Frederick\n' +
+      '• Howard (added 2025)\n' +
+      '• Montgomery\n' +
+      '• Washington\n\n' +
+      '**Carcass Transport Rules in CWDMA:**\n' +
+      '✓ **Allowed:** Deboned meat only\n' +
+      '✗ **NOT Allowed:** Spine, backbone, skull, head, or bone-in pieces\n' +
+      '✗ **NOT Allowed:** Transport of whole carcasses out of CWDMA\n\n' +
+      '**Testing & Surveillance:**\n' +
+      'MD DNR maintains 95% surveillance confidence through voluntary testing and targeted sampling. All harvested deer in CWDMA should be tested (free).\n\n' +
+      '**Questions?** Contact MD DNR: **301-334-4255**\n\n' +
+      'Always verify current CWD regulations with MD DNR before transporting deer.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/CWD.aspx'],
+    followUpSuggestions: [
+      'How do I test my deer?',
+      'Can I bring a whole carcass across county lines?',
+      'Is my county in a CWDMA?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HARVEST DATA & STATISTICS HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleHarvestDataQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Deer Harvest Statistics (2024-2025)**\n\n' +
+      '**Total Harvest:** 84,201 deer\n\n' +
+      '**By Sex:**\n' +
+      '• Antlered: 32,148\n' +
+      '• Antlerless: 47,271\n\n' +
+      '**By Method:**\n' +
+      '• Archery: 28,775 (61% using crossbow)\n' +
+      '• Firearms & Muzzleloader: Remaining\n\n' +
+      '**Junior Hunters:** 2,493 harvested (+12% increase from previous year)\n\n' +
+      '**Special Seasons:**\n' +
+      '• Sunday Hunting: 9,459 deer harvested across 7 authorized counties\n' +
+      '• Sika Deer: Harvested at Taylor\'s Island WMA and Fishing Bay WMA\n\n' +
+      'These statistics show Maryland\'s thriving deer population and strong hunting heritage!',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/deerharvest.aspx'],
+    followUpSuggestions: [
+      'Which county had the most deer harvested?',
+      'What are the season dates?',
+      'How do junior hunter licenses work?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LICENSE FEES HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleLicenseFeeQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Hunting License Fees (2025-2026)**\n\n' +
+      '**Base License:**\n' +
+      '• Resident: $35/year\n' +
+      '• Senior (65+): $5/year\n' +
+      '• Junior (under 16): $10.50/year (includes archery & muzzleloader stamps)\n' +
+      '• Disabled Veteran: FREE lifetime license\n' +
+      '• Nonresident: $160/year\n' +
+      '• Apprentice: $15 resident / $40 nonresident\n\n' +
+      '**Required Stamps & Permits:**\n' +
+      '• Archery Stamp: $6\n' +
+      '• Muzzleloader Stamp: $6\n' +
+      '• Sika Deer Stamp: $10\n' +
+      '• Bonus Buck Stamp: $10\n' +
+      '• Migratory Bird Stamp (HIP): FREE registration\n' +
+      '• Federal Duck Stamp: $25\n\n' +
+      '**Purchase:** compass.dnr.maryland.gov or authorized vendors\n\n' +
+      'Many stamps are included in combo licenses — check the COMPASS website for best pricing.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/huntinglicenses.aspx'],
+    followUpSuggestions: [
+      'Do I need all these stamps?',
+      'Are there combo deals?',
+      'How do I register for HIP?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BEAR HUNTING HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleBearHuntingQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Black Bear Hunting in Maryland**\n\n' +
+      '**Special Permit Required:**\n' +
+      'Black bear hunting is by lottery permit only. Application fee: **$15**\n\n' +
+      '**Eligible Zones:**\n' +
+      '• **Zone 1:** Allegany, Frederick, Garrett, Washington counties\n' +
+      '• **Zone 2:** Frederick, Washington counties\n\n' +
+      '**Bag Limit:** 1 bear per permit holder per season\n\n' +
+      '**Allowed Methods:**\n' +
+      '• Firearms\n' +
+      '• Archery\n\n' +
+      '**Lottery Period:** July 12 – August 31 (annual application deadline)\n\n' +
+      '**Apply:** compass.dnr.maryland.gov\n\n' +
+      'Black bear hunting is a special privilege with limited permits. Start planning in summer to apply for the next season!',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/bearhunting.aspx'],
+    followUpSuggestions: [
+      'How do I apply for a bear permit?',
+      'What\'s the success rate?',
+      'Can I use a bow?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TURKEY HUNTING HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleTurkeyQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Wild Turkey Hunting in Maryland**\n\n' +
+      '**2025 Spring Harvest:** 4,851 turkeys\n' +
+      '• 81% adult gobblers (mature males)\n\n' +
+      '**Top Harvest Counties:**\n' +
+      '• Garrett: 506\n' +
+      '• Charles: 445\n' +
+      '• Washington: 406\n' +
+      '• Worcester: 400\n' +
+      '• Allegany: 314\n\n' +
+      '**Population Status:**\n' +
+      'Statewide population exceeds 40,000+ birds. Record harvests in recent years in Cecil, St. Mary\'s, Talbot, and Wicomico counties show expanding populations.\n\n' +
+      '**Spring & Fall Seasons:**\n' +
+      'Ask about specific season dates or use the Regulations tab for exact open dates.\n\n' +
+      'Maryland has exceptional turkey hunting with strong populations and prime habitat across the state!',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/turkeyreport.aspx'],
+    followUpSuggestions: [
+      'When is spring turkey season?',
+      'Best counties for turkey hunting?',
+      'What calls work best?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SPECIAL HUNTS HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleSpecialHuntsQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Special Hunts & Lotteries in Maryland**\n\n' +
+      '**Chesapeake Forest Lottery:**\n' +
+      'Premier public hunting area with limited permits. Application deadline: August 21 annually.\n\n' +
+      '**Mentored Deer Hunts:**\n' +
+      'Central Region offers structured hunts for mentoring new hunters and youth programs.\n\n' +
+      '**Deal Island WMA Impoundment:**\n' +
+      '• Early Season: September 1–15\n' +
+      '• Main Season: November 1–February 7\n' +
+      'Specialized waterfowl and upland hunting opportunities.\n\n' +
+      '**Military Base Hunting (with required credentials):**\n' +
+      '• Aberdeen Proving Ground (APG)\n' +
+      '• Fort Meade\n' +
+      '• Patuxent Naval Air Station (NAS)\n' +
+      '• Indian Head Naval Support Facility (NSF)\n\n' +
+      '**Eligibility varies by program.** Check DNR website or contact 301-334-4255 for application details.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/specialhunts.aspx'],
+    followUpSuggestions: [
+      'How do I apply for Chesapeake Forest?',
+      'What\'s the mentored hunt program?',
+      'Do I qualify for military base hunting?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FEDERAL LANDS HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleFederalLandsQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Federal Refuges & Lands in Maryland**\n\n' +
+      '**Blackwater National Wildlife Refuge (NWR)**\n' +
+      '• Location: 15,000 acres in Dorchester County\n' +
+      '• Species: Sika & white-tailed deer\n' +
+      '• Archery: 12+ weeks (extended opportunity)\n' +
+      '• Reservation Fee: $6\n' +
+      '• **Important (Sept 2026):** Non-lead ammunition required\n\n' +
+      '**Eastern Neck National Wildlife Refuge**\n' +
+      '• Location: 2,285 acres in Kent County\n' +
+      '• Mentored Turkey Hunts: Partnership with NWTF (National Wild Turkey Federation)\n' +
+      '• Great for learning and youth programs\n\n' +
+      '**Patuxent National Wildlife Refuge**\n' +
+      '• Limited seasonal hunting opportunities\n' +
+      '• Contact refuge directly for current availability\n\n' +
+      '**Federal lands offer unique hunting experiences with specialized regulations. Check refuge websites or call ahead before visiting.**',
+    citations: ['https://www.fws.gov/refuge/blackwater'],
+    followUpSuggestions: [
+      'How do I make a Blackwater reservation?',
+      'Tell me about Eastern Neck turkey hunts',
+      'What species can I hunt on federal land?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WATERFOWL HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleWaterfowlQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Waterfowl Hunting in Maryland**\n\n' +
+      '**2026 Midwinter Survey:**\n' +
+      '• Total: 926,900 birds (35% above 5-year average)\n' +
+      '• Canada Geese: 509,400\n' +
+      '• Diving Ducks: 239,100\n\n' +
+      '**Strong Population = Excellent Hunting!**\n\n' +
+      '**Required Licenses & Stamps:**\n' +
+      '• Maryland Duck Stamp: $9\n' +
+      '• Federal Duck Stamp: $25\n' +
+      '• HIP Registration: FREE (Harvest Information Program)\n\n' +
+      '**Blind Reservations:**\n' +
+      '• Call up to 4 days prior (max 2 sites per call)\n' +
+      '• Limited availability — plan ahead during peak season\n\n' +
+      '**Season Dates & Limits:**\n' +
+      'Check the Regulations tab for current duck & goose seasons, daily bag limits, and species-specific rules.\n\n' +
+      'Maryland\'s Chesapeake Bay region is a world-class waterfowl destination!',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowlhunting.aspx'],
+    followUpSuggestions: [
+      'When is waterfowl season?',
+      'How do I reserve a blind?',
+      'What\'s the daily bag limit for ducks?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MANAGED HUNTS & URBAN ARCHERY HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleManagedHuntQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Managed Hunts & Urban Archery in Maryland**\n\n' +
+      '**Anne Arundel Managed Hunt**\n' +
+      '• Lottery-based: 140 hunters\n' +
+      '• Application Deadline: October 17\n' +
+      '• Structured deer management program\n\n' +
+      '**Seneca Creek State Park Managed Hunt**\n' +
+      '• Limited Permits: 30 hunters\n' +
+      '• Season Window: September 3 – December 5\n' +
+      '• Urban deer management initiative\n\n' +
+      '**Wye Island NRMA**\n' +
+      '• Multiple Weapon Types: Archery, Firearms, Muzzleloader, Rabbit\n' +
+      '• Specialized access program\n\n' +
+      '**Urban Archery Programs**\n' +
+      'Deer management archery programs available in populated counties for population control in developed areas.\n\n' +
+      '**How to Apply:**\n' +
+      'Apply via the MD DNR website. Check www.dnr.maryland.gov for current deadlines and application details.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/managedhunts.aspx'],
+    followUpSuggestions: [
+      'When is the Anne Arundel lottery deadline?',
+      'How do I apply for Seneca Creek?',
+      'What is urban archery in Maryland?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HARVEST REPORTING HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleHarvestReportingQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Harvest Reporting Requirements**\n\n' +
+      '**Reporting Timeline:**\n' +
+      '• **24-Hour Requirement:** You must report your harvest before removing the head or hide\n' +
+      '• Report immediately to avoid violations\n\n' +
+      '**Reporting Methods:**\n' +
+      '• Online: compass.dnr.maryland.gov (preferred)\n' +
+      '• Phone: Call MD DNR during business hours\n' +
+      '• Mobile App: Use MDHuntFishOutdoors or MD Outdoors app\n\n' +
+      '**Check Stations:**\n' +
+      'No physical check stations since 2004 — all reporting is done online or by phone.\n\n' +
+      '**Confirmation Number:**\n' +
+      '• You will receive a confirmation number when you report\n' +
+      '• **Keep this number for documentation and compliance records**\n' +
+      '• Required if you are ever checked by a wildlife officer\n\n' +
+      '**Why It Matters:**\n' +
+      'Harvest reports help MD DNR track populations, set future seasons, and manage wildlife resources statewide.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/harvestreport.aspx'],
+    followUpSuggestions: [
+      'How do I report my harvest online?',
+      'What if I forget my confirmation number?',
+      'Can I report by phone?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HUNTER EDUCATION HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleHunterEducationQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Hunter Education in Maryland**\n\n' +
+      '**Two Certification Paths:**\n\n' +
+      '**Option 1: Full In-Person Course**\n' +
+      '• Required if you are under 13 years old\n' +
+      '• Comprehensive classroom and field instruction\n' +
+      '• Live-fire component included\n\n' +
+      '**Option 2: Hybrid (Recommended)**\n' +
+      '• Online course component (flexible timing)\n' +
+      '• Field Day: 4–6 hours with live-fire instruction\n' +
+      '• Best option for most adult hunters\n\n' +
+      '**Apprentice License Exemption:**\n' +
+      '• Short online safety course\n' +
+      '• Hunt with mentor supervision\n' +
+      '• Full certification required after 2 years\n\n' +
+      '**Requirement to Buy License:**\n' +
+      'You must complete hunter education BEFORE purchasing a Maryland hunting license.\n\n' +
+      '**Learn More:**\n' +
+      'Visit learnhunting.org for course schedules and registration.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/huntered.aspx'],
+    followUpSuggestions: [
+      'Can I hunt without hunter education?',
+      'What is the apprentice hunter program?',
+      'Where can I take the online course?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOG TRAINING AREAS HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleDogTrainingQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Dog Training Areas in Maryland**\n\n' +
+      '**McKee-Beshers Wildlife Management Area**\n' +
+      '• Open: Year-round for dog training\n' +
+      '• No reservations required\n' +
+      '• Leash Rules: April 15–August 15 (spring/summer)\n' +
+      '• Premier retriever and bird dog training location\n\n' +
+      '**Indian Springs Wildlife Management Area**\n' +
+      '• Location: Washington County\n' +
+      '• Size: 6,400 acres\n' +
+      '• Year-round access for dog training\n\n' +
+      '**Live Bird Training:**\n' +
+      '• $5 Annual Retriever Dog Training Permit required if releasing live birds\n' +
+      '• Permits available through MD DNR\n\n' +
+      '**Best Practices:**\n' +
+      '• Call ahead to confirm current access\n' +
+      '• Follow all area rules and regulations\n' +
+      '• Respect seasonal leash restrictions',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/dogtraining.aspx'],
+    followUpSuggestions: [
+      'Do I need a permit to train my dog?',
+      'Is McKee-Beshers open year-round?',
+      'Can I release live birds for training?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCESSIBLE & DISABLED HUNTING HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleAccessibleHuntingQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Accessible Hunting for Disabled Hunters**\n\n' +
+      '**Universal Disability Pass**\n' +
+      '• FREE with physician certification\n' +
+      '• Grants access to accessible facilities\n' +
+      '• Apply through MD DNR\n\n' +
+      '**Access Permit**\n' +
+      '• FREE and required for participating locations\n' +
+      '• Includes ADA accommodations\n\n' +
+      '**Accessible Waterfowl Blinds**\n' +
+      '• Location: LeCompte Wildlife Management Area\n' +
+      '• Schedule: 1 day/week by reservation\n' +
+      '• Wheelchair-accessible design\n\n' +
+      '**Wheelchair-Accessible Boardwalks & Facilities:**\n' +
+      '• Cunningham Swamp\n' +
+      '• Mt. Nebo\n' +
+      '• Warrior Mountain\n\n' +
+      '**How to Get Started:**\n' +
+      'Contact MD DNR at 301-334-4255 or visit the website for more information about accommodations and permits.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/disabledhunting.aspx'],
+    followUpSuggestions: [
+      'How do I get a Universal Disability Pass?',
+      'Where are accessible waterfowl blinds?',
+      'What accessibility features are available?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUBLIC HUNTING PERMIT HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handlePublicPermitQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Free Public Hunting Permit Requirement**\n\n' +
+      '**The Requirement:**\n' +
+      '• A FREE permit is REQUIRED to hunt on all Maryland state hunting lands\n' +
+      '• This includes WMAs (Wildlife Management Areas) and state forests\n' +
+      '• Getting a permit is easy and takes just minutes\n\n' +
+      '**How to Get Your Permit:**\n\n' +
+      '**Option 1: Online (Fastest)**\n' +
+      '• Visit MD Outdoors portal\n' +
+      '• Register and print permit immediately\n\n' +
+      '**Option 2: In-Person**\n' +
+      '• Gwynnbrook Regional Office: 410-356-9272\n' +
+      '• Myrtle Grove Regional Office: 301-743-5161\n\n' +
+      '**Rules for State Lands:**\n' +
+      '• Portable stands ONLY (no permanent structures)\n' +
+      '• No baiting allowed\n' +
+      '• Display your parking pass at trailhead\n' +
+      '• Permit must be obtained BEFORE hunting\n\n' +
+      '**Important:**\n' +
+      'Always carry your permit with you when hunting on public lands.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/publichunt.aspx'],
+    followUpSuggestions: [
+      'How do I apply for a public hunting permit?',
+      'Are permits really free?',
+      'What are the rules on state land?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SMALL GAME & PHEASANT HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleSmallGameQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Small Game & Pheasant Hunting in Maryland**\n\n' +
+      '**Rabbits**\n' +
+      '• Season: September 1 – February 28\n' +
+      '• Year-round opportunity across state\n\n' +
+      '**Squirrels**\n' +
+      '• Season: September 6 – February 28\n' +
+      '• Daily Bag Limit: 6 per day\n' +
+      '• ⚠️ Delmarva Fox Squirrel: PROTECTED (not legal to harvest)\n\n' +
+      '**Pheasant Stocking (FREE Hunting!)**\n' +
+      '• Stocking Dates: November 22–23, 2025\n' +
+      '• Locations: 12 WMAs + 2 state forests\n' +
+      '• NO stamp required — completely FREE\n' +
+      '• Excellent opportunity for pheasant hunting\n\n' +
+      '**Dove**\n' +
+      '• Season: September 1 – January 31\n' +
+      '• Daily Bag Limit: 15 birds per day\n' +
+      '• Popular early-season hunting\n\n' +
+      '**Quail**\n' +
+      '• Season: November – February\n' +
+      '• Daily Bag Limit: 4 birds per day\n' +
+      '• ⚠️ Note: Declining population statewide\n\n' +
+      'Check the Regulations tab for specific county dates and additional small game species.',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/smallgame.aspx'],
+    followUpSuggestions: [
+      'When does squirrel season open?',
+      'Is pheasant stocking free?',
+      'What\'s the dove bag limit?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIKA DEER HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleSikaDeerQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Sika Deer Hunting in Maryland**\n\n' +
+      '**Unique to Maryland\'s Eastern Shore**\n' +
+      '• Only free-ranging sika deer population in the United States\n' +
+      '• Distinctive Asian elk relative — bugling calls during rut\n' +
+      '• Smaller body size than white-tailed deer\n\n' +
+      '**Primary Hunting Locations:**\n\n' +
+      '**Fishing Bay Wildlife Management Area**\n' +
+      '• Size: 29,000 acres\n' +
+      '• Status: Largest WMA in Maryland\n' +
+      '• Excellent sika deer population\n\n' +
+      '**Taylor\'s Island Wildlife Management Area**\n' +
+      '• Size: 1,120 acres\n' +
+      '• Eastern Shore prime habitat\n\n' +
+      '**Stamp Requirement:**\n' +
+      '• $10 Sika Deer Stamp: Required for all sika hunters\n\n' +
+      '**Hunting Tips:**\n' +
+      '• Best hunted from marshland edges\n' +
+      '• Listen for bugling calls during rut (September–October)\n' +
+      '• Smaller target than whitetail — careful bullet placement\n' +
+      '• Marsh access typically by canoe or foot\n\n' +
+      'Sika hunting is a truly unique Maryland hunting experience!',
+    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/sikadeer.aspx'],
+    followUpSuggestions: [
+      'Where are sika deer found in Maryland?',
+      'Do I need a sika stamp?',
+      'When is sika season?',
     ],
   };
 }

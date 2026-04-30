@@ -1,0 +1,135 @@
+{
+  "source_url": "https://dnr.maryland.gov/pages/service_fishing_license.aspx",
+  "date_accessed": "2026-04-11",
+  "effective_date": "June 1, 2025",
+  "validity_period": "365 days from purchase",
+  "data": {
+    "nontidal_freshwater_licenses": {
+      "resident_annual": {
+        "cost": "$32",
+        "waters": "Fresh waters of Maryland",
+        "validity": "365 days"
+      },
+      "resident_7_day": {
+        "cost": "Contact DNR for current rate",
+        "waters": "Fresh waters of Maryland",
+        "validity": "7 consecutive fishing days"
+      },
+      "resident_3_day": {
+        "cost": "Contact DNR for current rate",
+        "waters": "Fresh waters of Maryland",
+        "validity": "3 consecutive fishing days"
+      },
+      "nonresident_annual": {
+        "cost": "$55 (minimum) or reciprocal rate (whichever is greater)",
+        "waters": "Fresh waters of Maryland",
+        "validity": "365 days"
+      },
+      "nonresident_7_day": {
+        "cost": "$45",
+        "waters": "Fresh waters of Maryland",
+        "validity": "7 consecutive fishing days"
+      },
+      "nonresident_3_day": {
+        "cost": "$35",
+        "waters": "Fresh waters of Maryland",
+        "validity": "3 consecutive fishing days"
+      }
+    },
+    "trout_stamp": {
+      "resident": {
+        "cost": "$20",
+        "required_for": "Fishing for trout in nontidal waters",
+        "note": "Required in addition to annual license"
+      },
+      "nonresident": {
+        "cost": "$30",
+        "required_for": "Fishing for trout in nontidal waters",
+        "age_requirement": "16 years or older"
+      },
+      "change_2025": "Senior license no longer includes trout stamp - must be purchased separately"
+    },
+    "chesapeake_bay_coastal_licenses": {
+      "resident_annual": {
+        "cost": "$15",
+        "waters": "Chesapeake Bay and tributaries, Atlantic coast, coastal bays",
+        "validity": "365 days"
+      },
+      "resident_senior_consolidated": {
+        "description": "Nontidal + Chesapeake Bay combined",
+        "eligibility": "Age 65+ or becoming 65 in calendar year",
+        "cost": "Contact DNR for current rate",
+        "includes": "Nontidal + Chesapeake Bay access",
+        "excludes": "Trout stamp (must purchase separately since 2025)",
+        "note": "Major change in 2025 - seniors now must buy trout stamp separately"
+      },
+      "nonresident_annual": {
+        "cost": "Contact DNR for current rate",
+        "waters": "Chesapeake Bay and tributaries"
+      }
+    },
+    "consolidated_licenses": {
+      "resident_boat_license": {
+        "description": "Allows owner or designee to fish both nontidal and tidal waters",
+        "cost": "Contact DNR for current rate",
+        "benefit": "Eliminates need for separate nontidal and Chesapeake Bay licenses if both purchased"
+      }
+    },
+    "specialty_licenses": {
+      "recreational_crabbing_license": {
+        "resident_add_on": {
+          "cost": "$2",
+          "requirement": "Must have Chesapeake Bay and Coastal Sport Fishing License",
+          "eligibility": "Those using trotline, collapsible traps, net rings, seines, or eel pots"
+        },
+        "recreational_crabbing_boat_license": {
+          "cost": "Contact DNR for current rate",
+          "waters": "Chesapeake Bay and tidal tributaries",
+          "permission": "License holder or one other person on boat may crab"
+        },
+        "exemption": "Youth under 16 exempt with handlines/dip nets, limit 2 dozen crabs/day"
+      },
+      "limited_fishing_guide_license": {
+        "resident": "$50",
+        "nonresident": "$100"
+      },
+      "fee_fishing_lake_permits": {
+        "cost": "$25",
+        "period": "Annual",
+        "payment_methods": ["Check", "Money order", "Electronic payment"]
+      }
+    },
+    "military_veterans": {
+      "100_percent_disabled_veteran": {
+        "benefit": "Complimentary lifetime license",
+        "eligibility": "100% service-connected disabled veteran, former prisoner of war, or deemed unemployable by USDVA"
+      }
+    },
+    "youth_licenses": {
+      "under_16": {
+        "requirement": "NO LICENSE REQUIRED for any type of fishing",
+        "age_limit": "Under 16 years old"
+      }
+    },
+    "free_fishing_days_2026": [
+      {
+        "date": "June 6, 2026",
+        "activity": "Can fish without license"
+      },
+      {
+        "date": "June 13, 2026",
+        "activity": "Can fish without license"
+      },
+      {
+        "date": "July 4, 2026",
+        "activity": "Can fish without license"
+      }
+    ],
+    "tidal_water_note": "Anyone recreationally fishing in tidal waters must be licensed per MD Natural Resources Article 4-745",
+    "purchase_locations": {
+      "online": "https://compass.dnr.maryland.gov",
+      "phone": "Contact DNR",
+      "in_person": "Local license vendors (check DNR website for locations)"
+    }
+  }
+}

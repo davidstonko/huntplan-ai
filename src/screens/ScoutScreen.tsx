@@ -1,8 +1,21 @@
 /**
- * ScoutScreen — Full interactive map with scouting + planning tools.
- * Merges the old Plan and Scout/Social tabs into one power-user map.
- * Same base map layers as MapScreen, with annotation toolbar on top.
- * V2: Uses PlanSidebar, PlanCreationFlow, and AnnotationLayer components.
+ * @file ScoutScreen.tsx
+ * @description Full-featured scouting and hunt planning interface. Merges map browsing,
+ * scouting tools, hunt plan creation, GPS tracking, and distance measurement in one powerful map.
+ *
+ * @module Screens
+ * @version 2.0.0
+ *
+ * Key features:
+ * - Full Mapbox map with same base layers as MapScreen (lands, ranges, filter panel)
+ * - 7-button vertical toolbar: Plans, Pin, Sat/Map toggle, Track, Measure, Compass, GPS crosshair
+ * - Hunt plan creation flow (4-step wizard: name → parking → annotate → save)
+ * - Plan sidebar listing saved plans with visibility toggles and export-to-camp
+ * - Real-time GPS tracking (TrackMeBar) with time, distance, speed, elevation gain/loss
+ * - Distance measurement tool with point-by-point measuring
+ * - Animated compass overlay with cardinal directions and heading
+ * - Full annotation rendering (waypoints, routes, areas, tracks) on the map
+ * - Tap-to-place mode for waypoints and parking points in plan creation
  */
 
 import React, { useRef, useState, useMemo, useCallback } from 'react';
@@ -25,13 +38,13 @@ import TrackMeBar from '../components/scout/TrackMeBar';
 import CompassOverlay from '../components/scout/CompassOverlay';
 import MeasureTool, { MeasurePoint, measurePointsToGeoJSON } from '../components/scout/MeasureTool';
 import Colors from '../theme/colors';
-import Config from '../config';
 import {
   marylandPublicLands,
 } from '../data/marylandPublicLands';
 import { WaypointIcon, TrackPoint } from '../types/scout';
+import { MAPBOX_ACCESS_TOKEN } from '../config';
 
-MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
+MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 // ── Color maps (shared with MapScreen) ──
 const DESIGNATION_COLORS: Record<string, string> = {
@@ -64,6 +77,17 @@ const DESIGNATION_TO_FILTER: Record<string, keyof FilterState['landTypes']> = {
 
 type MapTapMode = 'none' | 'parking' | 'waypoint' | 'measure';
 
+/**
+ * ScoutScreen — Advanced scouting map with collaborative hunt planning and tracking.
+ *
+ * Provides a full-featured map experience for planning hunts. Users can create hunt plans,
+ * place waypoints and parking points, draw routes and areas, record live GPS tracks, measure
+ * distances, and view compass heading. Plans persist locally and can be shared to Deer Camp
+ * for collaborative group hunts. Integrates with ScoutDataContext for plan management and
+ * DeerCampContext for exporting to shared camps.
+ *
+ * @returns {JSX.Element} Full-screen map UI with 7-button toolbar, plan sidebar, and tool panels
+ */
 export default function ScoutScreen() {
   const { location } = useLocation();
   const { plans, addWaypoint, updatePlan, getPlan } = useScoutData();
@@ -198,12 +222,16 @@ export default function ScoutScreen() {
     if (mapTapMode === 'parking' && creationPlanId) {
       const plan = getPlan(creationPlanId);
       if (plan) {
+        // 2026-04-26 (fork merge): V3 Waypoint requires createdAt, sharedToCamp, hiddenFromCamp.
         const parkingPoint = {
           id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
           lat, lng,
           icon: 'parking' as WaypointIcon,
           label: 'Parking',
           notes: '',
+          createdAt: new Date().toISOString(),
+          sharedToCamp: false,
+          hiddenFromCamp: false,
         };
         updatePlan({ ...plan, parkingPoint });
       }
@@ -215,12 +243,16 @@ export default function ScoutScreen() {
       // Add waypoint to the most recently created plan, or the creation flow plan
       const targetPlanId = creationPlanId || (plans.length > 0 ? plans[plans.length - 1].id : null);
       if (targetPlanId) {
+        // 2026-04-26 (fork merge): V3 Waypoint requires createdAt, sharedToCamp, hiddenFromCamp.
         const newWaypoint = {
           id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
           lat, lng,
           icon: activeWaypointIcon,
           label: `Point ${(getPlan(targetPlanId)?.waypoints.length || 0) + 1}`,
           notes: '',
+          createdAt: new Date().toISOString(),
+          sharedToCamp: false,
+          hiddenFromCamp: false,
         };
         addWaypoint(targetPlanId, newWaypoint);
       }
@@ -271,10 +303,15 @@ export default function ScoutScreen() {
         styleURL={mapStyleURL}
         onPress={handleMapPress}
       >
+        {/* 2026-04-26 (cross-cutting audit): defaultSettings instead of
+            controlled centerCoordinate. Same bug as Hunt MapScreen — live
+            prop blocked drag/pan because every render reapplied the camera. */}
         <MapboxGL.Camera
           ref={cameraRef}
-          zoomLevel={location ? 10 : 7}
-          centerCoordinate={centerCoords as [number, number]}
+          defaultSettings={{
+            centerCoordinate: centerCoords as [number, number],
+            zoomLevel: location ? 10 : 7,
+          }}
           animationMode="moveTo"
           animationDuration={800}
         />
@@ -387,10 +424,9 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={[styles.toolButton, showSidebar && styles.toolButtonActive]}
           onPress={() => { setShowSidebar(!showSidebar); setShowCreationFlow(false); }}
-          accessibilityLabel="Hunt plans"
           accessibilityRole="button"
-          accessibilityState={{ selected: showSidebar }}
-          accessibilityHint="Toggle hunt plans and saved tracks panel"
+          accessibilityLabel="Open hunt plans sidebar"
+          accessibilityState={{ expanded: showSidebar }}
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDCCB'}</Text>
           <Text style={styles.toolLabel}>Plans</Text>
@@ -404,10 +440,9 @@ export default function ScoutScreen() {
             }
             setMapTapMode(mapTapMode === 'waypoint' ? 'none' : 'waypoint');
           }}
-          accessibilityLabel="Add waypoint"
           accessibilityRole="button"
+          accessibilityLabel="Drop a waypoint pin on tap"
           accessibilityState={{ selected: mapTapMode === 'waypoint' }}
-          accessibilityHint="Toggle waypoint placement mode, tap map to add waypoints to plan"
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDCCC'}</Text>
           <Text style={styles.toolLabel}>Pin</Text>
@@ -415,10 +450,9 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={styles.toolButton}
           onPress={() => setShowTopo(!showTopo)}
-          accessibilityLabel={showTopo ? 'Satellite view' : 'Topographic view'}
           accessibilityRole="switch"
+          accessibilityLabel={showTopo ? 'Switch to topo map' : 'Switch to satellite map'}
           accessibilityState={{ checked: showTopo }}
-          accessibilityHint="Toggle between satellite and topographic map styles"
         >
           <Text style={styles.toolEmoji}>{showTopo ? '\uD83D\uDDFA\uFE0F' : '\uD83D\uDEF0\uFE0F'}</Text>
           <Text style={styles.toolLabel}>{showTopo ? 'Map' : 'Sat'}</Text>
@@ -426,10 +460,9 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={[styles.toolButton, showTrackMe && styles.toolButtonActive]}
           onPress={() => setShowTrackMe(!showTrackMe)}
-          accessibilityLabel={showTrackMe ? 'Stop GPS recording' : 'Start GPS recording'}
-          accessibilityRole="switch"
-          accessibilityState={{ checked: showTrackMe }}
-          accessibilityHint="Toggle GPS track recording to capture your route"
+          accessibilityRole="button"
+          accessibilityLabel="Toggle GPS track recording bar"
+          accessibilityState={{ selected: showTrackMe }}
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDC63'}</Text>
           <Text style={styles.toolLabel}>Track</Text>
@@ -447,10 +480,9 @@ export default function ScoutScreen() {
               setMeasurePoints([]);
             }
           }}
-          accessibilityLabel="Measure distance"
           accessibilityRole="button"
+          accessibilityLabel="Toggle distance measure tool"
           accessibilityState={{ selected: showMeasure }}
-          accessibilityHint="Toggle distance measurement tool, tap map to measure"
         >
           <Text style={styles.toolEmoji}>{'\uD83D\uDCCF'}</Text>
           <Text style={styles.toolLabel}>Measure</Text>
@@ -466,9 +498,8 @@ export default function ScoutScreen() {
               });
             }
           }}
-          accessibilityLabel="Center on location"
           accessibilityRole="button"
-          accessibilityHint="Centers map on your current GPS location"
+          accessibilityLabel="Recenter map on my location"
         >
           <Text style={styles.crosshairIcon}>{'\u2316'}</Text>
         </TouchableOpacity>
@@ -482,12 +513,7 @@ export default function ScoutScreen() {
               ? 'Tap the map to set parking point'
               : 'Tap the map to place a waypoint'}
           </Text>
-          <TouchableOpacity
-            onPress={() => setMapTapMode('none')}
-            accessibilityLabel="Cancel"
-            accessibilityRole="button"
-            accessibilityHint="Cancels the current map tool"
-          >
+          <TouchableOpacity onPress={() => setMapTapMode('none')}>
             <Text style={styles.toolHintCancel}>Cancel</Text>
           </TouchableOpacity>
         </View>

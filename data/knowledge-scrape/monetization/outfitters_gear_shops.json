@@ -1,0 +1,113 @@
+{
+  "source_urls": [
+    "https://stores.basspro.com/us/md/hanover/7000-arundel-mills-circle.html",
+    "https://www.basspro.com/",
+    "https://www.cabelas.com/",
+    "https://www.savageriveroutfitters.com/",
+    "https://www.visitmaryland.org/list/places-go-hiking"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "major_retailers": [
+      {
+        "name": "Bass Pro Shops",
+        "location": "Hanover, Maryland",
+        "address": "7000 Arundel Mills Circle, Hanover, MD",
+        "services": [
+          "Fishing gear",
+          "Hunting equipment",
+          "Outdoor supplies",
+          "Boating center",
+          "ATV dealer"
+        ],
+        "amenities": [
+          "Archery lane",
+          "Rock climbing wall",
+          "Full aquarium with waterfall"
+        ],
+        "region_leadership": "Leader among Baltimore fishing and hunting outfitters",
+        "type": "Major outdoor retailer",
+        "website": "https://stores.basspro.com/us/md/hanover/7000-arundel-mills-circle.html"
+      },
+      {
+        "name": "Cabela's",
+        "corporate_status": "Subsidiary of Bass Pro Shops (acquired 2017)",
+        "services": [
+          "Hunting licenses",
+          "Fishing licenses",
+          "Full outdoor gear",
+          "Fly fishing equipment",
+          "Camping gear"
+        ],
+        "fly_fishing_brands": "White River Fly Shop and own-brand fly fishing gear",
+        "availability": "Retail locations + online",
+        "pricing": "Low price guarantee on best brands",
+        "type": "Major outdoor retailer",
+        "website": "https://www.cabelas.com/"
+      }
+    ],
+    "fishing_outfitters": [
+      {
+        "name": "Savage River Outfitters",
+        "location": "Western Maryland near Deep Creek Lake",
+        "setting": "Blue Ribbon Savage River tailwater",
+        "specialization": "Fly fishing",
+        "services": [
+          "Full service fly shop",
+          "Fly fishing equipment",
+          "Fly tying supplies"
+        ],
+        "type": "Independent fly shop",
+        "website": "https://www.savageriveroutfitters.com/",
+        "regional_focus": "Western Maryland tailwater fishing"
+      }
+    ],
+    "fishing_license_availability": {
+      "bass_pro_shops": {
+        "sells": true,
+        "service": "State hunting and fishing licenses"
+      },
+      "cabelas": {
+        "sells": true,
+        "service": "State hunting and fishing licenses"
+      }
+    },
+    "gear_categories_available": {
+      "fishing": [
+        "Rods and reels",
+        "Lines and leaders",
+        "Lures and flies",
+        "Tackle boxes",
+        "Fly fishing gear",
+        "Boat equipment"
+      ],
+      "hunting": [
+        "Rifles and shotguns",
+        "Ammunition",
+        "Hunting clothes",
+        "Tree stands",
+        "Hunting optics",
+        "Game calls"
+      ],
+      "camping": [
+        "Tents",
+        "Sleeping bags",
+        "Backpacks",
+        "Cooking equipment",
+        "Lighting"
+      ],
+      "boating": [
+        "Safety equipment",
+        "Navigation tools",
+        "Fishing tackle",
+        "Life jackets"
+      ]
+    },
+    "regional_outfitter_notes": {
+      "fly_fishing": "Savage River Outfitters is primary independent fly shop for Western Maryland tailwater",
+      "major_chains": "Bass Pro Shops (Hanover) and Cabela's dominate Maryland retail outdoor gear market",
+      "license_sales": "All major outdoor retailers sell hunting and fishing licenses"
+    },
+    "monetization_note": "These retailers stock products used by hunters, fishers, campers, and hikers - potential for affiliate programs with product links in app features like gear recommendations"
+  }
+}

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-itunes-app" content="app-id=6761347484" />
+  <title>Deer Camp Invite - MDHuntFishOutdoors</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+        sans-serif;
+      background-color: #1a1e16;
+      color: #c4a882;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .header {
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #4a6741 0%, #2d4a2b 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #a89968;
+      margin-bottom: 20px;
+    }
+
+    .invite-details {
+      background-color: rgba(74, 103, 65, 0.1);
+      border: 1px solid rgba(74, 103, 65, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 30px 0;
+    }
+
+    .invite-code {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #c4a882;
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 10px 0 0 0;
+      word-break: break-all;
+    }
+
+    .description {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #a89968;
+      margin: 30px 0;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 30px 0;
+    }
+
+    .button {
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .button-primary {
+      background-color: #4a6741;
+      color: #1a1e16;
+    }
+
+    .button-primary:hover {
+      background-color: #5a7751;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(74, 103, 65, 0.3);
+    }
+
+    .button-secondary {
+      background-color: transparent;
+      color: #c4a882;
+      border: 2px solid #4a6741;
+    }
+
+    .button-secondary:hover {
+      background-color: rgba(74, 103, 65, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .status {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(196, 168, 130, 0.2);
+      font-size: 13px;
+      color: #7a6d52;
+    }
+
+    .status.success {
+      color: #7cb342;
+    }
+
+    .status.error {
+      color: #d84315;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(196, 168, 130, 0.3);
+      border-top-color: #c4a882;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .footer {
+      margin-top: 50px;
+      font-size: 12px;
+      color: #5a5a5a;
+    }
+
+    .footer a {
+      color: #7a9f6b;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: rgba(45, 74, 43, 0.6);
+      color: #c4a882;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🦌</div>
+      <h1>MDHuntFishOutdoors</h1>
+      <p class="subtitle">Deer Camp Invite</p>
+    </div>
+
+    <div class="invite-details">
+      <p class="description">
+        You've been invited to join a Deer Camp on MDHuntFishOutdoors!
+      </p>
+      <div id="inviteCode" class="invite-code">Parsing invite...</div>
+      <span class="badge">Free for iOS</span>
+    </div>
+
+    <div id="appNotInstalledMessage" class="description hidden">
+      <p>
+        Open the camp invite in the MDHuntFishOutdoors app. If you don't have the
+        app installed yet, download it from the App Store to join your hunting
+        group's shared maps, tracks, and photos.
+      </p>
+    </div>
+
+    <div class="button-group">
+      <button
+        id="openAppButton"
+        class="button button-primary"
+        onclick="attemptOpenApp()"
+      >
+        Open in App
+      </button>
+      <a
+        id="appStoreButton"
+        href="https://apps.apple.com/app/id6761347484"
+        class="button button-secondary"
+      >
+        Download on App Store
+      </a>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+
+    <div class="footer">
+      <p>
+        MDHuntFishOutdoors is a free iOS app for Maryland outdoor enthusiasts.
+      </p>
+      <p style="margin-top: 10px">
+        <a href="https://davidstonko.github.io/huntmaryland-site/"
+          >Learn more</a
+        >
+        •
+        <a
+          href="https://davidstonko.github.io/huntmaryland-site/privacy.html"
+          >Privacy</a
+        >
+      </p>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Parse invite code from URL
+     * Supports: https://example.com/join/ABC123
+     */
+    function getInviteCodeFromURL() {
+      const path = window.location.pathname;
+      const match = path.match(/\/join\/([a-zA-Z0-9]+)/);
+      return match ? match[1] : null;
+    }
+
+    /**
+     * Display the invite code on the page
+     */
+    function displayInviteCode() {
+      const inviteCode = getInviteCodeFromURL();
+      const element = document.getElementById('inviteCode');
+
+      if (inviteCode) {
+        element.textContent = inviteCode;
+      } else {
+        element.textContent = 'Invalid or missing invite code';
+        showStatus(
+          'No valid invite code found in URL. Please check the link and try again.',
+          'error'
+        );
+      }
+    }
+
+    /**
+     * Generate the custom URL scheme link for the app
+     */
+    function getAppDeepLink() {
+      const inviteCode = getInviteCodeFromURL();
+      if (!inviteCode) return null;
+      return `huntmaryland://join/${inviteCode}`;
+    }
+
+    /**
+     * Generate the Universal Link for the app
+     */
+    function getUniversalLink() {
+      const inviteCode = getInviteCodeFromURL();
+      if (!inviteCode) return null;
+      return `https://davidstonko.github.io/huntmaryland-site/join/${inviteCode}`;
+    }
+
+    /**
+     * Attempt to open the app with the invite link
+     */
+    function attemptOpenApp() {
+      const deepLink = getAppDeepLink();
+      const universalLink = getUniversalLink();
+
+      if (!deepLink || !universalLink) {
+        showStatus('Invalid invite code. Please check the link.', 'error');
+        return;
+      }
+
+      // Try custom URL scheme first (faster if app is installed)
+      const timeout = setTimeout(() => {
+        // If app doesn't open in 1.5s, fall back to Universal Link
+        showStatus(
+          'App not detected. Redirecting to App Store...',
+          'success'
+        );
+        setTimeout(() => {
+          window.location.href = 'https://apps.apple.com/app/id6761347484';
+        }, 500);
+      }, 1500);
+
+      // Attempt custom scheme
+      showStatus('Opening app...', 'success');
+      window.location.href = deepLink;
+
+      // Clear timeout if user returns to tab (app was opened)
+      window.addEventListener('blur', () => {
+        clearTimeout(timeout);
+      });
+    }
+
+    /**
+     * Display status message to user
+     */
+    function showStatus(message, type = 'success') {
+      const element = document.getElementById('status');
+      element.textContent = message;
+      element.classList.remove('hidden', 'success', 'error');
+      element.classList.add(type);
+    }
+
+    /**
+     * Initialize on page load
+     */
+    window.addEventListener('DOMContentLoaded', () => {
+      displayInviteCode();
+
+      // Show app not installed message if invite code is valid
+      const inviteCode = getInviteCodeFromURL();
+      if (inviteCode) {
+        document.getElementById('appNotInstalledMessage').classList.remove('hidden');
+      }
+
+      // Auto-redirect to App Store after 3 seconds
+      // (user can tap "Open in App" to cancel)
+      setTimeout(() => {
+        showStatus(
+          'Redirecting to App Store in a moment...',
+          'success'
+        );
+        setTimeout(() => {
+          window.location.href = 'https://apps.apple.com/app/id6761347484';
+        }, 2000);
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+{
+  "source_url": "https://dnr.maryland.gov/forests/Pages/workplans.aspx",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "Maryland State Forest System",
+      "total_forests": 15,
+      "management_agency": "Maryland DNR Forest Service",
+      "primary_forests": [
+        "Savage River State Forest",
+        "Green Ridge State Forest",
+        "Pocomoke State Forest",
+        "Potomac-Garrett State Forest"
+      ]
+    },
+    {
+      "forest": "Savage River State Forest",
+      "county": "Garrett",
+      "location": "Western Maryland",
+      "acres": "Approximately 54,000",
+      "hunting_areas": "Over 2.8 miles of accessible hunting areas",
+      "hunting_allowed": true,
+      "excluded_areas": [
+        "Big Run State Park",
+        "New Germany State Park"
+      ],
+      "management_objectives": [
+        "Wildlife habitat enhancement",
+        "Recreation access",
+        "Forest composition management",
+        "Hunting opportunity maintenance"
+      ],
+      "gated_roads": "Opened each fall before squirrel season through January 31",
+      "regulations": "Hunters must possess valid Maryland Hunting License"
+    },
+    {
+      "forest": "Green Ridge State Forest",
+      "county": "Allegany",
+      "location": "Western Maryland",
+      "acres": "Approximately 43,000",
+      "management_focus": "Upland game habitat and recreation",
+      "recreation_infrastructure": {
+        "hiking_trails": "62 miles",
+        "mountain_bike_trails": "12 miles"
+      },
+      "habitat_enhancement_areas": [
+        {
+          "area": "Kirk Orchard",
+          "focus": "Upland game habitat"
+        },
+        {
+          "area": "Bull Ring Ranch",
+          "focus": "Upland game habitat"
+        },
+        {
+          "area": "Anthonys Ridge",
+          "focus": "Upland game habitat"
+        },
+        {
+          "area": "Town Creek",
+          "focus": "Upland game habitat"
+        },
+        {
+          "area": "Kasecamp Bottomlands",
+          "focus": "Upland game habitat"
+        }
+      ],
+      "management_activities": "Trail maintenance, habitat enhancement, wildlife management"
+    },
+    {
+      "forest": "Pocomoke State Forest",
+      "county": "Somerset, Wicomico, Worcester",
+      "location": "Southern Maryland (Delmarva Peninsula)",
+      "acres": "Approximately 107,000 (largest Maryland forest)",
+      "habitat_type": "Mixed hardwood, cypress swamp, coastal plain forest",
+      "hunting_opportunities": "Deer, waterfowl, upland game",
+      "management_zone": "Part of Chesapeake Forest Lands complex"
+    },
+    {
+      "category": "Chesapeake Forest Lands Complex",
+      "description": "Multi-forest hunting lease program",
+      "counties": [
+        "Caroline",
+        "Dorchester",
+        "Somerset",
+        "Wicomico",
+        "Worcester"
+      ],
+      "hunting_opportunity": "Hunt club lottery system for non-leased tracts",
+      "lease_type": "Individual tract hunting leases",
+      "application": "Random draw for available tracts",
+      "current_status": "Active lease program accepting applications"
+    },
+    {
+      "forest": "Potomac-Garrett State Forest",
+      "location": "Garrett County",
+      "management_focus": "Diverse forest uses including hunting and recreation"
+    },
+    {
+      "category": "Annual Work Plans",
+      "description": "Fiscal year management plans for each state forest",
+      "plan_content": [
+        "Forest composition objectives",
+        "Establishment and growth targets",
+        "Forest health improvements",
+        "Wildlife habitat work",
+        "Recreation maintenance and development",
+        "Timber management",
+        "Water quality protection"
+      ],
+      "public_input": "Annual public comment periods before plan finalization"
+    },
+    {
+      "category": "Hunting Zone Management",
+      "description": "How state forests are organized for hunting access",
+      "zone_types": [
+        "General hunting areas",
+        "Specific species management zones",
+        "Habitat-designated areas"
+      ],
+      "hunting_regulations": "Follow Maryland DNR hunting and trapping regulations"
+    },
+    {
+      "category": "Habitat Improvement Projects",
+      "description": "Specific management activities to enhance hunting areas",
+      "project_types": [
+        "Food plot establishment",
+        "Prescribed burning for habitat",
+        "Logging to improve forest structure",
+        "Water management",
+        "Access trail maintenance"
+      ],
+      "timeline": "Multi-year implementation through annual work plans"
+    },
+    {
+      "category": "Public Access and Regulations",
+      "hunting_requirement": "Valid Maryland hunting license",
+      "season_compliance": "Must follow all Maryland hunting seasons",
+      "permission": "Public hunting allowed in most areas except closed zones",
+      "contact_information": "Regional Wildlife Offices for specific questions"
+    },
+    {
+      "category": "Work Plan Access",
+      "description": "How to find and review state forest work plans",
+      "method": "Available for public comment through Maryland DNR website",
+      "frequency": "Annual update cycle",
+      "notification": "Public notices of comment periods on DNR website"
+    }
+  ]
+}

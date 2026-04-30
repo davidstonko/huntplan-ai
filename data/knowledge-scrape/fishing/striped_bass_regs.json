@@ -1,0 +1,96 @@
+{
+  "source_url": "https://dnr.maryland.gov/fisheries/pages/regulations/index.aspx",
+  "date_accessed": "2026-04-11",
+  "regulation_effective_date": "2026-01-01",
+  "data": {
+    "2026_season_overview": {
+      "description": "2026 marks a significant shift in striped bass season structure with April C&R and August closure",
+      "effective_date": "April 1, 2026",
+      "changes_from_previous": "Returns catch-and-release in April (first time since 2019), moves closure to full August"
+    },
+    "chesapeake_bay": {
+      "april_season": {
+        "dates": "April 1 - April 30, 2026",
+        "activity": "Catch-and-release only",
+        "harvest": "Not permitted"
+      },
+      "may_harvest_start": {
+        "date": "May 1, 2026",
+        "harvest_allowed": true,
+        "bag_limit": "1 fish per person per day",
+        "size_slot": {
+          "minimum_inches": 19,
+          "maximum_inches": 24,
+          "measurement": "total length"
+        }
+      },
+      "june_july_season": {
+        "dates": "June 1 - July 31, 2026",
+        "harvest_allowed": true,
+        "regulations": "Same as May (1 fish, 19-24 inch slot)"
+      },
+      "august_closure": {
+        "dates": "August 1 - August 31, 2026",
+        "status": "Entire month closed",
+        "activity_allowed": "None - all striped bass targeting prohibited"
+      },
+      "september_february": {
+        "dates": "September 1, 2026 - February 28, 2027",
+        "harvest_allowed": true,
+        "regulations": "Same as May (1 fish, 19-24 inch slot)"
+      }
+    },
+    "spawning_river_closures": {
+      "closure_period": "March 1 - May 31",
+      "purpose": "Protect spawning striped bass",
+      "closed_rivers": [
+        "Choptank River",
+        "Chester River",
+        "Manokin River",
+        "Nanticoke River",
+        "Patuxent River",
+        "Transquaking River",
+        "Wicomico River"
+      ],
+      "upper_bay_closure": "Includes Upper Bay spawning area and Susquehanna Flats"
+    },
+    "atlantic_coast_ocean": {
+      "year_round": {
+        "availability": "Open year-round",
+        "bag_limit": "1 fish per person per day",
+        "size_slot": {
+          "minimum_inches": 28,
+          "maximum_inches": 31,
+          "measurement": "total length"
+        }
+      },
+      "applicable_waters": "Atlantic Ocean, coastal bays, and tributaries"
+    },
+    "charter_boat_regulations": {
+      "facts_charter_pilot_program": {
+        "description": "Special flexibility for charter captains in Atlantic waters",
+        "captain_bonus": "Can land 1 additional fish per day (captain fish)",
+        "mate_bonus": "Can land 1 additional fish per day if mate present",
+        "required_license": [
+          "Non-Resident Guide License (FGN)",
+          "Resident Guide License (FGR)",
+          "Master Fishing Guide License (FGM)",
+          "Unlimited Tidal Fishing License (TFL)"
+        ]
+      }
+    },
+    "water_boundaries": {
+      "note": "Bay boundaries defined by line from Abbey Point to Worton Point",
+      "areas_above_line": "Upper Bay - often closed during spawning"
+    },
+    "recent_stock_status": {
+      "concern": "Seven years of poor recruitment documented",
+      "juvenile_survey": "Maryland DEC has recorded seven years of poor recruitment in Maryland waters",
+      "management_focus": "Investigating survivability pressures on young striped bass"
+    },
+    "water_temperature_notes_2026": {
+      "march_2026": "Running 2-4 degrees below 5-year average",
+      "expected_impact": "Spring run expected 1-2 weeks behind normal"
+    }
+  }
+}

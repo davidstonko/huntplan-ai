@@ -33,7 +33,6 @@ const SPLASH_PHOTOS = {
 
 interface SplashScene {
   id: string;
-  emoji: string;
   title: string;
   tagline: string;
   bgColorTop: string;
@@ -41,20 +40,22 @@ interface SplashScene {
   image?: ImageSourcePropType;
 }
 
+// All scenes display the same unified brand: MDHuntFishOutdoors.
+// Photo scenes use real Maryland outdoor photos; gradient scenes are
+// text-forward fallbacks. Taglines are mode-agnostic so they read
+// correctly regardless of which mode the user will land in.
 const SPLASH_SCENES: SplashScene[] = [
-  // ── Photo-backed scenes (real user photos) ──
+  // ── Photo-backed scenes (real Maryland outdoor photos) ──
   {
     id: 'sunset_deer',
-    emoji: '🦌',
     title: 'MDHuntFishOutdoors',
-    tagline: 'Every season. Every county. One app.',
+    tagline: 'Hunt · Fish · Camp · Hike',
     bgColorTop: '#1A2E1A',
     bgColorBottom: '#0D1A0D',
     image: SPLASH_PHOTOS.sunsetDeer,
   },
   {
     id: 'buck_crossbow',
-    emoji: '🎯',
     title: 'MDHuntFishOutdoors',
     tagline: 'Know before you go',
     bgColorTop: '#2A2210',
@@ -63,26 +64,23 @@ const SPLASH_SCENES: SplashScene[] = [
   },
   {
     id: 'buck_closeup',
-    emoji: '🏆',
     title: 'MDHuntFishOutdoors',
-    tagline: 'Maryland\'s outdoor planning companion',
+    tagline: "Maryland's outdoor planning companion",
     bgColorTop: '#1A2E1A',
     bgColorBottom: '#0D1A0D',
     image: SPLASH_PHOTOS.buckCloseup,
   },
   {
     id: 'arrow',
-    emoji: '🏹',
     title: 'MDHuntFishOutdoors',
-    tagline: '192 public lands at your fingertips',
+    tagline: 'Public lands, waters, and trails in one app',
     bgColorTop: '#2A1A0D',
     bgColorBottom: '#1A0E05',
     image: SPLASH_PHOTOS.arrow,
   },
-  // ── Emoji-only fallback scenes ──
+  // ── Gradient fallback scenes (no photo, still on-brand) ──
   {
     id: 'forest',
-    emoji: '🌲',
     title: 'MDHuntFishOutdoors',
     tagline: 'Seasons, regs, and maps — all in one',
     bgColorTop: '#0D2A1A',
@@ -90,9 +88,8 @@ const SPLASH_SCENES: SplashScene[] = [
   },
   {
     id: 'bay',
-    emoji: '🦀',
-    title: 'OutdoorsMaryland',
-    tagline: 'Hunt · Fish · Crab · Hike · Boat',
+    title: 'MDHuntFishOutdoors',
+    tagline: 'Hunt · Fish · Camp · Hike',
     bgColorTop: '#1A1A2A',
     bgColorBottom: '#0D0D15',
   },
@@ -145,73 +142,72 @@ export default function AnimatedSplash({
       }).start();
     }
 
-    // Phase 1: Fade in + emoji bounce (0-600ms)
+    // Phase 1: Fade in + emoji bounce (0-400ms)
     Animated.parallel([
       Animated.timing(fadeIn, {
         toValue: 1,
-        duration: 500,
+        duration: 350,
         useNativeDriver: true,
       }),
       Animated.spring(scaleEmoji, {
         toValue: 1,
-        tension: 60,
-        friction: 7,
+        tension: 70,
+        friction: 8,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Phase 2: Title slides up (400ms)
+    // Phase 2: Title slides up (300ms)
     setTimeout(() => {
       Animated.parallel([
         Animated.timing(slideTitle, {
           toValue: 0,
-          duration: 400,
+          duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(fadeTagline, {
           toValue: 1,
-          duration: 600,
+          duration: 400,
           useNativeDriver: true,
         }),
       ]).start();
-    }, 400);
+    }, 250);
 
-    // Phase 3: MD flag stripe slides across (800ms)
+    // Phase 3: MD flag stripe slides across (600ms)
     setTimeout(() => {
       Animated.timing(flagSlide, {
         toValue: 0,
-        duration: 500,
+        duration: 400,
         useNativeDriver: true,
       }).start();
-    }, 700);
+    }, 500);
 
     // Phase 4: Fade out everything
     setTimeout(() => {
       Animated.timing(fadeOut, {
         toValue: 0,
-        duration: 400,
+        duration: 300,
         useNativeDriver: true,
       }).start(() => {
         onFinish();
       });
-    }, duration - 400);
+    }, duration - 300);
   }, []);
 
   const overlayContent = (
     <Animated.View style={[styles.container, { opacity: fadeOut }]}>
       {/* Main content */}
       <Animated.View style={[styles.content, { opacity: fadeIn }]}>
-        {/* Emoji hero (smaller on photo scenes to not compete) */}
-        <Animated.Text
-          style={[
-            scene.image ? styles.emojiSmall : styles.emoji,
-            {
-              transform: [{ scale: scaleEmoji }],
-            },
-          ]}
+        {/* Brand mark: a large MD flag bar that scales in, serving
+            as the visual anchor in place of an emoji hero */}
+        <Animated.View
+          style={[styles.brandMark, { transform: [{ scale: scaleEmoji }] }]}
         >
-          {scene.emoji}
-        </Animated.Text>
+          <View style={[styles.brandMarkBlock, { backgroundColor: Colors.mdRed }]} />
+          <View style={[styles.brandMarkBlock, { backgroundColor: Colors.mdGold }]} />
+          <View style={[styles.brandMarkBlock, { backgroundColor: Colors.mdBlack }]} />
+          <View style={[styles.brandMarkBlock, { backgroundColor: Colors.mdWhite }]} />
+        </Animated.View>
 
         {/* App name */}
         <Animated.View
@@ -219,7 +215,6 @@ export default function AnimatedSplash({
             transform: [{ translateY: slideTitle }],
           }}
         >
-          <Text style={styles.logoMark}>OMD</Text>
           <Text style={styles.title}>{scene.title}</Text>
         </Animated.View>
 
@@ -244,7 +239,7 @@ export default function AnimatedSplash({
 
       {/* Footer */}
       <Animated.Text style={[styles.version, { opacity: fadeTagline }]}>
-        v1.0 — Maryland
+        v2.2 {'\u00B7'} Maryland
       </Animated.Text>
     </Animated.View>
   );
@@ -325,35 +320,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emoji: {
-    fontSize: 96,
-    marginBottom: 16,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 12,
+  brandMark: {
+    flexDirection: 'row',
+    width: 160,
+    height: 24,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
-  emojiSmall: {
-    fontSize: 56,
-    marginBottom: 12,
-    textShadowColor: 'rgba(0,0,0,0.7)',
-    textShadowOffset: { width: 0, height: 3 },
-    textShadowRadius: 10,
-  },
-  logoMark: {
-    fontSize: 44,
-    fontWeight: '900',
-    color: Colors.oak,
-    letterSpacing: 6,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 10,
+  brandMarkBlock: {
+    flex: 1,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
     color: Colors.tan,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     textAlign: 'center',
     marginTop: 2,
     textShadowColor: 'rgba(0,0,0,0.7)',

@@ -1,0 +1,111 @@
+{
+  "source_url": "https://news.maryland.gov/dnr/2025/06/02/maryland-spring-turkey-hunters-harvest-4851-birds/",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "year": 2025,
+      "season": "Spring Regular and Junior",
+      "total_harvest": 4851,
+      "percent_adult_gobblers": 81,
+      "top_harvesting_counties": [
+        {
+          "rank": 1,
+          "county": "Garrett",
+          "harvest": 506
+        },
+        {
+          "rank": 2,
+          "county": "Charles",
+          "harvest": 445
+        },
+        {
+          "rank": 3,
+          "county": "Washington",
+          "harvest": 406
+        },
+        {
+          "rank": 4,
+          "county": "Worcester",
+          "harvest": 400
+        },
+        {
+          "rank": 5,
+          "county": "Allegany",
+          "harvest": 314
+        }
+      ],
+      "record_setting_counties": [
+        "Cecil",
+        "St. Mary's",
+        "Talbot",
+        "Wicomico"
+      ],
+      "additional_harvests": [
+        {
+          "county": "Dorchester",
+          "harvest": 226,
+          "change": "increase from 211 in 2024"
+        },
+        {
+          "county": "Frederick",
+          "harvest": 281,
+          "change": "decrease from 322"
+        },
+        {
+          "county": "Queen Anne's",
+          "harvest": 186,
+          "change": "slightly down from 191"
+        },
+        {
+          "county": "Kent",
+          "harvest": 184,
+          "change": "matched 2023 high"
+        }
+      ],
+      "hunter_effort": {
+        "average_days_afield": 8.5,
+        "percent_with_harvest": 37
+      }
+    },
+    {
+      "year": 2024,
+      "season": "Spring Regular and Junior",
+      "total_harvest": 4959,
+      "top_county": {
+        "county": "Garrett",
+        "harvest": 546
+      },
+      "second_county": {
+        "county": "Charles",
+        "harvest": 472
+      },
+      "third_county": {
+        "county": "Washington",
+        "harvest": 442
+      }
+    },
+    {
+      "category": "Population Status",
+      "description": "Wild turkey population survey results",
+      "population_range": "Over 40,000 statewide",
+      "trend": "Growing significantly over the last 10 years",
+      "reproductive_success_2025": {
+        "primary_index": "2.0 poults per hen",
+        "notes": "Below 2024 index of 2.6 poults per hen and 15-year average of 2.5"
+      },
+      "reproductive_success_recent": "Average to above-average reproductive success in three of last four nesting seasons",
+      "population_status": "Stable to growing in many areas"
+    },
+    {
+      "category": "Historical Records",
+      "ten_year_average": 4350,
+      "2025_status": "Well above 10-year average despite 2% decline from 2024"
+    },
+    {
+      "category": "Surveys",
+      "summer_wild_turkey_observation_survey": "Conducted annually by Maryland DNR",
+      "description": "Documents reproductive success and population trends",
+      "methodology": "Summer brood observations and hunter surveys"
+    }
+  ]
+}

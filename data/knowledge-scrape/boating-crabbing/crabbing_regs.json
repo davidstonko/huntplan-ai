@@ -1,0 +1,100 @@
+{
+  "source_urls": [
+    "https://www.eregulations.com/maryland/fishing/blue-crabs-chesapeake-bay",
+    "https://dnr.maryland.gov/fisheries/pages/regulations/blue-crab.aspx",
+    "https://kayakcambria.com/maryland-crabbing-regulations-explained-guide/",
+    "https://law.cornell.edu/regulations/maryland/COMAR-08-02-03-10"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "season": {
+      "chesapeake_bay": {
+        "start_date": "April 1",
+        "end_date": "December 15",
+        "area": "Chesapeake Bay and its tidal tributaries"
+      },
+      "atlantic_coastal": {
+        "start_date": "Year-round",
+        "end_date": "December 31",
+        "area": "Atlantic Ocean and coastal bays"
+      },
+      "operating_hours": {
+        "april_and_october_december": "One half hour after sunrise to sunset",
+        "may_through_september": "One half hour before sunrise to sunset"
+      }
+    },
+    "size_limits": {
+      "male_hard_crabs": {
+        "minimum_inches": 5,
+        "minimum_after_july_14": "5.25 inches",
+        "measurement": "Point to point across widest shell part"
+      },
+      "female_crabs": {
+        "note": "No female crabs allowed - includes sooks (mature) and sallies (immature)"
+      }
+    },
+    "daily_catch_limits": {
+      "chesapeake_bay": {
+        "unlicensed_one_person": "24 male hard crabs per day (2 dozen)",
+        "unlicensed_two_people": "48 male hard crabs per day (4 dozen)",
+        "licensed_boat": "1 bushel or 6 dozen male crabs",
+        "soft_or_peeler_limit": "12 soft crabs or male peeler crabs maximum"
+      },
+      "atlantic_coastal": {
+        "per_person_with_bushel": "1 bushel if using bushel basket",
+        "per_person_other_container": "6 dozen if using other container"
+      }
+    },
+    "crab_pot_regulations": {
+      "private_property_shoreline": {
+        "registration_required": true,
+        "registration_fee": "Free",
+        "registration_valid_days": 365,
+        "maximum_pots_per_property": 2,
+        "registration_note": "Owner, lessee, or tenant of private shoreline property"
+      },
+      "atlantic_coastal_pots": {
+        "registration_required": false,
+        "marking_required": true,
+        "marking_details": "Must be marked with owner's name and address"
+      },
+      "design_specifications": {
+        "cull_rings_required": true,
+        "cull_ring_1_inches": "2.1875 minimum",
+        "cull_ring_2_inches": "2.5625 minimum",
+        "location": "Exterior side panel or top panels",
+        "turtle_reduction_device": {
+          "required": true,
+          "material": "Wire or plastic",
+          "shape": "Rectangular",
+          "max_height_inches": 1.75,
+          "max_length_inches": 4.75,
+          "location": "Each entrance or funnel in lower chamber"
+        }
+      }
+    },
+    "gear_types": {
+      "license_exempt_gear": [
+        "Handlines",
+        "Dip nets"
+      ],
+      "gear_requiring_license_or_decal": [
+        "Trotlines",
+        "Collapsible crab traps",
+        "Net rings",
+        "Seines",
+        "Eel pots"
+      ],
+      "trotline_specifications": {
+        "floats_required": "At each end and every 50 feet minimum",
+        "purpose": "Prevent boat propeller entanglement and visibility",
+        "spacing_from_other_gear": "Never set within 100 feet of another person's equipment"
+      }
+    },
+    "licensing": {
+      "required_for": "Trotlines, collapsible traps, net rings, seines, eel pots",
+      "not_required_for": "Handlines, dip nets",
+      "private_property_exemption": "Waterfront property owners/lessees/tenants can register 2 pots license-free"
+    }
+  }
+}

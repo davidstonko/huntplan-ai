@@ -5,8 +5,12 @@ Standalone AI-powered hunting planning app.
 iPhone-first with offline GIS data. Maryland pilot state.
 """
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from contextlib import asynccontextmanager
 
@@ -26,6 +30,14 @@ from app.modules.websocket.routes import router as websocket_router
 from app.modules.photos.routes import router as photos_router
 from app.modules.forum.routes import router as forum_router
 from app.modules.feedback.routes import router as feedback_router
+from app.modules.analytics.routes import router as analytics_router
+# V2.3 modules (added from huntplan-ai fork merge 2026-04-26)
+from app.modules.camping.routes import router as camping_router
+from app.modules.hiking.routes import router as hiking_router
+from app.modules.landowner_blinds.routes import router as landowner_blinds_router
+from app.modules.push.routes import router as push_router
+# 2026-04-27: runtime config (Mapbox token + future per-tier flags)
+from app.modules.config.routes import router as config_router
 
 async def auto_ingest_if_empty():
     """Seed regulation chunks on first deploy (if table is empty)."""
@@ -142,6 +154,13 @@ app.include_router(harvest_router, prefix="/api/v1/harvest", tags=["Harvest Log"
 app.include_router(photos_router, prefix="/api/v1/photos", tags=["Photos"])
 app.include_router(forum_router, prefix="/api/v1/forum", tags=["Forum & Marketplace"])
 app.include_router(feedback_router, prefix="/api/v1/feedback", tags=["Feedback"])
+app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics"])
+# V2.3 modules
+app.include_router(camping_router, prefix="/api/v1/camping", tags=["Camping"])
+app.include_router(hiking_router, prefix="/api/v1/hiking", tags=["Hiking"])
+app.include_router(landowner_blinds_router, tags=["Landowner Blinds"])
+app.include_router(push_router, prefix="/api/v1", tags=["Push Notifications"])
+app.include_router(config_router, prefix="/api/v1/config", tags=["Runtime Config"])
 
 # WebSocket routes (no prefix — mounted at /ws/camps/{camp_id})
 app.include_router(websocket_router, tags=["WebSocket"])
@@ -150,11 +169,29 @@ app.include_router(websocket_router, tags=["WebSocket"])
 @app.get("/")
 async def root():
     return {
-        "message": "Welcome to HuntPlan AI",
+        "message": "Welcome to MDHuntFishOutdoors API",
         "docs": "/docs",
+        "dashboard": "/dashboard",
         "disclaimer": (
-            "HuntPlan AI is a planning tool. Always verify hunting regulations "
+            "MDHuntFishOutdoors is a planning tool. Always verify hunting regulations "
             "with your state Department of Natural Resources before hunting. "
             "This is not legal advice."
         ),
     }
+
+
+# ── Analytics Dashboard ──────────────────────────────────────────
+# Serves the single-file React dashboard at /dashboard
+
+DASHBOARD_PATH = Path(__file__).parent.parent.parent / "dashboard" / "index.html"
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def serve_dashboard():
+    """Serve the analytics dashboard HTML page."""
+    if DASHBOARD_PATH.exists():
+        return HTMLResponse(content=DASHBOARD_PATH.read_text(encoding="utf-8"))
+    return HTMLResponse(
+        content="<h1>Dashboard not found</h1><p>Place dashboard/index.html in the project root.</p>",
+        status_code=404,
+    )

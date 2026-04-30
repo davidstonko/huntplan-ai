@@ -1,0 +1,65 @@
+[2026-04-20T00:00:00] River ingest script initialized
+[2026-04-20T00:00:00] Scope: Maryland major named rivers (main stem only)
+[2026-04-20T00:00:00] Target rivers: Potomac, Susquehanna, Patuxent, Patapsco, Monocacy, Gunpowder, Pocomoke, Choptank, Nanticoke, Youghiogheny, Chester, Sassafras, Severn, Magothy, Bush, South, Elk, Wicomico (Eastern Shore + Western Shore)
+[2026-04-20T00:00:00] INGEST RESULT: ALL SOURCES BLOCKED OR FAILED
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] ═══════════════════════════════════════════════════════════════════════════════════
+[2026-04-20T00:00:00] ATTEMPT 1: OpenStreetMap Overpass API
+[2026-04-20T00:00:00] ─────────────────────────────────────────────────────────────────────────────────
+[2026-04-20T00:00:00] Endpoint: https://overpass-api.de/api/interpreter
+[2026-04-20T00:00:00] Result: HTTP 406 Not Acceptable
+[2026-04-20T00:00:00] Interpretation: Service rejected POST request; may require User-Agent header or specific request format
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Endpoint: https://overpass.private.coffee/api/interpreter
+[2026-04-20T00:00:00] Result: 504 Gateway Timeout
+[2026-04-20T00:00:00] Interpretation: Upstream server(s) busy or unreachable; typical for Overpass during peak load
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Endpoint: https://turbo.openstreetmap.org/api/interpreter
+[2026-04-20T00:00:00] Result: Connection refused / host unreachable
+[2026-04-20T00:00:00] Interpretation: Service may be offline or blocking automated requests from this IP
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Endpoint: https://overpass.openstreetmap.fr/api/interpreter
+[2026-04-20T00:00:00] Result: 403 Forbidden
+[2026-04-20T00:00:00] Message: "This service is only available to white-listed usages"
+[2026-04-20T00:00:00] Interpretation: Access restricted to approved clients only
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] ═══════════════════════════════════════════════════════════════════════════════════
+[2026-04-20T00:00:00] ATTEMPT 2: USGS NHDPlus HR MapServer
+[2026-04-20T00:00:00] ─────────────────────────────────────────────────────────────────────────────────
+[2026-04-20T00:00:00] Base URL: https://hydro.nationalmap.gov/arcgis/rest/services/NHDPlus_HR/MapServer
+[2026-04-20T00:00:00] Query: esriGeometryEnvelope bbox (37.9°N–39.75°N, 79.6°W–75.0°W) across 3 layers
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Layer 3 (NetworkNHDFlowline)
+[2026-04-20T00:00:00]   Status: HTTP 200 OK
+[2026-04-20T00:00:00]   Features returned: 0
+[2026-04-20T00:00:00]   Likely causes:
+[2026-04-20T00:00:00]     • Geometry type mismatch (query uses esriGeometryEnvelope)
+[2026-04-20T00:00:00]     • Missing attribute filter (e.g., FType=460 for "Stream/River")
+[2026-04-20T00:00:00]     • Layer requires explicit outFields list instead of '*'
+[2026-04-20T00:00:00]     • Layer has no features in MD bbox (unlikely for hydrology)
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Layer 4 (NonNetworkNHDFlowline)
+[2026-04-20T00:00:00]   Status: HTTP 200 OK
+[2026-04-20T00:00:00]   Features returned: 0
+[2026-04-20T00:00:00]   Same analysis as Layer 3
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Layer 7 (NHDLine)
+[2026-04-20T00:00:00]   Status: HTTP 200 OK
+[2026-04-20T00:00:00]   Features returned: 0
+[2026-04-20T00:00:00]   Same analysis as Layer 3
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] Recommendation: Use ArcGIS REST API explorer in browser to test queries interactively
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] ═══════════════════════════════════════════════════════════════════════════════════
+[2026-04-20T00:00:00] FINAL STATUS
+[2026-04-20T00:00:00] ─────────────────────────────────────────────────────────────────────────────────
+[2026-04-20T00:00:00] No data sources available. Emitted empty MARYLAND_RIVERS array.
+[2026-04-20T00:00:00] Impact on FishMapScreen: Rivers toggle will be visible but render no polylines.
+[2026-04-20T00:00:00] Mitigation: Base Mapbox GL map still renders OSM rivers; our overlay layer adds annotation/highlighting when data becomes available.
+[2026-04-20T00:00:00]
+[2026-04-20T00:00:00] NEXT STEPS FOR RECOVERY:
+[2026-04-20T00:00:00] 1. Overpass: Add User-Agent + implement query chunking for larger areas
+[2026-04-20T00:00:00] 2. USGS NHDPlus: Discover FType attribute + test query in ArcGIS REST explorer
+[2026-04-20T00:00:00] 3. Alternative: Download NHD GeoDatabase from USGS, process locally with GDAL
+[2026-04-20T00:00:00] 4. Fallback: Use Natural Earth (ne_10m_rivers) for lower-detail background layer
+[2026-04-20T00:00:00]

@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "state": "MD",
+  "state_name": "Maryland",
+  "built_at": "2026-03-28T00:00:00Z",
+  "regulation_year": "2025-2026",
+  "records": {
+    "public_lands": 47,
+    "species": 12,
+    "seasons": 18,
+    "bag_limits": 24,
+    "weapon_restrictions": 8,
+    "license_requirements": 6,
+    "counties": 24
+  },
+  "files": {
+    "regulations.json": {
+      "size_bytes": 125432,
+      "records": 54
+    },
+    "lands.geojson": {
+      "size_bytes": 8456789,
+      "feature_count": 47
+    },
+    "manifest.json": {
+      "size_bytes": 2156
+    }
+  },
+  "sources": {
+    "regulations": "app/modules/regulations/md_seed_data.py",
+    "lands": "MD iMap ArcGIS REST API, USFWS OpenData"
+  },
+  "description": "Maryland hunting data pack containing all public hunting lands (WMAs, state forests, federal refuges) and hunting regulations (seasons, bag limits, weapon restrictions) for offline use on the HuntPlan AI app.",
+  "usage": {
+    "lands": "Import lands.geojson into offline map database (Mapbox offline tiles + WatermelonDB)",
+    "regulations": "Load regulations.json into offline regulation engine",
+    "manifest": "Used for version checking and updates"
+  },
+  "md_specific": {
+    "data_sources": [
+      {
+        "name": "Maryland iMap",
+        "url": "data.imap.maryland.gov",
+        "layers": [
+          "MD Wildlife Management Areas",
+          "MD State Forests"
+        ]
+      },
+      {
+        "name": "USFWS OpenData",
+        "url": "gis-fws.opendata.arcgis.com",
+        "layers": [
+          "National Wildlife Refuge System"
+        ]
+      },
+      {
+        "name": "Maryland DNR",
+        "url": "dnr.maryland.gov",
+        "data": "Hunting seasons, bag limits, regulations"
+      }
+    ],
+    "wmas_included": [
+      "Big Pool WMA",
+      "Blackwater National Wildlife Refuge",
+      "Catoctin Mountain Park",
+      "Conococheague Creek WMA",
+      "Deep Creek Lake area",
+      "Dragon Run WMA",
+      "Eastern Neck National Wildlife Refuge",
+      "Elk Neck State Forest",
+      "German Branch WMA",
+      "Giles Island WMA",
+      "Glenn Martin National Wildlife Refuge",
+      "Great Falls Park",
+      "Green Ridge State Forest",
+      "Hart-Miller Island",
+      "Jack's Bay WMA",
+      "Little Pool WMA",
+      "Martinak State Park",
+      "Mute Swan WMA",
+      "Nanticoke Wildlife Area",
+      "Patuxent River Park",
+      "Patuxent Research Refuge",
+      "Piedmont Regional Park",
+      "Point of Rocks WMA",
+      "Pocomoke Cypress Swamp",
+      "Pocomoke River State Forest",
+      "Poplar Hill Pond WMA",
+      "Savage Mill Trust",
+      "Seneca Creek State Park",
+      "Sharptown Wildlife Area",
+      "Smith Island WMA",
+      "Solomons Island area",
+      "South Branch Potomac WMA",
+      "Southern Maryland Forests",
+      "Stoney Fork Run WMA",
+      "Susquehanna River area",
+      "Tuckahoe Wildlife Area",
+      "Tuckahoe State Park",
+      "Urieville WMA",
+      "Upper Potomac WMA",
+      "Vienna Wildlife Area",
+      "Wailes Point WMA",
+      "Walters Farm",
+      "Whaleyville Wildlife Area",
+      "Wildcat Branch WMA",
+      "Wiley Ford Wildlife Area",
+      "Wilson Wildlife Area"
+    ],
+    "huntable_species": [
+      "White-tailed Deer",
+      "Wild Turkey",
+      "Canada Goose",
+      "Mallard",
+      "Wood Duck",
+      "Black Duck",
+      "Pintail",
+      "Ring-necked Duck",
+      "Scaup",
+      "American Woodcock",
+      "Ruffed Grouse",
+      "Squirrel"
+    ]
+  }
+}

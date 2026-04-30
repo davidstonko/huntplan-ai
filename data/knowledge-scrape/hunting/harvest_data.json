@@ -1,0 +1,111 @@
+{
+  "source_url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/deer_annualreports.aspx",
+  "date_accessed": "2026-04-11",
+  "description": "Maryland harvest statistics by species, season, and method for recent years",
+  "data": {
+    "overall_2024_2025": {
+      "season": "2024-2025",
+      "total_deer_harvest": 84201,
+      "antlered_deer": 32148,
+      "antlerless_deer": 47271,
+      "other_notes": "Includes all seasons and methods combined"
+    },
+    "archery_season_2024_2025": {
+      "season_name": "Archery Season",
+      "total_harvest": 28775,
+      "methods": {
+        "vertical_bow": {
+          "harvest": 11238,
+          "percentage": 39
+        },
+        "crossbow": {
+          "harvest": 17537,
+          "percentage": 61,
+          "year_over_year_note": "Crossbow harvests continue to grow"
+        }
+      },
+      "licenses_sold": {
+        "resident_stamps": 51658,
+        "nonresident_stamps": 12183
+      },
+      "growth": {
+        "total_increase": "16%",
+        "from_year": "2023-2024",
+        "crossbow_dominance": "Crossbows represent 60% of total archery harvest"
+      }
+    },
+    "sunday_hunting": {
+      "season_name": "Sunday Hunting",
+      "total_harvest": 9459,
+      "permitted_counties": [
+        "Allegany",
+        "Cecil",
+        "Garrett",
+        "St. Mary's",
+        "Washington",
+        "Wicomico",
+        "Worcester"
+      ],
+      "additional_sundays": "Somerset County has limited Sunday hunting on designated public lands"
+    },
+    "junior_hunters": {
+      "season_name": "Junior Deer Hunt Weekend",
+      "2024_2025_harvest": {
+        "total": 2493,
+        "antlered": 1674,
+        "antlerless": 819,
+        "growth": "12% increase from 2,226 in 2023-2024"
+      },
+      "participation": "Growing youth participation in hunting",
+      "opportunity": "Designated weekend hunt for hunters under 16"
+    },
+    "firearm_season": {
+      "season_name": "Firearm Season",
+      "harvest_estimate": "Approximately 42,000+ (estimated from total minus archery)",
+      "notes": "Primary harvest season typically accounts for roughly half of annual harvest"
+    },
+    "historical_harvest_trends": {
+      "note": "Maryland consistently maintains 80,000+ annual deer harvest",
+      "trend": "Stable to slightly increasing",
+      "data_availability": "Annual Big Game Reports published by Maryland DNR"
+    },
+    "sika_deer_harvest": {
+      "species": "Asian sika deer",
+      "locations": [
+        "Taylor's Island WMA",
+        "Fishing Bay WMA",
+        "Other Eastern Shore locations"
+      ],
+      "harvest_status": "Tracked separately from white-tailed deer",
+      "stamp_requirement": "Sika Deer Stamp ($10)"
+    },
+    "data_sources": {
+      "primary_report": "Maryland Big Game Report - 2024-2025",
+      "report_url": "https://dnr.maryland.gov/wildlife/Documents/maryland-Big-Game-Report_2024-25.pdf",
+      "archives_available": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/deer_annualreports.aspx",
+      "historical_reports": "Annual reports available back many years"
+    },
+    "harvest_by_region": {
+      "note": "Regional breakdown available in full Big Game Reports",
+      "regions": [
+        "Western (Allegany, Garrett, Washington, Frederick)",
+        "Central (Anne Arundel, Howard, Montgomery, etc.)",
+        "Eastern Shore (Dorchester, Somerset, Wicomico, Worcester)",
+        "Southern (Charles, St. Mary's, Calvert)"
+      ]
+    },
+    "adaptive_harvest_management": {
+      "report_url": "https://dnr.maryland.gov/wildlife/Documents/AHMReport2025.pdf",
+      "purpose": "Manages waterfowl and migratory game bird seasons based on population surveys"
+    },
+    "county_by_county_reporting": {
+      "availability": "Detailed county-by-county statistics in annual reports",
+      "metrics": [
+        "Archery vs firearm harvest",
+        "Antlered vs antlerless breakdown",
+        "Methods and weapon types",
+        "Youth harvest statistics"
+      ]
+    }
+  }
+}

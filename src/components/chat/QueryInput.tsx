@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
-import Colors from '../../theme/colors';
 
 interface QueryInputProps {
   onSend: (query: string) => void;
@@ -38,6 +37,8 @@ export default function QueryInput({
         onChangeText={setQuery}
         multiline
         editable={!disabled && !loading}
+        maxLength={500}
+        returnKeyType="send"
       />
       <TouchableOpacity
         style={[
@@ -59,16 +60,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     alignItems: 'flex-end',
   },
   input: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#1a1a1a',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: Colors.textPrimary,
+    color: '#fff',
     fontSize: 14,
     maxHeight: 100,
     marginRight: 8,
@@ -77,16 +78,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.oak,
+    backgroundColor: '#8B7355',
     justifyContent: 'center',
     alignItems: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: Colors.mud,
+    backgroundColor: '#555',
     opacity: 0.5,
   },
   sendButtonText: {
-    color: Colors.mdWhite,
+    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },

@@ -1,0 +1,119 @@
+{
+  "source_url": "https://dnr.maryland.gov/wildlife/pages/licenses/ddpermit.aspx",
+  "date_accessed": "2026-04-11",
+  "description": "Deer management data including CWD zones, DMP areas, antler restrictions, and Earn-A-Buck information",
+  "data": {
+    "cwd_management_area": {
+      "name": "Chronic Wasting Disease Management Area (CWDMA)",
+      "description": "Area where CWD surveillance and management activities occur",
+      "counties_included": [
+        "Allegany",
+        "Baltimore",
+        "Carroll",
+        "Frederick",
+        "Howard",
+        "Montgomery",
+        "Washington"
+      ],
+      "status": "Active surveillance",
+      "surveillance_approach": "Risk-based sampling from hunter harvest, DMP operations, and road-killed deer",
+      "minimum_sample_goal": 60,
+      "confidence_level": "95% confidence CWD does not exist at >5% prevalence"
+    },
+    "cwd_carcass_transport_restrictions": {
+      "description": "Rules for transporting deer from CWD zones",
+      "whole_carcass": {
+        "restriction": "Cannot be transported out of CWDMA",
+        "exception": "Can transport to approved processor or taxidermist"
+      },
+      "deboned_meat": {
+        "allowed": true,
+        "requirements": [
+          "No part of spinal column",
+          "No backbone",
+          "No head attached",
+          "Deer must be checked in first",
+          "Obtain confirmation number before transport"
+        ]
+      },
+      "quartered_deer": {
+        "allowed": true,
+        "requirements": [
+          "No spinal column attached",
+          "Deer must be checked in first",
+          "Obtain confirmation number before transport"
+        ]
+      }
+    },
+    "deer_management_permit_dmp": {
+      "name": "Deer Management Permit (DMP)",
+      "purpose": "Help landowners and farmers resolve legitimate crop damage",
+      "eligible_damages": [
+        "Commercial farm crops",
+        "Orchards",
+        "Nurseries",
+        "Managed forests"
+      ],
+      "antlerless_requirement": "All deer taken on DMPs must be antlerless",
+      "antlered_exception": "Antlered deer may be issued for severe antler-rub damage to nursery or orchard stock (DNR determines quantity)",
+      "quota_basis": "Case-by-case determination based on damage assessment",
+      "dnr_application_url": "https://dnr.maryland.gov/wildlife/pages/licenses/ddpermit.aspx",
+      "guidelines_pdf": "https://dnr.maryland.gov/wildlife/documents/dmp_general-conditions.pdf",
+      "contact_method": "Contact county WHS DMP coordinator during business hours",
+      "notes": "Specific antlerless quotas vary by county and individual permit assessment"
+    },
+    "antler_point_restrictions": {
+      "description": "Statewide antler point requirements for harvested deer",
+      "restriction": "One antlered deer per license year must have at least 3 points on one antler (3-point minimum)",
+      "exception": "May harvest one antlered deer without meeting 3-point requirement",
+      "applicability": "Applies statewide to most counties",
+      "notes": "Specific county variations exist - check current regulations"
+    },
+    "earn_a_buck_program": {
+      "name": "Earn-A-Buck Program",
+      "description": "County-specific antlerless-first regulations",
+      "status": "Program exists but specific 2025-2026 county designations require verification",
+      "general_concept": "Hunters must harvest antlerless deer before antlered deer in designated areas",
+      "affected_areas": "County-specific - not uniformly applied statewide",
+      "notes": "Check current Maryland hunting guide for county-specific Earn-A-Buck designations"
+    },
+    "sika_deer_hunting": {
+      "name": "Sika Deer Hunting",
+      "description": "Asian sika deer found on Eastern Shore properties",
+      "regions": [
+        "Eastern Shore (Dorchester County primary)"
+      ],
+      "primary_wmas": [
+        "Fishing Bay WMA",
+        "Taylor's Island WMA"
+      ],
+      "season_status": "Available statewide where found",
+      "stamp_required": "Sika Deer Stamp ($10)",
+      "notes": "Populations found in coastal marshes alongside white-tailed deer"
+    },
+    "white_tailed_deer_seasons": {
+      "2024_2025_harvest_summary": {
+        "total_harvest": 84201,
+        "antlered_bucks": 32148,
+        "antlerless_does": 47271,
+        "archery_harvest": {
+          "total": 28775,
+          "vertical_bow": 11238,
+          "crossbow": 17537,
+          "crossbow_percentage": 60,
+          "resident_stamps_sold": 51658,
+          "nonresident_stamps_sold": 12183,
+          "increase_from_prior_year": "16%"
+        },
+        "sunday_hunting_harvest": 9459,
+        "junior_harvest": {
+          "total": 2493,
+          "antlered": 1674,
+          "antlerless": 819,
+          "increase_from_prior_year": "12%"
+        }
+      },
+      "harvest_reports_available": "Annual Big Game Reports available from Maryland DNR"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,112 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Colors from '../theme/colors';
-import { getSmartResponse } from '../data/chatKnowledge';
+import { getSmartResponse, ChatResponse } from '../data/chatKnowledge';
+import { getFishingSmartResponse } from '../data/fishingChatKnowledge';
+import { getCampingSmartResponse } from '../data/campingChatKnowledge';
+import { getHikingSmartResponse } from '../data/hikingChatKnowledge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Config from '../config';
+import { useActivityMode, ActivityMode } from '../context/ActivityModeContext';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Per-mode chat configuration
+// The AI tab appears in every mode; each mode gets its own welcome message,
+// quick suggestions, input placeholder, and "Plan" banner destination.
+// Hunt keeps the existing hunt-plan flow; Camp and Hike point at their trip
+// planners; Fish has no trip planner yet, so the banner is hidden.
+// This replaces the prior behavior where every mode's AI tab deep-linked to
+// HuntPlanScreen — the V2.2.0 cross-mode pollution fix.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ChatModeConfig {
+  welcome: string;
+  placeholder: string;
+  suggestions: string[];
+  banner: null | {
+    title: string;
+    subtitle: string;
+    route: 'HuntPlan' | 'CampTripPlan' | 'HikeTripPlan';
+  };
+}
+
+const CHAT_MODE_CONFIG: Record<ActivityMode, ChatModeConfig> = {
+  hunt: {
+    welcome:
+      'Welcome to MDHuntFishOutdoors AI! I know about all 192 public hunting lands, 14 shooting ranges, seasons, bag limits, and regulations across Maryland. What would you like to know?',
+    placeholder: 'Ask about regulations, lands, or hunts...',
+    suggestions: [
+      'When is deer season?',
+      'Turkey season dates',
+      'Bear hunting rules',
+      'Sunday hunting rules',
+      'Where can I hunt near me?',
+      'What licenses do I need?',
+      'Plan my next hunt',
+    ],
+    banner: {
+      title: 'AI Hunt Plan Generator',
+      subtitle: 'Get a custom plan for your next hunt',
+      route: 'HuntPlan',
+    },
+  },
+  fish: {
+    welcome:
+      'Welcome to MDHuntFishOutdoors AI. Ask about Maryland tidal and non-tidal fishing — angler access sites, stocking schedules, seasons, creel limits, and tide/weather guidance.',
+    placeholder: 'Ask about angler access, seasons, creels, or tides...',
+    suggestions: [
+      'Striped bass season',
+      'Where can I fish for trout?',
+      'Non-tidal license requirements',
+      'Best tide for the Bay',
+      'Where are the DNR stocking locations?',
+      'Crabbing rules',
+    ],
+    banner: null,
+  },
+  camp: {
+    welcome:
+      'Welcome to MDHuntFishOutdoors AI. Ask about Maryland campgrounds, reservations, access, trip planning, gear, and group-camp logistics.',
+    placeholder: 'Ask about campgrounds, reservations, or trip planning...',
+    suggestions: [
+      'Best state-park campgrounds',
+      'How do I reserve a site?',
+      'What gear do I need for car camping?',
+      'Dog-friendly campgrounds',
+      'Group camping options',
+      'Plan a weekend trip',
+    ],
+    banner: {
+      title: 'AI Camp Trip Planner',
+      subtitle: 'Build a custom camping itinerary',
+      route: 'CampTripPlan',
+    },
+  },
+  hike: {
+    welcome:
+      'Welcome to MDHuntFishOutdoors AI. Ask about Maryland trails, the Appalachian Trail, shelters, elevation, trip planning, and hiking gear.',
+    placeholder: 'Ask about trails, the AT, gear, or trip planning...',
+    suggestions: [
+      'Beginner trails near me',
+      'AT section in Maryland',
+      'Where are the AT shelters?',
+      'Day-hike gear list',
+      'Overnight backpacking checklist',
+      'Plan a multi-day AT trip',
+    ],
+    banner: {
+      title: 'AI Hike Trip Planner',
+      subtitle: 'Build a custom hike or AT itinerary',
+      route: 'HikeTripPlan',
+    },
+  },
+};
+
+const API_BASE_URL = __DEV__
+  ? 'http://localhost:8000'
+  : 'https://huntplan-api.onrender.com';
 
 interface ChatMessage {
   id: string;
@@ -56,106 +155,59 @@ interface ChatMessage {
  * questions. Currently uses local getSmartResponse; future versions will call the
  * FastAPI backend at /api/v1/planner/query.
  *
- * Messages are persisted to AsyncStorage (@chat_messages) — up to 50 messages retained.
- *
  * @returns {JSX.Element} Full-screen chat UI with message list, input bar, and suggestion chips
  */
 export default function ChatScreen() {
   const navigation = useNavigation<any>();
-  const WELCOME_MESSAGE: ChatMessage = {
-    id: '0',
-    text: 'Welcome to MDHuntFishOutdoors AI! I know about all 192 public hunting lands, 14 shooting ranges, seasons, bag limits, and regulations across Maryland. What would you like to know?',
-    isUser: false,
-    timestamp: new Date().toISOString(),
-  };
+  const route = useRoute<RouteProp<{ ChatMain: { initialQuery?: string } }, 'ChatMain'>>();
+  const { activeMode } = useActivityMode();
+  const modeConfig = CHAT_MODE_CONFIG[activeMode];
 
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: '0',
+      text: modeConfig.welcome,
+      isUser: false,
+      timestamp: new Date().toISOString(),
+    },
+  ]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  // Load persisted messages on mount
+  // 2026-04-29: respond to a deep-link arriving via route.params.initialQuery.
+  // FishMapScreen's "What we use here" CTA on hotspot detail cards
+  // navigates here with an initialQuery — pre-populate the input so the
+  // user can review-then-send (rather than auto-firing). Cleared after
+  // first apply so a re-entry doesn't re-populate.
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        const saved = await AsyncStorage.getItem('@chat_messages');
-        if (saved) {
-          const parsed = JSON.parse(saved) as ChatMessage[];
-          if (parsed.length > 0) {
-            setMessages(parsed);
-            return;
-          }
-        }
-      } catch (err) {
-        if (__DEV__) console.warn('[ChatScreen] Failed to load persisted messages:', err);
-      }
-      // Default to welcome message if no saved messages
-      setMessages([WELCOME_MESSAGE]);
-    };
+    const q = route.params?.initialQuery;
+    if (q && typeof q === 'string') {
+      setInputText(q);
+      navigation.setParams({ initialQuery: undefined } as any);
+    }
+  }, [route.params?.initialQuery, navigation]);
 
-    loadMessages();
-  }, []);
-
-  // Persist messages whenever they change
+  // When the user switches modes, reset the chat so the welcome message + quick
+  // suggestions match the new mode. (Keeping prior messages would be confusing
+  // because they were hunt-shaped.)
   useEffect(() => {
-    const persistMessages = async () => {
-      try {
-        // Keep only last 50 messages to prevent storage bloat
-        const messagesToPersist = messages.slice(-50);
-        await AsyncStorage.setItem('@chat_messages', JSON.stringify(messagesToPersist));
-      } catch (err) {
-        if (__DEV__) console.warn('[ChatScreen] Failed to persist messages:', err);
-      }
-    };
+    setMessages([
+      {
+        id: `welcome-${activeMode}`,
+        text: modeConfig.welcome,
+        isUser: false,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+    setInputText('');
+  }, [activeMode, modeConfig.welcome]);
 
-    persistMessages();
-  }, [messages]);
-
-  // Auto-scroll to end when new messages arrive
   useEffect(() => {
     if (flatListRef.current && messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   }, [messages]);
-
-  const clearChat = async () => {
-    try {
-      await AsyncStorage.removeItem('@chat_messages');
-      setMessages([WELCOME_MESSAGE]);
-    } catch (err) {
-      if (__DEV__) console.warn('[ChatScreen] Failed to clear chat:', err);
-    }
-  };
-
-  const handleClearConfirm = () => {
-    Alert.alert(
-      'Clear Chat History',
-      'This will delete all messages from this conversation. This action cannot be undone.',
-      [
-        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
-        {
-          text: 'Clear',
-          onPress: clearChat,
-          style: 'destructive',
-        },
-      ],
-    );
-  };
-
-  // Configure header with clear button
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={handleClearConfirm}
-          activeOpacity={0.6}
-          style={{ paddingRight: 16 }}
-        >
-          <Text style={{ fontSize: 20, color: Colors.rust }}>🗑</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
   const addMessage = (text: string, isUser: boolean, citations?: string[], followUpSuggestions?: string[]) => {
     setMessages((prev) => [
@@ -187,7 +239,7 @@ export default function ChatScreen() {
     try {
       // Try backend AI (Claude + RAG)
       const token = await AsyncStorage.getItem('auth_token');
-      const response = await fetch(`${Config.API_BASE_URL}/api/v1/planner/ai/query`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/planner/ai/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,17 +265,42 @@ export default function ChatScreen() {
       // If non-OK response, fall through to local fallback
     } catch (_err) {
       // Network error or timeout — use local fallback
-      if (__DEV__) console.warn('[ChatScreen] API call failed, using local fallback');
     }
 
-    // Local fallback: keyword-matching knowledge base
-    const localResponse = getSmartResponse(query);
-    addMessage(
-      localResponse.text,
-      false,
-      localResponse.citations,
-      localResponse.followUpSuggestions,
-    );
+    // 2026-04-28 (live audit): route to the mode-specific knowledge base
+    // so Fish AI uses fishing intents, Hike AI uses hike intents, etc.
+    // Pre-fix: every mode used Hunt's getSmartResponse — the live audit
+    // caught Fish AI returning weapon types for "best fly fishing on the
+    // Gunpowder?" because the Hunt chat handled the query as a weapon
+    // intent. Each per-mode wrapper has its own augmentXLocalPros wired,
+    // so this also activates the Fish/Hike/Camp local-pros footers.
+    const localResponse: ChatResponse | null =
+      activeMode === 'fish'
+        ? getFishingSmartResponse(query)
+        : activeMode === 'camp'
+        ? getCampingSmartResponse(query)
+        : activeMode === 'hike'
+        ? getHikingSmartResponse(query)
+        : getSmartResponse(query);
+    if (!localResponse) {
+      // Mode-specific responder returned null (no intent matched). Fall
+      // back to the generic Hunt response so the user always gets
+      // something useful instead of silence.
+      const fallback = getSmartResponse(query);
+      addMessage(
+        fallback.text,
+        false,
+        fallback.citations,
+        fallback.followUpSuggestions,
+      );
+    } else {
+      addMessage(
+        localResponse.text,
+        false,
+        localResponse.citations,
+        localResponse.followUpSuggestions,
+      );
+    }
     setLoading(false);
   };
 
@@ -264,7 +341,7 @@ export default function ChatScreen() {
       {/* Show follow-up suggestion chips if present */}
       {!item.isUser && item.followUpSuggestions && item.followUpSuggestions.length > 0 && (
         <View style={styles.followUpContainer}>
-          {item.followUpSuggestions.map((suggestion) => (
+          {item.followUpSuggestions?.map((suggestion) => (
             <TouchableOpacity
               key={suggestion}
               style={styles.followUpChip}
@@ -287,32 +364,28 @@ export default function ChatScreen() {
       style={styles.container}
       keyboardVerticalOffset={100}
     >
-      {/* ── Hunt Plan Generator Banner ── */}
-      <TouchableOpacity
-        style={styles.huntPlanBanner}
-        onPress={() => navigation.navigate('HuntPlan')}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.huntPlanBannerIcon}>{'🎯'}</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.huntPlanBannerTitle}>AI Hunt Plan Generator</Text>
-          <Text style={styles.huntPlanBannerSub}>Get a custom plan for your next hunt</Text>
-        </View>
-        <Text style={styles.huntPlanBannerArrow}>{'›'}</Text>
-      </TouchableOpacity>
+      {/* ── Mode-specific Trip Planner Banner ── */}
+      {modeConfig.banner && (
+        <TouchableOpacity
+          style={styles.huntPlanBanner}
+          onPress={() => navigation.navigate(modeConfig.banner!.route)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.huntPlanBannerChip}>
+            <Text style={styles.huntPlanBannerChipText}>PLAN</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.huntPlanBannerTitle}>{modeConfig.banner.title}</Text>
+            <Text style={styles.huntPlanBannerSub}>{modeConfig.banner.subtitle}</Text>
+          </View>
+          <Text style={styles.huntPlanBannerArrow}>{'›'}</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Quick suggestion chips when chat is fresh */}
       {messages.length <= 1 && (
         <View style={styles.suggestionsContainer}>
-          {[
-            'When is deer season?',
-            'Turkey season dates',
-            'Bear hunting rules',
-            'Sunday hunting rules',
-            'Where can I hunt near me?',
-            'What licenses do I need?',
-            'Plan my next hunt',
-          ].map((suggestion) => (
+          {modeConfig.suggestions.map((suggestion) => (
             <TouchableOpacity
               key={suggestion}
               style={styles.suggestionChip}
@@ -346,7 +419,7 @@ export default function ChatScreen() {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Ask about regulations, lands, or hunts..."
+          placeholder={modeConfig.placeholder}
           placeholderTextColor={Colors.textMuted}
           value={inputText}
           onChangeText={setInputText}
@@ -386,7 +459,21 @@ const styles = StyleSheet.create({
     borderColor: Colors.moss,
     gap: 10,
   },
-  huntPlanBannerIcon: { fontSize: 22 },
+  huntPlanBannerChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: Colors.moss,
+    minWidth: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  huntPlanBannerChipText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
   huntPlanBannerTitle: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
   huntPlanBannerSub: { fontSize: 10, color: Colors.textSecondary, marginTop: 1 },
   huntPlanBannerArrow: { fontSize: 22, color: Colors.textMuted, fontWeight: '300' },

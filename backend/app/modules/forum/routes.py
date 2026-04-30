@@ -158,7 +158,7 @@ async def create_thread(
         view_count=0,
         is_pinned=False,
         is_locked=False,
-        username=user.handle,
+        username=user.username,
         created_at=thread.created_at.isoformat(),
     )
 
@@ -168,13 +168,13 @@ async def list_threads(
     category: Optional[str] = None,
     land_id: Optional[str] = None,
     county: Optional[str] = None,
-    sort: str = Query(default="recent", regex="^(recent|popular|active)$"),
+    sort: str = Query(default="recent", pattern="^(recent|popular|active)$"),
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
     """List forum threads with filtering and sorting."""
-    query = select(ForumThread, User.handle).join(
+    query = select(ForumThread, User.username).join(
         User, ForumThread.user_id == User.id, isouter=True
     ).where(
         ForumThread.is_removed == False  # noqa: E712
@@ -250,7 +250,7 @@ async def get_thread(
 ):
     """Get a single thread with full body and increment view count."""
     result = await db.execute(
-        select(ForumThread, User.handle).join(
+        select(ForumThread, User.username).join(
             User, ForumThread.user_id == User.id, isouter=True
         ).where(ForumThread.id == thread_id, ForumThread.is_removed == False)  # noqa: E712
     )
@@ -348,7 +348,7 @@ async def create_reply(
         parent_id=str(reply.parent_id) if reply.parent_id else None,
         photo_urls=reply.photo_urls,
         upvotes=0,
-        username=user.handle,
+        username=user.username,
         created_at=reply.created_at.isoformat(),
     )
 
@@ -363,7 +363,7 @@ async def list_replies(
     """List all replies for a thread."""
     offset = (page - 1) * per_page
     result = await db.execute(
-        select(ForumReply, User.handle).join(
+        select(ForumReply, User.username).join(
             User, ForumReply.user_id == User.id, isouter=True
         ).where(
             ForumReply.thread_id == thread_id,
@@ -429,7 +429,7 @@ async def create_listing(
         status=listing.status,
         message_count=0,
         view_count=0,
-        username=user.handle,
+        username=user.username,
         created_at=listing.created_at.isoformat(),
     )
 
@@ -441,13 +441,13 @@ async def list_marketplace(
     county: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
-    sort: str = Query(default="recent", regex="^(recent|price_low|price_high)$"),
+    sort: str = Query(default="recent", pattern="^(recent|price_low|price_high)$"),
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
     """List marketplace items with filtering."""
-    query = select(MarketplaceListing, User.handle).join(
+    query = select(MarketplaceListing, User.username).join(
         User, MarketplaceListing.user_id == User.id, isouter=True
     ).where(
         MarketplaceListing.status == "active",
@@ -510,7 +510,7 @@ async def get_listing(
 ):
     """Get a single marketplace listing."""
     result = await db.execute(
-        select(MarketplaceListing, User.handle).join(
+        select(MarketplaceListing, User.username).join(
             User, MarketplaceListing.user_id == User.id, isouter=True
         ).where(MarketplaceListing.id == listing_id)
     )
@@ -544,7 +544,7 @@ async def get_listing(
 @router.patch("/marketplace/{listing_id}/status")
 async def update_listing_status(
     listing_id: str,
-    status: str = Query(..., regex="^(active|sold|traded|expired)$"),
+    status: str = Query(..., pattern="^(active|sold|traded|expired)$"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -612,7 +612,7 @@ async def list_land_permissions(
     db: AsyncSession = Depends(get_db),
 ):
     """List available land permissions / hunting leases."""
-    query = select(LandPermission, User.handle).join(
+    query = select(LandPermission, User.username).join(
         User, LandPermission.user_id == User.id, isouter=True
     ).where(
         LandPermission.status == "active",

@@ -1,0 +1,20 @@
+Ingesting 27 trails…
+→ Prefetching Maryland AT polyline from USGS Layer 11…
+  AT prefetch: 53 polylines, total vertices=19499
+[1/27] md-billy-goat-a — Billy Goat Trail Section A
+    → medium | Billy Goat Trail, Section A | 1.715 mi | src=usgs_trails
+[2/27] md-billy-goat-b — Billy Goat Trail Section B
+    → high | Billy Goat Trail Section A | 0.525 mi | src=osm_overpass
+[3/27] md-billy-goat-c — Billy Goat Trail Section C
+    → medium | Billy Goat Trail, Section A | 1.713 mi | src=usgs_trails
+[4/27] md-cunningham-falls-loop — Cunningham Falls Trail
+    → none | — | 0 mi | src=—
+[5/27] md-cunningham-falls-manor — Old Misery Trail
+    → low | Cunningham Falls Manor Camping Area | 0.573 mi | src=osm_overpass
+[6/27] md-catoctin-hog-rock — Hog Rock Nature Trail
+    → medium | TR-9 Hog Rock Trail | 0.404 mi | src=usgs_trails
+[7/27] md-catoctin-thurmont-vista — Thurmont Vista Trail
+    → medium | TR-7 Thurmont Vista Trail | 0.736 mi | src=usgs_trails
+[8/27] md-catoctin-blue-ridge — Blue Ridge Summit Overlook
+    → medium | TR-5 Blue Ridge Summit Trail | 0.28 mi | src=usgs_trails
+[9/27] md-patapsco-mckeldin-switchback — Switchback Trail

@@ -1,3 +1,5 @@
+> **DEPRECATED** — This file is outdated. See [README.md](../README.md) for the current project documentation.
+
 # HuntPlan AI — React Native Mobile Scaffold
 
 Complete, production-ready React Native iOS app scaffold for the HuntPlan AI hunting planning application. Built with TypeScript, Mapbox GL, React Navigation, and WatermelonDB.

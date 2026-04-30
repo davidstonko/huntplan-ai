@@ -128,12 +128,14 @@ const MapFilterPanel: React.FC<MapFilterPanelProps> = ({
         onPress={() => setIsExpanded(!isExpanded)}
         activeOpacity={0.7}
       >
-        <Text style={styles.toggleText}>
-          Filters{isFiltered ? ' ●' : ''}
-        </Text>
-        <Text style={[styles.arrowIcon, isExpanded && styles.arrowIconExpanded]}>
-          ▶
-        </Text>
+        <View style={styles.toggleContent}>
+          <Text style={styles.toggleText}>
+            Filters{isFiltered ? ' ●' : ''}
+          </Text>
+          <Text style={[styles.arrowIcon, isExpanded && styles.arrowIconExpanded]}>
+            ▶
+          </Text>
+        </View>
       </TouchableOpacity>
 
       {isExpanded && (
@@ -254,8 +256,8 @@ const FilterChip: React.FC<FilterChipProps> = ({ label, active, onToggle }) => (
 const styles = StyleSheet.create({
   panelContainer: {
     position: 'absolute',
-    left: 8,
-    bottom: 120,
+    left: 12,
+    top: 70,
     backgroundColor: Colors.surfaceElevated,
     borderRadius: 12,
     borderLeftWidth: 3,
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     overflow: 'hidden',
-    zIndex: 10,
+    zIndex: 9,
     maxHeight: 480,
   },
   toggleButton: {
@@ -274,18 +276,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: Colors.mud,
+  },
+  toggleContent: {
+    alignItems: 'center',
+    width: '100%',
   },
   toggleText: {
     fontSize: 12,
     fontWeight: '600',
     color: Colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   arrowIcon: {
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.sage,
     marginTop: 2,
   },

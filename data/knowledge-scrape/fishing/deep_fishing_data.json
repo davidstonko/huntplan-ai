@@ -1,0 +1,692 @@
+{
+  "metadata": {
+    "title": "Maryland Deep Fishing Data",
+    "lastUpdated": "2026-04-11",
+    "scope": "Comprehensive Maryland fishing research including NOAA tides, boat ramps, reefs, consumption advisories, spawning closures, fly fishing streams, ice fishing, snakehead fishery, and state records",
+    "sources": [
+      "Maryland DNR (dnr.maryland.gov)",
+      "NOAA Tides & Currents (tidesandcurrents.noaa.gov)",
+      "Maryland Department of Environment (mde.maryland.gov)",
+      "eRegulations.com (Maryland fishing)",
+      "TidesPro, FishTalk Magazine, VisitMaryland.org"
+    ]
+  },
+  "noaa_tide_stations": {
+    "overview": "NOAA maintains tide prediction stations across Maryland's Chesapeake Bay and coastal waters",
+    "primary_resource": "https://tidesandcurrents.noaa.gov/tide_predictions.html?gid=1402",
+    "maryland_dnr_tide_finder": "https://dnr.maryland.gov/fisheries/Pages/Tide-Finder.aspx",
+    "key_stations": [
+      {
+        "name": "Chesapeake Beach",
+        "stationId": "8576363",
+        "location": "Chesapeake Bay, Maryland",
+        "type": "Tide Prediction Station"
+      },
+      {
+        "name": "Fishing Point",
+        "location": "Fishing Bay, Chesapeake Bay, Maryland",
+        "description": "Lower Bay location"
+      },
+      {
+        "name": "Upper Chesapeake Bay Stations",
+        "locations": [
+          "Annapolis, MD",
+          "Baltimore, MD",
+          "Chesapeake City, MD",
+          "Havre de Grace, MD"
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "name": "Tides4Fishing",
+        "url": "https://tides4fishing.com/us/maryland",
+        "description": "Solunar charts for fishing in Maryland 2026"
+      },
+      {
+        "name": "Tide-Forecast",
+        "url": "https://www.tide-forecast.com/",
+        "description": "Multi-location tide forecasts"
+      }
+    ]
+  },
+  "boat_ramps_and_access": {
+    "primary_resources": [
+      {
+        "name": "Maryland Online Water Access Guide",
+        "url": "https://dnr.maryland.gov/boating/pages/water-access/boatramps.aspx",
+        "description": "Official DNR water access guide with boat ramps and soft access"
+      },
+      {
+        "name": "Angler Access Map",
+        "url": "http://gisapps.dnr.state.md.us/PublicFishingAccess/index.html",
+        "description": "Interactive GIS map of fishing access points"
+      },
+      {
+        "name": "SaltChef County Listings",
+        "url": "https://www.saltchef.com/catch_fish/MD/",
+        "description": "County-by-county boat ramp GPS coordinates"
+      }
+    ],
+    "fee_structure": {
+      "state_parks": {
+        "residents": "$10 launch fee",
+        "nonresidents": "$12 launch fee"
+      },
+      "county_permits": {
+        "example_queen_annes": {
+          "annual_resident": "$40",
+          "annual_nonresident": "$75",
+          "daily_resident": "$10",
+          "daily_nonresident": "$15"
+        }
+      },
+      "free_access": "Many jurisdictions offer free ramp use with paid parking"
+    },
+    "major_ramps_with_coordinates": [
+      {
+        "name": "Fort Armistead",
+        "county": "Baltimore",
+        "coordinates": {
+          "latitude": 39.209350,
+          "longitude": -76.532667
+        },
+        "facilities": "Double wide launching lane, courtesy docks, paved parking for 35 trailers"
+      },
+      {
+        "name": "Inverness Park",
+        "county": "Baltimore (Dundalk)",
+        "coordinates": {
+          "latitude": 39.256827,
+          "longitude": -76.492522
+        },
+        "facilities": "2 launching lanes, courtesy docks, parking for 13 trailers, seasonal portable restrooms"
+      },
+      {
+        "name": "Gunpowder Falls State Park - Dundee Creek Marina",
+        "county": "Baltimore",
+        "coordinates": {
+          "latitude": 39.351839,
+          "longitude": -76.359136
+        },
+        "facilities": "2 double wide lanes, courtesy docks, parking for ~100 trailers, restrooms"
+      },
+      {
+        "name": "Solomons Island",
+        "county": "Calvert",
+        "coordinates": {
+          "latitude": 38.328828,
+          "longitude": -76.467511
+        },
+        "facilities": "4 launching lanes, courtesy docks, parking for ~75 trailers, restrooms"
+      },
+      {
+        "name": "Rod & Reel East Ramps",
+        "county": "Calvert",
+        "coordinates": {
+          "latitude": 38.691200,
+          "longitude": -76.536694
+        },
+        "facilities": "East ramps with multiple lanes"
+      },
+      {
+        "name": "Rod & Reel West Ramps",
+        "county": "Calvert",
+        "coordinates": {
+          "latitude": 38.691199,
+          "longitude": -76.536858
+        },
+        "facilities": "West ramps (6 total between east and west)"
+      },
+      {
+        "name": "Piney Point Landing",
+        "county": "St. Mary's",
+        "coordinates": {
+          "latitude": 38.137956,
+          "longitude": -76.500156
+        },
+        "facilities": "2 launching lanes, courtesy docks, picnic area, portable toilets, parking for 22 trailers"
+      },
+      {
+        "name": "Janes Island State Park",
+        "county": "Somerset",
+        "coordinates": {
+          "latitude": 38.009808,
+          "longitude": -75.847714
+        },
+        "facilities": "Single wide launching lane, courtesy dock, parking for 24 trailers, restrooms"
+      },
+      {
+        "name": "Marshall Hall",
+        "county": "Prince George's (Bryans Road)",
+        "coordinates": {
+          "latitude": 38.673056,
+          "longitude": -76.903056
+        }
+      }
+    ]
+  },
+  "artificial_reefs": {
+    "primary_resources": [
+      {
+        "name": "Maryland DNR Artificial Reef Initiative",
+        "url": "https://dnr.maryland.gov/fisheries/pages/reefs/index.aspx",
+        "description": "Official reef program overview and coordination"
+      },
+      {
+        "name": "Maryland GIS Data Portal - Artificial Reefs",
+        "url": "https://data.imap.maryland.gov/datasets/maryland-finfish-maryland-artificial-reef-initiative-sites/",
+        "description": "Interactive map with reef coordinates"
+      },
+      {
+        "name": "Maryland iMap Reef Charts",
+        "url": "https://www.imap.maryland.gov/",
+        "center_coordinates": {
+          "latitude": 38.582150,
+          "longitude": -75.626550,
+          "zoom_level": 9
+        }
+      },
+      {
+        "name": "TidesPro Maryland Artificial Reefs",
+        "url": "https://www.tidespro.com/fishing/us/maryland/maryland-artificial-reefs",
+        "description": "GPS coordinates and map for major reef sites"
+      }
+    ],
+    "program_overview": {
+      "description": "Maryland Artificial Reef Initiative coordinates 60+ private, state, and federal partners for habitat preservation",
+      "contact": "Michael Malpezzi",
+      "email": "michael.malpezzi@maryland.gov"
+    },
+    "example_reef_coordinates": [
+      {
+        "name": "Cedar Point",
+        "coordinates": {
+          "latitude": 38.307500,
+          "longitude": -76.373833
+        }
+      },
+      {
+        "name": "Cedarhurst",
+        "coordinates": {
+          "latitude": 38.840000,
+          "longitude": -76.461833
+        }
+      },
+      {
+        "name": "Hackett Point",
+        "coordinates": {
+          "latitude": 38.990000,
+          "longitude": -76.403833
+        }
+      }
+    ],
+    "reference_document": {
+      "title": "Artificial Reef Management Plan for Maryland",
+      "authors": "Loftus and Stone",
+      "year": 2007
+    }
+  },
+  "fish_consumption_advisories": {
+    "primary_resources": [
+      {
+        "name": "Maryland MDE Fish Consumption Advisory",
+        "url": "https://mde.maryland.gov/programs/marylander/fishandshellfish/pages/fishconsumptionadvisory.aspx",
+        "description": "Official consumption guidelines"
+      },
+      {
+        "name": "MDE Interactive Advisory Map",
+        "url": "https://mde.geodata.md.gov/FCA/",
+        "description": "Searchable by location and species"
+      },
+      {
+        "name": "CCA Maryland Fish Consumption Advisory Map",
+        "url": "https://www.ccamd.org/resource/fish-consumption-advisory-map/",
+        "description": "Alternative interactive map"
+      }
+    ],
+    "contaminants_monitored": [
+      "Methylmercury",
+      "Polychlorinated biphenyls (PCBs)",
+      "Pesticides",
+      "PFAS/PFOS"
+    ],
+    "key_findings_2023_2026": {
+      "pfas_advisories": {
+        "issuance_date": "December 2023",
+        "total_sites": 40,
+        "species_with_advisories": [
+          {
+            "species": "Largemouth Bass",
+            "advisories_count": 13
+          },
+          {
+            "species": "Smallmouth Bass",
+            "advisories_count": 13
+          },
+          {
+            "species": "Bluegill/Sunfish",
+            "advisories_count": 12
+          },
+          {
+            "species": "White Perch",
+            "advisories_count": 11
+          }
+        ]
+      },
+      "geographic_coverage": "PFAS advisories in all but two Maryland counties (Howard and Worcester exempt)",
+      "health_risk": "Eating more recommended amount for 30 years = 1 in 10,000 increased health risk",
+      "shellfish_status": "No PFAS concerns for blue crabs or oysters"
+    },
+    "advisory_resources": {
+      "documents": "County-specific PDFs available (24 counties + Baltimore Harbor + Piscataway Creek)",
+      "languages": "Available in English and Spanish",
+      "special_brochures": "Women and children advisory guides, Anacostia River-specific guidance"
+    }
+  },
+  "striped_bass_spawning_closures": {
+    "primary_resource": "https://dnr.maryland.gov/fisheries/Pages/sb_reg_maps.aspx",
+    "closure_details": {
+      "period": "March 1 - May 31 annually",
+      "purpose": "Protection of spawning striped bass",
+      "affected_rivers": [
+        "Choptank River",
+        "Chester River",
+        "Manokin River",
+        "Nanticoke River",
+        "Patuxent River",
+        "Transquaking River",
+        "Wicomico River"
+      ],
+      "upper_bay_areas": [
+        "Susquehanna Flats",
+        "Susquehanna River (specific boundaries)"
+      ]
+    },
+    "susquehanna_flats_boundary": {
+      "description": "Upper Chesapeake Bay spawning area",
+      "northern_boundary": "Upstream of a line from Sandy Point to Turkey Point"
+    },
+    "susquehanna_river_boundary": {
+      "downstream_limit": "Downstream from a line connecting:",
+      "points": [
+        {
+          "name": "Susquehanna State Park boat ramp at Lapidum",
+          "latitude": 39.597500,
+          "longitude": -76.127500
+        },
+        {
+          "name": "Twin Rocks",
+          "latitude": 39.602833,
+          "longitude": -76.126000
+        },
+        {
+          "name": "Tomes Wharf",
+          "location": "Port Deposit"
+        }
+      ]
+    },
+    "2026_season_details": {
+      "april_opening": "April 1 - Catch-and-release only until regulation changes",
+      "may_harvest_opens": "May 1 (after spawning closure ends May 31)",
+      "slot_limit": "19-24 inches",
+      "daily_limit": "1 fish"
+    },
+    "regulatory_documents": [
+      {
+        "title": "DNR-FS-2025-3 Striped Bass - Recreational Seasons",
+        "url": "https://dnr.maryland.gov/fisheries/Documents/Reg_Changes/DNR-FS-2025-3_StripedBass_RecreationalSeasons.pdf"
+      }
+    ]
+  },
+  "fly_fishing_streams": {
+    "gunpowder_falls": {
+      "location": "Baltimore County",
+      "coordinates": {
+        "latitude": 39.35,
+        "longitude": -76.36
+      },
+      "description": "Premier trout fishery with cold-water reservoir releases and naturally breeding brown trout",
+      "special_management_area": {
+        "name": "Gunpowder Falls SMZ",
+        "regulations": "Artificial lures and flies only, catch-and-release areas",
+        "distance": "7.2 miles of catch-and-release-only area"
+      },
+      "water_source": "Controlled releases from Prettyboy Reservoir maintain year-round flow",
+      "species": [
+        "Brown trout (naturally breeding)",
+        "Rainbow trout"
+      ],
+      "recommended_equipment": {
+        "rod_weight": "4-5 weight",
+        "rod_length": "6-9 feet",
+        "line": "Floating line",
+        "leader": "7.5-9 feet",
+        "tippet": "4x-5x"
+      }
+    },
+    "savage_river": {
+      "location": "Garrett County, Western Maryland",
+      "coordinates": {
+        "latitude": 39.3,
+        "longitude": -79.1
+      },
+      "description": "Premier trout fishery in Western Maryland with year-round cold water",
+      "water_source": "Controlled releases from Savage River Reservoir",
+      "species": [
+        "Brown trout (wild)",
+        "Brook trout (native)",
+        "Rainbow trout"
+      ],
+      "regulations": {
+        "fly_fishing_only": "Mainstem and tributaries upstream of dam (excluding put-and-take areas)",
+        "tackle": "Conventional fly fishing only"
+      },
+      "season": "Open year-round",
+      "recommended_equipment": {
+        "rod_weight": "4 weight",
+        "rod_length": "9-10 feet",
+        "leader": "9 feet",
+        "tippet": "5x-6x",
+        "recommended_flies": [
+          "Caddis patterns",
+          "Duns",
+          "Parachutes",
+          "Woolly buggers",
+          "Midges",
+          "Nymphs",
+          "Copper Johns",
+          "Sculpins"
+        ]
+      }
+    },
+    "other_maryland_fly_streams": {
+      "reference": "Maryland Fly Fishing - TotalFlyFishing.com",
+      "url": "https://www.totalflyfishing.com/maryland/",
+      "guide_resources": [
+        {
+          "provider": "Savage River Outfitters",
+          "url": "https://www.savageriveroutfitters.com/"
+        },
+        {
+          "provider": "Fly in Disguise Guided Trips",
+          "url": "https://flysindisguise.com/guided-fly-fishing-trips/"
+        }
+      ]
+    }
+  },
+  "ice_fishing": {
+    "primary_location": "Deep Creek Lake, Garrett County",
+    "description": "Most popular ice fishing destination in Maryland",
+    "target_species": [
+      "Bluegill (primary target)",
+      "Yellow perch (primary target)",
+      "Walleye (primary target)",
+      "Largemouth bass (secondary)",
+      "Crappie (secondary)",
+      "Northern pike (occasional trophy)"
+    ],
+    "regulations_2026": {
+      "licensing": {
+        "requirement": "Age 16+ must purchase fishing license",
+        "exempt": "Children 15 and under"
+      },
+      "walleye": {
+        "closure": "March 1 - April 15",
+        "open_season": "April 16 - February 28/29",
+        "daily_limit": 5,
+        "possession_limit": 10
+      },
+      "yellow_perch": {
+        "daily_limit": 10
+      },
+      "ice_hole_size": {
+        "maximum_diameter": "10 inches in any direction"
+      }
+    },
+    "snowmobile_access": {
+      "permit_required": true,
+      "description": "Registered snowmobiles only on ORV trails",
+      "permit_locations": [
+        "DNR Licensing Service Centers",
+        "Deep Creek Lake park headquarters",
+        "Discovery Center",
+        "New Germany State Park"
+      ]
+    },
+    "resources": [
+      {
+        "title": "Ice Fishing in Western Maryland",
+        "url": "https://fishandhuntmaryland.com/articles/ice-fishing-western-maryland"
+      },
+      {
+        "title": "Ice-Fishing Tactics for Perch in Deep Creek Lake",
+        "url": "https://fishandhuntmaryland.com/articles/ice-fishing-tactics-perch-deep-creek-lake"
+      }
+    ]
+  },
+  "snakehead_fishery": {
+    "species": "Northern Snakehead (Channa argus)",
+    "invasive_status": "Invasive species with aggressive management",
+    "primary_location": "Blackwater National Wildlife Refuge, Dorchester County (Eastern Shore)",
+    "ecological_significance": {
+      "first_report": 2012,
+      "current_status": "Largest northern snakehead population in United States",
+      "impact": "Significantly altered fish community composition in affected waters"
+    },
+    "fishing_details": {
+      "year_round_availability": "Catchable every month, spring/summer prime",
+      "techniques": [
+        "Bull minnow (most effective)",
+        "Topwater lures",
+        "Swimbaits",
+        "Chatterbaits"
+      ],
+      "best_season": "Spring (primary), Summer (secondary)"
+    },
+    "management": {
+      "bounty_program": "Maryland pays anglers to catch and report tagged northern snakeheads",
+      "bowfishing": "Active bowfishing harvesting from 2022-2024 research period"
+    },
+    "ecological_concerns": {
+      "species_displacement": "Dominance increased for invasive species post-snakehead introduction",
+      "native_species_decline": [
+        "White Perch",
+        "Black Crappie",
+        "Brown Bullhead"
+      ],
+      "descriptions": "Blackwater waters 'literally littered with snakeheads' muscling out native species"
+    },
+    "resources": [
+      {
+        "title": "Maryland DNR Snakehead Information",
+        "url": "https://dnr.maryland.gov/fisheries/pages/snakehead_info.aspx"
+      },
+      {
+        "title": "Snakehead Fishing in the Blackwater",
+        "url": "https://www.fishtalkmag.com/blog/snakehead-fishing-blackwater"
+      },
+      {
+        "title": "Unlocking the Thrills of Snakehead Fishing on Maryland's Eastern Shore",
+        "url": "https://fishandhuntmaryland.com/articles/unlocking-thrills-snakehead-fishing-marylands-eastern-shore"
+      }
+    ]
+  },
+  "state_records_and_trophy_fish": {
+    "primary_resources": [
+      {
+        "name": "FishMaryland Program",
+        "url": "https://dnr.maryland.gov/fisheries/Pages/FishMaryland/index.aspx",
+        "description": "Trophy citation program for non-record fish"
+      },
+      {
+        "name": "eRegulations State Records",
+        "url": "https://www.eregulations.com/maryland/fishing/state-records",
+        "description": "Complete state record listings by category"
+      }
+    ],
+    "record_submission": {
+      "contact": "Phone: 410-991-0748",
+      "requirement": "Must submit application within 2 weeks of catch",
+      "verification": "DNR fisheries biologist or authorized individual must verify"
+    },
+    "fishy_maryland_trophy_program": {
+      "description": "For anglers catching trophy-sized fish that don't reach state record",
+      "categories": 3,
+      "eligible_species": "60+ species",
+      "achievement_milestone": "Master Angler award for 10 different species"
+    },
+    "record_categories": [
+      "Chesapeake Bay",
+      "Atlantic Coast",
+      "Nontidal (Freshwater)",
+      "Invasive Species"
+    ],
+    "notable_records_2025": {
+      "northern_snakehead_invasive": {
+        "weight_lbs": 21.8,
+        "angler": "Matt Foreman",
+        "location": "Susquehanna River"
+      },
+      "false_albacore": {
+        "weight_lbs": 26.0,
+        "angler": "Jack Dorman",
+        "location": "Atlantic Coast"
+      },
+      "blueline_tilefish": {
+        "weight_lbs": 21.3,
+        "angler": "Dominic Vuotto",
+        "location": "Atlantic Coast"
+      },
+      "longfin_albacore_tuna": {
+        "weight_lbs": 78.0,
+        "angler": "Marc Spagnola",
+        "location": "Atlantic Coast"
+      },
+      "longnose_gar": {
+        "weight_lbs": 20.5,
+        "angler": "David Confair",
+        "location": "Chesapeake Bay"
+      }
+    },
+    "notable_saltwater_records": {
+      "blue_marlin": "1,135.0 lbs",
+      "tiger_shark": "1,210.0 lbs",
+      "bluefin_tuna": "625.0 lbs",
+      "thresher_shark": "642.0 lbs",
+      "swordfish": "393 lbs"
+    },
+    "notable_freshwater_records": {
+      "muskellunge": "33.0 lbs",
+      "brown_trout": "18.2 lbs",
+      "largemouth_bass": "11.4 lbs",
+      "striped_bass": "47.1 lbs"
+    }
+  },
+  "fishing_regulations_2026": {
+    "primary_resources": [
+      {
+        "name": "eRegulations Maryland Fishing",
+        "url": "https://www.eregulations.com/maryland/fishing",
+        "description": "Comprehensive season, size, and limit information"
+      },
+      {
+        "name": "Maryland DNR Fishing Changes",
+        "url": "https://dnr.maryland.gov/fisheries/pages/regulations/changes.aspx",
+        "description": "Latest regulation updates"
+      }
+    ],
+    "key_species_limits": {
+      "yellow_perch": {
+        "status": "Recent decrease (2026)",
+        "daily_limit": 5,
+        "notes": "Reduced across all tidal waters and nontidal rivers/streams"
+      },
+      "striped_bass_ocean": {
+        "season": "Year-round",
+        "slot_limit": "28-31 inches",
+        "daily_limit": 1
+      },
+      "striped_bass_bay": {
+        "april_season": "April 1 - April 30 (catch-and-release only)",
+        "may_opener": "May 1+ harvest allowed",
+        "closure": "Spawning rivers closed March 1 - May 31",
+        "slot_limit": "19-24 inches",
+        "daily_limit": 1
+      }
+    },
+    "regulations_by_category": [
+      "Freshwater seasons, sizes & limits",
+      "Chesapeake Bay seasons, sizes & limits",
+      "Atlantic Coast seasons, sizes & limits",
+      "Saltwater fishing regulations"
+    ],
+    "comprehensive_guides": [
+      {
+        "name": "2026 Maryland Guide to Fishing and Crabbing",
+        "description": "Family-friendly fishing opportunities with licenses and regulations"
+      }
+    ]
+  },
+  "data_access_and_gis_tools": {
+    "maryland_dnr_maps": {
+      "primary_url": "https://dnr.maryland.gov/fisheries/pages/maps.aspx",
+      "description": "Centralized fishing and boating maps"
+    },
+    "interactive_maps": {
+      "dnr_url": "https://dnr.maryland.gov/Pages/maps.aspx",
+      "description": "Interactive natural resources near you"
+    },
+    "gis_data_sources": [
+      {
+        "name": "Maryland GIS Data Catalog",
+        "url": "https://dnr.geodata.md.gov/",
+        "description": "Download GIS data by category (Environment, Hydrology, etc.)"
+      },
+      {
+        "name": "Fishing Grounds MapServer",
+        "url": "https://dnr.geodata.md.gov/dnrdata/rest/services/Fisheries/FishingGrounds/MapServer",
+        "description": "REST API for fishing ground polygons"
+      },
+      {
+        "name": "Chesapeake Coastal Service GIS",
+        "url": "https://dnr.maryland.gov/ccs/pages/gis.aspx",
+        "description": "Coastal GIS resources and data"
+      }
+    ],
+    "angler_access_tools": [
+      {
+        "name": "Eyes on the Bay - Click Before You Cast",
+        "url": "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/ClickBeforeCast.cfm",
+        "description": "Resource guide using online tools before fishing"
+      },
+      {
+        "name": "Coastal Atlas 2019",
+        "url": "https://gisapps.dnr.state.md.us/coastalatlas2019/PublicFishingAccess/",
+        "description": "Coastal fishing access mapping"
+      }
+    ]
+  },
+  "knowledge_gaps_and_notes": {
+    "granular_data_available": "Boat ramp coordinates extensively documented; NOAA API requires direct access; reef coordinates available via iMap portal; consumption advisories searchable by location",
+    "api_recommendations": "Direct NOAA API (tidesandcurrents.noaa.gov) for tide predictions; Maryland GIS REST endpoints for fishing grounds; eRegulations API integration",
+    "app_integration_opportunities": [
+      "NOAA tide prediction widget for tidal fishing planning",
+      "Boat ramp database with real-time availability (if available)",
+      "Artificial reef GPS overlay on map",
+      "Fish consumption advisory search by species/waterway",
+      "Spawning closure boundary visualization (Susquehanna Flats, rivers)",
+      "Trophy fish citation tracker (FishMaryland integration)",
+      "Snakehead bounty program information for Eastern Shore fishing",
+      "Fly stream conditions (link to outfitter reports)",
+      "Ice fishing depth/thickness alerts for Deep Creek Lake (seasonal)"
+    ],
+    "data_monetization_potential": [
+      "Premium fly fishing guide recommendations (Savage River, Gunpowder Falls)",
+      "Snakehead bounty program promotion (Eastern Shore trips)",
+      "Trophy fish tracking for FishMaryland program",
+      "Sponsored content from boat ramp & marina operators",
+      "NOAA partnership for tide/current visualization"
+    ]
+  }
+}

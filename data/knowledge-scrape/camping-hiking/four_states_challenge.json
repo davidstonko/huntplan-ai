@@ -1,0 +1,72 @@
+{
+  "source_urls": [
+    "https://fastestknowntime.com/route/four-state-challenge-pa-md-wv-va",
+    "https://www.blueridgeoutdoors.com/hiking/24-hours-in-maryland-the-four-state-challenge/",
+    "https://www.backpacker.com/trips/appalachian-trail-four-state-challenge-pa-va/",
+    "https://thetrek.co/appalachian-trail/the-four-state-challenge/",
+    "https://www.whiteblaze.net/forum/showthread.php/130938-Four-State-Challenge"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "four_states_challenge": {
+      "name": "Appalachian Trail Four State Challenge",
+      "description": "Hiking between VA/WV border and Pennsylvania in 24 hours",
+      "objective": "Hike in four states within 24 hours",
+      "states_covered": [
+        "Virginia",
+        "West Virginia",
+        "Maryland",
+        "Pennsylvania"
+      ],
+      "total_distance_miles": "43.5 to 45 (varies by endpoints)",
+      "distance_range": "Approximately 42-61 miles depending on endpoints used",
+      "time_goal": "Complete within 24 hours",
+      "difficulty": "Endurance challenge",
+      "terrain": "Mixed trail terrain"
+    },
+    "route_breakdown": {
+      "starting_point": "VA/WV state border ridge line",
+      "west_virginia_section": {
+        "description": "3.5 mile descent into West Virginia"
+      },
+      "maryland_section": {
+        "description": "2 mile stroll on flat C&O Canal tow path",
+        "state": "Maryland",
+        "major_geographic_feature": "Potomac River crossing"
+      },
+      "ending_point": "Pennsylvania at Mason-Dixon line"
+    },
+    "maryland_section_details": {
+      "portion_of_total": "Majority of the 43.5 mile challenge",
+      "terrain": "Flat section along C&O Canal"
+      },
+    "popularity": {
+      "most_popular_among": "Thru-hikers",
+      "reason": "Endurance built up by time reaching Maryland from either terminus"
+    },
+    "variant_challenges": {
+      "note": "Debate exists about exact endpoints",
+      "variations": [
+        {
+          "distance_miles": 42,
+          "endpoint_variation": "Using one set of state line markers"
+        },
+        {
+          "distance_miles": 61,
+          "endpoint_variation": "Using different state line markers"
+        }
+      ],
+      "recommendation": "Clarify start/end points before attempting"
+    },
+    "fastest_known_times": {
+      "resource": "https://fastestknowntime.com/route/four-state-challenge-pa-md-wv-va",
+      "note": "FKT records tracked and maintained"
+    },
+    "similar_challenges": {
+      "four_state_challenge_pa_va": {
+        "description": "Variation using Pennsylvania and Virginia endpoints",
+        "source": "Backpacker Magazine"
+      }
+    }
+  }
+}

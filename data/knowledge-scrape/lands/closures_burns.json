@@ -1,0 +1,107 @@
+{
+  "source_url": "https://dnr.maryland.gov/forests/Pages/workplans.aspx",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "Prescribed Burning Program",
+      "description": "Maryland DNR Forest Service prescribed fire management",
+      "purpose": [
+        "Manage forest composition and structure",
+        "Improve wildlife habitat",
+        "Reduce hazardous fuel loads",
+        "Enhance ecosystem health"
+      ],
+      "program_documents": [
+        "MARYLAND DNR FOREST SERVICE PRESCRIBED BURN PLAN",
+        "Prescribed Fire Fact Sheet"
+      ],
+      "compliance": "Burning conducted in compliance with state regulations",
+      "approval_required": "Written Prescribed Burn Plan submitted to Forest Service for approval"
+    },
+    {
+      "category": "State Forest Work Plans",
+      "description": "Annual management plans for Maryland state forests",
+      "major_forests": [
+        "Savage River State Forest",
+        "Green Ridge State Forest",
+        "Pocomoke State Forest",
+        "Potomac-Garrett State Forest"
+      ],
+      "plan_frequency": "Annual fiscal year work plans",
+      "public_process": "Public comment periods for proposed plans",
+      "next_comment_period": "2026 plans available for public comment"
+    },
+    {
+      "forest_name": "Savage River State Forest",
+      "county": "Garrett County",
+      "location": "Western Maryland",
+      "hunting_information": "Over 2.8 miles of accessible hunting areas",
+      "hunting_restrictions": "Prohibited in Big Run State Park and New Germany State Park (contained within forest)",
+      "road_access": "Several gated roads opened each fall to accommodate hunters",
+      "road_opening": "Prior to squirrel season in September",
+      "road_closure": "January 31 or end of hunting season",
+      "regulations": "Hunters must possess valid Maryland Hunting License",
+      "contact": "Regional Wildlife Office in Flintstone"
+    },
+    {
+      "forest_name": "Green Ridge State Forest",
+      "county": "Allegany County",
+      "location": "Western Maryland",
+      "management_priorities": "Wildlife habitat enhancement",
+      "recreation_maintenance": [
+        "62 miles of hiking trails",
+        "12 miles of mountain bike trail"
+      ],
+      "upland_game_habitat_areas": [
+        "Kirk Orchard",
+        "Bull Ring Ranch",
+        "Anthonys Ridge",
+        "Town Creek",
+        "Kasecamp Bottomlands"
+      ],
+      "habitat_enhancement": "Improving wildlife habitat for upland game hunting"
+    },
+    {
+      "forest_name": "Pocomoke State Forest",
+      "location": "Southern Maryland (Delmarva Peninsula)",
+      "notes": "Part of Chesapeake Forest Lands complex"
+    },
+    {
+      "category": "Chesapeake Forest Lands",
+      "description": "Multi-forest complex managed for diverse uses including hunting",
+      "counties": [
+        "Caroline",
+        "Dorchester",
+        "Somerset",
+        "Wicomico",
+        "Worcester"
+      ],
+      "hunting_leases": "Hunt club lottery for leasing opportunities on non-leased tracts",
+      "lease_type": "Individual non-leased hunting leases available"
+    },
+    {
+      "category": "Prescribed Burn Scheduling",
+      "description": "Current and proposed prescribed burn activities",
+      "monitoring": "Regular monitoring of burn areas for ecosystem response",
+      "fuel_reduction": "Hazardous fuel reduction to prevent catastrophic wildfires",
+      "frequency": "Burns scheduled based on forest management objectives",
+      "seasonal_timing": "Spring and fall typically preferred for prescribed burns"
+    },
+    {
+      "category": "Land Closure Information",
+      "sources": [
+        "State Forest Work Plans",
+        "Prescribed Burn Plan documents",
+        "Individual WMA closure notices"
+      ],
+      "access": "Check Maryland DNR website for current closure information",
+      "notification": "Closures typically posted at access points and on DNR website"
+    },
+    {
+      "category": "Contact Information",
+      "agency": "Maryland DNR Forest Service and Wildlife & Heritage Service",
+      "website": "dnr.maryland.gov/forests",
+      "public_comment": "Annual public comment periods for state forest work plans"
+    }
+  ]
+}

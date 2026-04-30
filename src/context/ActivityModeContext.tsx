@@ -1,79 +1,82 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+/**
+ * ActivityModeContext — Global state for the currently active outdoor activity mode.
+ *
+ * Manages user selection of which outdoor activity the app is currently focused on (hunt or fish).
+ * This drives which regulations, screens, map layers, and resources are displayed.
+ *
+ * Persistence: In-memory only (no AsyncStorage). Default mode is 'hunt'. Selection is lost on app restart.
+ *
+ * Usage:
+ * 1. Wrap app root with <ActivityModeProvider>
+ * 2. Call useActivityMode() in any component to access activeMode and setActiveMode
+ *
+ * V2.2.0 (2026-04-17 afternoon): Scope revised back to full 4-mode support
+ * (hunt, fish, camp, hike) per V2_2_0_BUILD_PLAN.md. Crab and Boat remain
+ * deferred to Future Projects.
+ *
+ * Future: Consider adding AsyncStorage persistence if users want their last mode remembered.
+ */
 
-export type ActivityMode = 'hunt' | 'fish' | 'hike' | 'crab' | 'boat';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+/**
+ * ActivityMode — Union type for the four outdoor activities shipped in V2.2.0.
+ * @type {'hunt' | 'fish' | 'camp' | 'hike'}
+ *
+ * Legacy 'crab' and 'boat' content is folded into the fish UX (see CLAUDE.md);
+ * helper code that still references those literals uses local type assertions.
+ */
+export type ActivityMode = 'hunt' | 'fish' | 'camp' | 'hike';
+
+/**
+ * ActivityModeContextType — Contract for the ActivityMode context.
+ * @interface
+ */
 interface ActivityModeContextType {
+  /** The currently active activity mode */
   activeMode: ActivityMode;
+  /** Function to update the active mode */
   setActiveMode: (mode: ActivityMode) => void;
-  isLoading: boolean;
 }
 
 const ActivityModeContext = createContext<ActivityModeContextType | undefined>(undefined);
 
 /**
- * ActivityModeProvider — Manages current activity mode with AsyncStorage persistence.
+ * ActivityModeProvider — React context provider for activity mode state.
  *
- * Persists the selected activity mode across app sessions using AsyncStorage key @activity_mode.
- * Provides a loading state to prevent UI flash during initialization.
+ * Wraps the app root to make activity mode accessible throughout the component tree.
  *
- * @param children — React components to wrap
- * @returns {JSX.Element} Provider component
+ * @param {ReactNode} children - Child components
+ * @returns {JSX.Element}
+ *
+ * @example
+ * <ActivityModeProvider>
+ *   <App />
+ * </ActivityModeProvider>
  */
 export function ActivityModeProvider({ children }: { children: ReactNode }) {
+  // Default mode is 'hunt' — the MVP activity. Others are phases 4-5.
   const [activeMode, setActiveMode] = useState<ActivityMode>('hunt');
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load persisted mode on mount
-  useEffect(() => {
-    const loadMode = async () => {
-      try {
-        const saved = await AsyncStorage.getItem('@activity_mode');
-        if (saved && isValidMode(saved)) {
-          setActiveMode(saved as ActivityMode);
-        }
-      } catch (err) {
-        if (__DEV__) console.warn('[ActivityModeContext] Failed to load persisted mode:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadMode();
-  }, []);
-
-  // Persist mode whenever it changes
-  const handleSetMode = async (mode: ActivityMode) => {
-    setActiveMode(mode);
-    try {
-      await AsyncStorage.setItem('@activity_mode', mode);
-    } catch (err) {
-      if (__DEV__) console.warn('[ActivityModeContext] Failed to persist mode:', err);
-    }
-  };
 
   return (
-    <ActivityModeContext.Provider value={{ activeMode, setActiveMode: handleSetMode, isLoading }}>
+    <ActivityModeContext.Provider value={{ activeMode, setActiveMode }}>
       {children}
     </ActivityModeContext.Provider>
   );
 }
 
 /**
- * Type guard to validate activity mode string.
- */
-function isValidMode(value: unknown): value is ActivityMode {
-  return typeof value === 'string' && ['hunt', 'fish', 'hike', 'crab', 'boat'].includes(value);
-}
-
-/**
- * Hook to access the current activity mode, setter, and loading state.
- * Must be used within an ActivityModeProvider.
+ * useActivityMode — Custom hook to access activity mode state and setter.
  *
- * The isLoading flag can be used to avoid UI flashing during AsyncStorage initialization.
- * Once isLoading becomes false, activeMode has been hydrated from persistent storage.
+ * Returns the current active activity mode and a function to change it.
+ * Throws if called outside an ActivityModeProvider.
  *
- * @returns {ActivityModeContextType} { activeMode, setActiveMode, isLoading }
+ * @returns {ActivityModeContextType} { activeMode, setActiveMode }
+ * @throws {Error} If used outside ActivityModeProvider
+ *
+ * @example
+ * const { activeMode, setActiveMode } = useActivityMode();
+ * if (activeMode === 'hunt') { // render hunt-specific UI }
  */
 export function useActivityMode() {
   const context = useContext(ActivityModeContext);

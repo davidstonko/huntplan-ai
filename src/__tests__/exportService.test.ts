@@ -105,10 +105,12 @@ describe('exportService', () => {
     });
 
     it('planToGPX should include parking point', () => {
+      // 2026-04-26 (fork merge): GPX format now emits the parking waypoint
+      // with type=parking instead of a 'parking waypoint' description string.
       const gpx = planToGPX(samplePlan);
       expect(gpx).toContain('<wpt lat="39.045800" lon="-76.641300">');
       expect(gpx).toContain('<name>Main Lot</name>');
-      expect(gpx).toContain('<desc>parking waypoint');
+      expect(gpx).toContain('<type>parking</type>');
     });
 
     it('planToGPX should include waypoints with correct lat/lon', () => {

@@ -741,7 +741,7 @@ export default function PlanScreen() {
                         name: selectedPlanForCamp.location || selectedPlanForCamp.species,
                         createdAt: selectedPlanForCamp.createdAt,
                         updatedAt: selectedPlanForCamp.createdAt,
-                        color: '#E03C31', // Default to MD Red
+                        color: Colors.mdRed, // Default to MD Red
                         visible: true,
                         parkingPoint: null,
                         waypoints: [],
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 10,
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

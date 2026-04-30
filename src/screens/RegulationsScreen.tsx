@@ -9,11 +9,10 @@ import {
   FlatList,
   TextInput,
   Modal,
+  Linking,
 } from 'react-native';
 import Colors from '../theme/colors';
-import { submitFeedback } from '../services/feedbackService';
-import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
-import { SearchableCountyPicker } from '../components/common/SearchableCountyPicker';
+import { useModalFocus } from '../hooks/useModalFocus';
 import {
   MD_SEASONS,
   MD_COUNTIES,
@@ -22,13 +21,34 @@ import {
   HuntingSeason,
   BagLimitRule,
   MarylandCounty,
+  REGULATIONS_META,
+  isRegulationsStale,
 } from '../data/marylandHuntingData';
+
+/**
+ * @file RegulationsScreen.tsx
+ * @description Comprehensive Maryland hunting regulations reference with interactive tools.
+ * Displays seasons, bag limits, and a "Can I Hunt?" checker for species/weapon/date combinations.
+ * Includes a floating feedback button for reporting outdated or incorrect regulations.
+ *
+ * @module Screens
+ * @version 2.0.0
+ *
+ * Key features:
+ * - Seasons tab: All MD 2025-2026 seasons grouped by species, with dates and notes
+ * - Can I Hunt tab: Interactive form (species, weapon, date, county) to check if hunt is legal
+ * - Bag Limits tab: All daily and annual bag limits grouped by species
+ * - Floating "Report" FAB to flag errors, outdated info, or suggest improvements
+ * - Feedback modal with 3 types: Error/Bug, Outdated, Suggestion
+ * - Local feedback logging (V2); backend sync in V3+
+ * - Persistent disclaimer reminding users to verify with MD DNR before hunting
+ */
 
 type Tab = 'seasons' | 'canIHunt' | 'bagLimits';
 
 // Get unique species list from MD_SEASONS
 const getUniqueSpecies = (): string[] => {
-  const species = new Set(MD_SEASONS.map((s) => s.species));
+  const species = new Set((MD_SEASONS?.map((s) => s.species) || []));
   return Array.from(species).sort();
 };
 
@@ -43,7 +63,7 @@ const getUniqueWeapons = (): string[] => {
 
 // Get county names
 const getCountyNames = (): string[] => {
-  return MD_COUNTIES.map((c) => c.name).sort();
+  return (MD_COUNTIES?.map((c) => c.name) || []).sort();
 };
 
 // Format date string to readable format
@@ -51,21 +71,39 @@ const formatDate = (dateStr: string): string => {
   try {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch (error) {
-    if (__DEV__) console.error('[RegulationsScreen] Date formatting failed:', error);
+  } catch {
     return dateStr;
   }
 };
 
 type FeedbackType = 'bug' | 'outdated' | 'suggestion';
 
+/**
+ * RegulationsScreen — Complete Maryland hunting regulations browser and checker.
+ *
+ * Provides three main views:
+ *
+ * 1. **Seasons Tab**: Lists all 2025-2026 hunting seasons by species, showing dates, weapon types,
+ *    bag limits, and special notes (early season, youth-only, special area rules, etc.).
+ *
+ * 2. **Can I Hunt Tab**: Interactive form to check if a specific hunt is legal. User selects species,
+ *    weapon, date, and county; the system returns "IN SEASON" or "NOT IN SEASON" with reasoning.
+ *
+ * 3. **Bag Limits Tab**: Daily and annual bag limits by species and weapon type, with notes about
+ *    possession limits, split seasons, special areas, etc.
+ *
+ * Also features a floating "Report" button to flag outdated regulations or suggest improvements.
+ * Feedback is logged locally in V2; V3+ will send to backend for review by admins.
+ *
+ * @returns {JSX.Element} Tabbed UI with season/limit cards and interactive form
+ */
 export default function RegulationsScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('seasons');
 
   // Can I Hunt form
   const [huntSpecies, setHuntSpecies] = useState('');
   const [huntWeapon, setHuntWeapon] = useState('');
-  const [huntDate, setHuntDate] = useState(new Date());
+  const [huntDate, setHuntDate] = useState(new Date().toISOString().split('T')[0]);
   const [huntCounty, setHuntCounty] = useState('');
   const [huntResult, setHuntResult] = useState<{
     allowed: boolean;
@@ -75,29 +113,36 @@ export default function RegulationsScreen() {
   // Dropdown visibility states
   const [showSpeciesDropdown, setShowSpeciesDropdown] = useState(false);
   const [showWeaponDropdown, setShowWeaponDropdown] = useState(false);
+  const [showCountyDropdown, setShowCountyDropdown] = useState(false);
 
   // Regulation feedback/report states
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const feedbackInputRef = useModalFocus(showFeedbackModal);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('bug');
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  const handleSubmitFeedback = async () => {
+  const handleSubmitFeedback = () => {
     if (!feedbackText.trim()) {
       Alert.alert('Missing Details', 'Please describe the issue or suggestion.');
       return;
     }
-    // Submit to backend with offline queue fallback
-    try {
-      await submitFeedback({
-        feedback_type: feedbackType,
-        description: feedbackText.trim(),
-        screen: 'RegulationsScreen',
-        active_tab: activeTab,
-      });
-    } catch (e) {
-      if (__DEV__) console.warn('[RegFeedback] submitFeedback error:', e);
-    }
+    // Honest channel: compose an email the user sends themselves. No silent
+    // server-side discard. (Previous console.log-only stub could read as a
+    // deceptive "thanks, got it" under App Store 2.3.1(a).)
+    const subject = `MDHuntFishOutdoors regulation ${feedbackType} — ${activeTab}`;
+    const body =
+      `Type: ${feedbackType}\n` +
+      `Section: ${activeTab}\n` +
+      `Date: ${new Date().toISOString()}\n\n` +
+      `${feedbackText}\n`;
+    const url = `mailto:dstonko1@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert(
+        'Email not available',
+        'Please email dstonko1@gmail.com with your feedback.',
+      );
+    });
     setFeedbackSubmitted(true);
     setTimeout(() => {
       setShowFeedbackModal(false);
@@ -113,18 +158,18 @@ export default function RegulationsScreen() {
       return;
     }
 
-    // Format date to YYYY-MM-DD for comparison
-    const dateStr = huntDate.toISOString().split('T')[0];
+    // Parse the date
+    const dateObj = new Date(huntDate + 'T00:00:00');
 
     // Check if in season using local helper
-    const inSeason = isInSeason(huntSpecies, huntDate, huntWeapon);
+    const inSeason = isInSeason(huntSpecies, dateObj, huntWeapon);
 
     if (inSeason) {
       const matchingSeasons = MD_SEASONS.filter(
         (s) =>
           s.species === huntSpecies &&
-          s.startDate <= dateStr &&
-          dateStr <= s.endDate &&
+          s.startDate <= huntDate &&
+          huntDate <= s.endDate &&
           s.weaponType.toLowerCase().includes(huntWeapon.toLowerCase())
       );
 
@@ -140,7 +185,7 @@ export default function RegulationsScreen() {
     } else {
       setHuntResult({
         allowed: false,
-        reason: `${huntSpecies} is not in season on ${dateStr} with ${huntWeapon} in ${huntCounty} County.`,
+        reason: `${huntSpecies} is not in season on ${huntDate} with ${huntWeapon} in ${huntCounty} County.`,
       });
     }
   };
@@ -161,8 +206,37 @@ export default function RegulationsScreen() {
     limits: MD_BAG_LIMITS.filter((b) => b.species === species),
   }));
 
+  const stale = isRegulationsStale();
+
   return (
     <View style={styles.container}>
+      {/* Data-freshness banner — always visible on the Regulations screen.
+          Non-stale: informational dark-mud chip pointing at DNR source.
+          Stale (past REGULATIONS_META.nextSeasonExpectedBy): amber warning. */}
+      <TouchableOpacity
+        style={[styles.freshnessBanner, stale && styles.freshnessBannerStale]}
+        activeOpacity={0.8}
+        onPress={() => {
+          Linking.openURL(REGULATIONS_META.sourceUrl).catch(() => {
+            Alert.alert(
+              'Could not open link',
+              'Visit dnr.maryland.gov/huntersguide in your browser for the latest regulations.',
+            );
+          });
+        }}
+      >
+        <Text style={[styles.freshnessTitle, stale && styles.freshnessTitleStale]}>
+          {stale
+            ? `${REGULATIONS_META.seasonLabel} season data may be outdated`
+            : `${REGULATIONS_META.seasonLabel} Maryland season`}
+        </Text>
+        <Text style={[styles.freshnessBody, stale && styles.freshnessBodyStale]}>
+          {stale
+            ? `The next license year was expected by ${REGULATIONS_META.nextSeasonExpectedBy}. Tap to check MD DNR for the current Hunter's Guide.`
+            : 'Always verify dates and bag limits on the MD DNR Hunter\'s Guide before hunting. Tap to open dnr.maryland.gov.'}
+        </Text>
+      </TouchableOpacity>
+
       {/* Tab Bar */}
       <View style={styles.tabBar}>
         {(['seasons', 'canIHunt', 'bagLimits'] as Tab[]).map((tab) => (
@@ -186,7 +260,7 @@ export default function RegulationsScreen() {
         {/* ── Seasons Tab ── */}
         {activeTab === 'seasons' && (
           <>
-            <Text style={styles.sectionTitle}>MARYLAND 2025-2026 SEASONS</Text>
+            <Text style={styles.sectionTitle}>{`MARYLAND ${REGULATIONS_META.seasonLabel} SEASONS`}</Text>
             {seasonsBySpecies.map((group) => (
               <View key={group.species}>
                 <Text style={styles.speciesGroupTitle}>{group.species}</Text>
@@ -285,17 +359,46 @@ export default function RegulationsScreen() {
               </View>
             )}
 
-            <CalendarDatePicker
-              value={huntDate}
-              onChange={setHuntDate}
-              label="Date"
-            />
+            <Text style={styles.formLabel}>Date</Text>
+            <View style={styles.dateInputRow}>
+              <Text style={styles.dateDisplay}>{huntDate}</Text>
+            </View>
 
-            <SearchableCountyPicker
-              value={huntCounty}
-              onChange={setHuntCounty}
-              label="County"
-            />
+            <Text style={styles.formLabel}>County</Text>
+            <TouchableOpacity
+              style={styles.dropdownButton}
+              onPress={() => setShowCountyDropdown(!showCountyDropdown)}
+            >
+              <Text
+                style={[
+                  styles.dropdownButtonText,
+                  !huntCounty && styles.dropdownPlaceholder,
+                ]}
+              >
+                {huntCounty || 'Select a county...'}
+              </Text>
+            </TouchableOpacity>
+            {showCountyDropdown && (
+              <View style={[styles.dropdownMenu, styles.countyDropdownMenu]}>
+                <FlatList
+                  data={getCountyNames()}
+                  keyExtractor={(item) => item}
+                  scrollEnabled={true}
+                  nestedScrollEnabled={true}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setHuntCounty(item);
+                        setShowCountyDropdown(false);
+                      }}
+                    >
+                      <Text style={styles.dropdownItemText}>{item}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            )}
 
             <TouchableOpacity
               style={styles.checkButton}
@@ -411,6 +514,7 @@ export default function RegulationsScreen() {
 
                 {/* Description */}
                 <TextInput
+                  ref={feedbackInputRef}
                   style={styles.feedbackInput}
                   placeholder="Describe the issue or suggestion..."
                   placeholderTextColor={Colors.textMuted}
@@ -419,6 +523,7 @@ export default function RegulationsScreen() {
                   value={feedbackText}
                   onChangeText={setFeedbackText}
                   textAlignVertical="top"
+                  maxLength={500}
                 />
 
                 {/* Actions */}
@@ -443,6 +548,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  // Data-freshness banner above the tab bar. Two visual states:
+  //   - default (non-stale): low-key dark-mud chip — reassures without yelling
+  //   - stale (after REGULATIONS_META.nextSeasonExpectedBy): amber warning
+  freshnessBanner: {
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.mud,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  freshnessBannerStale: {
+    backgroundColor: Colors.amber,
+    borderBottomColor: Colors.forestDark,
+  },
+  freshnessTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.oak,
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  freshnessTitleStale: {
+    color: Colors.forestDark,
+  },
+  freshnessBody: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    lineHeight: 15,
+  },
+  freshnessBodyStale: {
+    color: Colors.forestDark,
+    fontWeight: '600',
   },
   tabBar: {
     flexDirection: 'row',
@@ -563,6 +701,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     maxHeight: 200,
   },
+  countyDropdownMenu: {
+    maxHeight: 250,
+  },
   dropdownItem: {
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -571,6 +712,19 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 13,
+    color: Colors.textPrimary,
+  },
+  dateInputRow: {
+    backgroundColor: Colors.surface,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+    marginBottom: 12,
+  },
+  dateDisplay: {
+    fontSize: 14,
     color: Colors.textPrimary,
   },
   checkButton: {
@@ -596,7 +750,7 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.success,
   },
   resultDenied: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#3A2220',
     borderLeftWidth: 4,
     borderLeftColor: Colors.danger,
   },
@@ -674,7 +828,7 @@ const styles = StyleSheet.create({
   // ── Feedback Modal ──
   modalOverlay: {
     flex: 1,
-    backgroundColor: Colors.overlay,
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modalContent: {

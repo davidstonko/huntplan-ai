@@ -1,0 +1,742 @@
+{
+  "metadata": {
+    "scraped_date": "2026-04-11",
+    "description": "Comprehensive community intel on Maryland hunting and fishing forums, social media, YouTube channels, podcasts, and events",
+    "sources_count": 87,
+    "regions_covered": [
+      "Maryland statewide",
+      "Eastern Shore",
+      "Western Maryland",
+      "Central Maryland",
+      "Southern Maryland",
+      "Chesapeake Bay"
+    ]
+  },
+  "hunting_forums": {
+    "major_communities": [
+      {
+        "name": "Maryland Whitetail (MWC)",
+        "url": "https://marylandwhitetail.discussion.community/",
+        "type": "Forum",
+        "focus": ["Deer hunting", "QDMA", "Hunting contests", "Predator hunting", "Food prep"],
+        "activity_level": "High",
+        "description": "Primary community forum for MD deer hunters with category discussions for hunting strategies, conservation, and network"
+      },
+      {
+        "name": "Maryland Sporting Forum",
+        "url": "https://marylandsporting.com/",
+        "type": "Forum",
+        "focus": ["Public land hunts", "Deer hunting", "Duck hunting", "Gear recommendations", "Youth programs"],
+        "activity_level": "High",
+        "description": "Active community focused on MD hunting strategies and conservation"
+      },
+      {
+        "name": "Maryland Shooters Forum (mdshooters.com)",
+        "url": "https://www.mdshooters.com/",
+        "type": "Forum",
+        "focus": ["Handgun hunting", "Firearm regulations", "Public land access", "Shed hunting", "Weapon selection"],
+        "activity_level": "Very High",
+        "key_discussions": [
+          "Deer rifle regulations and muzzle energy requirements (1200+ ft-lbs)",
+          "Handgun hunting for game mammals and turkeys",
+          "Public land hunting opportunities on WMAs and state parks",
+          "Seasonal hunting dates and regulations",
+          "Backyard practice techniques"
+        ]
+      },
+      {
+        "name": "HuntingNet.com Forums",
+        "url": "https://www.huntingnet.com/forum/whitetail-deer-hunting/",
+        "type": "Forum",
+        "focus": ["Whitetail deer", "Maryland-specific tips", "Regional discussions"],
+        "activity_level": "Medium"
+      },
+      {
+        "name": "Bowhunting.com Forums",
+        "url": "https://forums.bowhunting.com/",
+        "type": "Forum",
+        "focus": ["Bow hunting", "Maryland techniques", "Equipment reviews"],
+        "activity_level": "Medium"
+      },
+      {
+        "name": "Refuge Forums",
+        "url": "https://www.refugeforums.com/",
+        "type": "Forum",
+        "focus": ["Southern Maryland hunting", "Refuge hunting"],
+        "activity_level": "Medium"
+      }
+    ],
+    "key_intel": {
+      "pressure_patterns": [
+        "Western Maryland WMAs (Dan's Mountain, Savage River) see moderate-to-high pressure during rifle season",
+        "Pocomoke River State Forest (Eastern Shore) experiences LOWER pressure than center of state due to shift in pressure toward suburban areas",
+        "Mt. Nebo WMA in Garrett County is underutilized and produces quality deer",
+        "Fishing Bay WMA (29,000 acres) offers extensive interior trails for getting away from parking areas"
+      ],
+      "hidden_gem_locations": [
+        "Mt. Nebo Wildlife Management Area - 2,000 acres in Garrett County, red spruce bog, less crowded, white-tailed deer and turkeys",
+        "Pocomoke River State Forest - Lower pressure despite traditional reputation, better-sized deer due to farmland habitat",
+        "Dan's Mountain Wildlife Management Area - 10,000 acres, unique elevation changes, 50% designated Wildlands",
+        "Fishing Bay WMA - 29,000 acres, best public land for Sika deer, extensive trail network"
+      ],
+      "hunting_season_tips": [
+        "Avoid over-aggressive pressure - hunt edges first, work toward center over season",
+        "Learn wind patterns and thermals specific to MD terrain",
+        "Weather fronts are critical - hunt right before and after",
+        "Practice weapon proficiency obsessively - limited opportunities at big bucks",
+        "Only take broadside and slight quartering-away shots"
+      ]
+    }
+  },
+  "fishing_forums": {
+    "major_communities": [
+      {
+        "name": "Tidal Fish Forum",
+        "url": "https://www.tidalfish.com/forums/",
+        "type": "Forum",
+        "focus": ["Saltwater fishing", "Chesapeake Bay", "Maryland angling"],
+        "activity_level": "Very High",
+        "subsections": ["Chesapeake Angler (MD-focused)", "Fishing techniques", "Species discussions"]
+      },
+      {
+        "name": "Maryland Fishing Forum (MD Fish Finder)",
+        "url": "https://www.mdfishfinder.com/forum/",
+        "type": "Forum",
+        "focus": ["Freshwater and saltwater", "Local tips", "Success stories"],
+        "activity_level": "High"
+      },
+      {
+        "name": "The Hull Truth - Chesapeake Bay Section",
+        "url": "https://www.thehulltruth.com/mid-atlantic-chesapeake-bay-30/",
+        "type": "Forum",
+        "focus": ["Boating and fishing", "Chesapeake Bay techniques", "Species targeting"],
+        "activity_level": "High"
+      },
+      {
+        "name": "Big Fish Tackle Forum - Maryland Section",
+        "url": "https://www.bigfishtackle.com/forum/",
+        "type": "Forum",
+        "focus": ["Fishing tackle", "Maryland fishing"],
+        "activity_level": "Medium"
+      },
+      {
+        "name": "Ultimate Bass Forum - Maryland",
+        "url": "https://www.ultimatebass.com/bass-fishing-forum/",
+        "type": "Forum",
+        "focus": ["Bass fishing", "Snakehead fishing"],
+        "activity_level": "Medium"
+      },
+      {
+        "name": "Bass Resource Forums - Maryland",
+        "url": "https://www.bassresource.com/bass-fishing-forums/",
+        "type": "Forum",
+        "focus": ["Bass and snakehead fishing", "Regional techniques"],
+        "activity_level": "Medium"
+      }
+    ],
+    "key_intel": {
+      "seasonal_patterns": [
+        "April 2026: Stripers racing to rivers for spawning; American shad run in Potomac active; first flounder appearing in Assateague back bays",
+        "Spring-Summer (May-July): Heavy spot live bait fishing for stripers in middle and upper bay",
+        "Winter (Dec-Mar): Best time for trophy stripers; slow-trolling live eels around bridge-tunnels effective",
+        "Fall-Winter: Bait flows out of rivers creating feeding frenzy; top-water fishing productive",
+        "Mid-October: Snakehead and sika deer rut activity peaks"
+      ],
+      "current_regulations_2026": [
+        "Striped bass: April catch-and-release only; May 1-July 31 and Sept 1-Nov 30 harvest (19-24 inch slot, 1 fish/day)",
+        "August is CLOSED for all striped bass targeting",
+        "White perch fishing in full swing (spring spawn)"
+      ],
+      "top_fishing_species": {
+        "striped_bass": {
+          "techniques": ["Trolling", "Live-lining", "Chumming", "Bottom fishing", "Drift fishing", "Topwater"],
+          "seasonal_best": "Winter (Dec-Mar) for trophy fish",
+          "critical_factors": "Tide and current - when current meets obstruction, speeds up and concentrates baitfish"
+        },
+        "snakehead": {
+          "best_locations": [
+            "Mattawoman Creek (state record 19.9 lbs) - high pressure but big fish",
+            "Pomonkey Creek (small, remote, less pressure, high numbers)",
+            "Cambridge MD area (ground zero for snakehead)",
+            "Blackwater River system",
+            "Transquaking River",
+            "Chickamacomico River",
+            "Tuckahoe Creek",
+            "Wye Mills Lake"
+          ],
+          "techniques": ["Topwater frogs/poppers", "Swimbaits (soft and hard)", "Minnow and bobber", "Bowfishing at night"],
+          "key_tips": [
+            "Find grass edges, lily pads, thick weeds - snakes love shallow structure",
+            "Use minimum 30lb line (braid recommended)",
+            "6'8-7'5\" medium-heavy action rods best",
+            "Simple minnow + bobber works well",
+            "Larger minnows better than small ones"
+          ]
+        },
+        "white_perch": {
+          "current_status": "Peak of spawn (April 2026)",
+          "locations": ["Patuxent River", "Potomac River", "Eastern Shore rivers"],
+          "techniques": ["Bottom rigs with bloodworms and grass shrimp"]
+        },
+        "flounder": {
+          "seasonal_start": "Early April (Assateague back bays)"
+        }
+      }
+    }
+  },
+  "facebook_groups": {
+    "hunting_groups": [
+      {
+        "name": "Western Maryland Hunting",
+        "url": "https://www.facebook.com/western.marylandhunting/",
+        "type": "Page",
+        "activity_level": "High",
+        "focus": "Real hunts, real stories, dogs, big game, youth hunts"
+      },
+      {
+        "name": "Maryland bow hunters",
+        "url": "https://www.facebook.com/groups/422890001108853/",
+        "type": "Group",
+        "activity_level": "Medium-High",
+        "focus": "Bow hunting strategies and community"
+      },
+      {
+        "name": "Maryland Hunters Community Page",
+        "url": "https://www.facebook.com/groups/marylandhunters/",
+        "type": "Group",
+        "activity_level": "High",
+        "focus": "General hunting discussions"
+      },
+      {
+        "name": "Western Maryland bear hunters",
+        "url": "https://www.facebook.com/groups/481812631322432/",
+        "type": "Group",
+        "activity_level": "Medium",
+        "focus": "Black bear hunting in Western MD"
+      },
+      {
+        "name": "Western MD Whitetails",
+        "url": "https://www.facebook.com/groups/392457727464467/",
+        "type": "Group",
+        "activity_level": "Medium-High",
+        "focus": "Whitetail deer hunting"
+      },
+      {
+        "name": "Fish and Hunt Maryland",
+        "url": "https://www.facebook.com/fishhuntmd/",
+        "type": "Page",
+        "activity_level": "High",
+        "focus": "Showcasing state-wide opportunities"
+      },
+      {
+        "name": "Maryland Hunting & Fishing Classifieds",
+        "url": "https://www.facebook.com/groups/729113627203589/",
+        "type": "Group",
+        "activity_level": "Medium",
+        "focus": "Buying/selling hunting and fishing equipment"
+      }
+    ],
+    "fishing_groups": [
+      {
+        "name": "Maryland Fishing Club",
+        "url": "https://www.facebook.com/groups/1479066419006646/",
+        "type": "Group",
+        "activity_level": "High"
+      },
+      {
+        "name": "Maryland Fishing Fanatics",
+        "url": "https://www.facebook.com/groups/marylandfishing/",
+        "type": "Group",
+        "activity_level": "High",
+        "focus": "General MD fishing discussion"
+      },
+      {
+        "name": "Assateague Island Surf Fishing",
+        "url": "https://www.facebook.com/groups/54506594086/",
+        "type": "Group",
+        "activity_level": "Medium",
+        "focus": "Surf and shore fishing"
+      },
+      {
+        "name": "Maryland Hunting & Fishing Classifieds",
+        "url": "https://www.facebook.com/groups/729113627203589/",
+        "type": "Group",
+        "activity_level": "Medium"
+      }
+    ]
+  },
+  "fishing_organizations": {
+    "description": "Active angling groups and clubs for Chesapeake Bay and Maryland fishing",
+    "organizations": [
+      {
+        "name": "Annapolis Anglers Club",
+        "focus": "Saltwater fishing (Bay and Delmarva Coast)",
+        "activity": "Tournaments, events, largest/most active in region"
+      },
+      {
+        "name": "Coastal Conservation Association Maryland",
+        "focus": "Marine resource conservation",
+        "activity": "Education, public awareness"
+      },
+      {
+        "name": "Essex-Middle River Fishing Club",
+        "focus": "Local Baltimore area club",
+        "activity": "Fishing derbies, flea markets"
+      },
+      {
+        "name": "Frederick Saltwater Anglers Inc.",
+        "focus": "Saltwater tournaments",
+        "activity": "Year-round meetings, educational events"
+      },
+      {
+        "name": "Free State Fly Fishers, Inc.",
+        "focus": "Fly fishing and conservation",
+        "activity": "Resource conservation, restoration"
+      },
+      {
+        "name": "Kent Island Fishermen",
+        "focus": "Youth and community fishing",
+        "description": "501(c)7 non-profit, established to encourage appreciation of Chesapeake Bay life",
+        "activity": "Bay tournaments, community contributions"
+      },
+      {
+        "name": "Maryland Bass Nation",
+        "focus": "Part of B.A.S.S. Nation",
+        "activity": "Local clubs, competitive tournaments"
+      },
+      {
+        "name": "Maryland Trout Unlimited",
+        "focus": "Coldwater fisheries conservation"
+      },
+      {
+        "name": "Mid-Shore Fishing Club",
+        "activity": "Educational meetings, contests, youth events"
+      },
+      {
+        "name": "National Capital Chapter of Trout Unlimited",
+        "focus": "DC metro area conservation"
+      },
+      {
+        "name": "Northwest Fishing Club",
+        "activity": "Kids' derbies, bay restoration"
+      },
+      {
+        "name": "Pasadena Sportfishing Group",
+        "activity": "Free membership, meetings, kids' fishing derbies"
+      },
+      {
+        "name": "Southern Maryland Recreational Fishing Organization",
+        "focus": "Non-profit focused on fisheries protection"
+      },
+      {
+        "name": "Fly Fishing Organizations (Western MD)",
+        "names": ["Western Maryland Antietam Fly Anglers", "Potomac Valley Fly Fishers", "Seneca Valley Chapter of Trout Unlimited", "Youghiogheny Chapter of Trout Unlimited"]
+      }
+    ]
+  },
+  "youtube_channels": {
+    "maryland_hunting": [
+      {
+        "name": "Amped Up Outdoors",
+        "url": "https://www.youtube.com/@AmpedUpOutdoors",
+        "description": "Maryland-based crew covering fishing, hunting, camping, hiking, and outdoor activities",
+        "notable_content": "Gauntlet Snakehead Tournament, Glamped Up, Carp-a-thon, Perch-A-Palooza events",
+        "subscriber_count": "Unknown"
+      },
+      {
+        "name": "The Grind Waterfowl TV",
+        "description": "Waterfowl hunting destination series featuring duck and goose hunting"
+      }
+    ],
+    "maryland_fishing": [
+      {
+        "name": "Tight Lining MD",
+        "focus": "Fly fishing for new and intermediate anglers",
+        "content": "Weekly videos on techniques, tips, tricks"
+      },
+      {
+        "name": "Bass Brothers Fishing",
+        "subscribers": "21.4K+",
+        "focus": "Bass fishing in DMV region"
+      },
+      {
+        "name": "1Rod1ReelFishing",
+        "subscribers": "1.61M+",
+        "location": "Maryland-based, operates across US"
+      },
+      {
+        "name": "Uncle Larry Outdoors",
+        "focus": "Maryland fishing content"
+      },
+      {
+        "name": "Fishin' With Jim Gronaw",
+        "focus": "Fishing how-to and entertainment"
+      }
+    ],
+    "chesapeake_bay_specific": [
+      {
+        "name": "Chesapeake Light Tackle",
+        "url": "https://www.chesapeakelighttackle.com/",
+        "content_type": "The Chesapeake Minute (video series)",
+        "description": "Short instructional vignettes (60 seconds or less) on light tackle fishing techniques",
+        "species_covered": ["Panfish (perch, crappie, bluegill, shad)", "Striped bass (rockfish)", "Red drum (shellcrackers)"],
+        "resources": "Tide predictions, weather forecasting, MD DNR info links"
+      },
+      {
+        "name": "Sawyer Charters",
+        "url": "http://www.sawyercharters.com/",
+        "type": "Charter service with YouTube content"
+      },
+      {
+        "name": "Griffin's Guide Service",
+        "url": "https://griffinsguideservice.com/",
+        "type": "Charter service with video content"
+      }
+    ]
+  },
+  "podcasts": {
+    "hunting_podcasts": [
+      {
+        "name": "Mid-Atlantic Outdoorsmen",
+        "url": "https://sportsmensempire.com/network/mid-atlantic-outdoorsmen",
+        "host": "Kevin Creeley",
+        "description": "Discusses tactics and strategies for Mid-Atlantic hunting with relatable guests from eastern states",
+        "platform": "Sportsmen's Empire"
+      },
+      {
+        "name": "Duck Season Somewhere",
+        "type": "Podcast",
+        "feature": "Episode 565: Eastern Shore Maryland Goose Hunter",
+        "platform": "Apple Podcasts"
+      },
+      {
+        "name": "The Outdoorsman Radio Show",
+        "url": "http://www.ellisoutdoors.com/podcasts.html",
+        "focus": "Maryland hunting"
+      },
+      {
+        "name": "Pennsylvania Woodsman",
+        "feature": "Episodes about Maryland sika deer hunting on public lands"
+      },
+      {
+        "name": "Antler Up Podcast",
+        "url": "https://sportsmensempire.com/podcasts/stories-from-maryland-w-rob-mendoza-jared-shaffer",
+        "feature": "Stories from Maryland with Rob Mendoza & Jared Shaffer"
+      },
+      {
+        "name": "The Bowhunter Podcast",
+        "focus": "Spotlight on Maryland bowhunters",
+        "description": "Features conversations with Maryland Bowhunters Society leaders"
+      }
+    ],
+    "fishing_podcasts": [
+      {
+        "name": "Maryland Fishing Line",
+        "url": "https://podcasts.apple.com/us/podcast/maryland-fishing-line/id1491997885",
+        "producer": "Chesapeake Angler Magazine",
+        "focus": ["Rockfish in Chesapeake", "Snakehead on Potomac", "White marlin off Ocean City", "Trout in Western MD streams"],
+        "platforms": ["Apple Podcasts", "Podbay"]
+      },
+      {
+        "name": "Fishing the DMV",
+        "url": "https://www.fishingthedmv.com",
+        "description": "#1 Fishing Podcast for DC, MD, VA, PA, NC",
+        "host": "Thomas",
+        "content": "Weekly interviews with local guides, state biologists, tournament winners",
+        "platforms": ["YouTube", "Apple Podcasts", "Spotify"]
+      },
+      {
+        "name": "Chesapeake Bay, Baltimore/Washington D.C. Daily Fishing Report",
+        "url": "https://www.spreaker.com/podcast/chesapeake-bay-baltimore-washington-d-c-daily-fishing-report--6310791",
+        "frequency": "Daily updates",
+        "content": "Latest conditions, tips, hotspots for Chesapeake Bay area",
+        "platforms": ["Apple Podcasts", "Spreaker"]
+      },
+      {
+        "name": "Lower Chesapeake Bay Fishing Report",
+        "url": "https://open.spotify.com/show/457SxeKqtRKVdwvQRkukcy",
+        "platform": "Spotify"
+      }
+    ]
+  },
+  "magazines_and_publications": [
+    {
+      "name": "FishTalk Magazine",
+      "url": "https://www.fishtalkmag.com/",
+      "full_name": "Rudow's FishTalk",
+      "description": "Chesapeake Bay and Mid-Atlantic fishing magazine",
+      "content": [
+        "Detailed regional fishing reports (Upper, Middle, Lower, Way South Bay)",
+        "How-to articles and videos (shoreline, boat, kayak fishing)",
+        "Fish species guide (sportfishing directory)",
+        "Event calendar (tournaments, seminars, shows)",
+        "Topic guides (striped bass season, snakehead fishing, bridge fishing)"
+      ],
+      "coverage": "Maryland and surrounding Chesapeake region"
+    },
+    {
+      "name": "The Fisherman Magazine",
+      "url": "https://www.thefisherman.com/area/delaware-maryland-chesapeake-bay/",
+      "description": "Ultimate Fishing Authority in the Northeast",
+      "coverage": "Delaware, Maryland, Chesapeake Bay region",
+      "section": "Dedicated Maryland/Chesapeake Bay content archive"
+    },
+    {
+      "name": "On The Water Magazine",
+      "url": "https://onthewater.com/regions/chesapeake",
+      "type": "Online magazine",
+      "content": "Fishing reports, species guides, technique articles"
+    },
+    {
+      "name": "Southern Maryland Chronicle",
+      "url": "https://southernmarylandchronicle.com/",
+      "content": "Public lands hunting guides and community hunting info"
+    },
+    {
+      "name": "Chesapeake Bay Magazine",
+      "url": "https://www.chesapeakebaymagazine.com/",
+      "content": "Rod and Reef Slam Challenge, fishing features"
+    }
+  ],
+  "fishing_tournaments_2026": {
+    "major_events": [
+      {
+        "name": "White Marlin Open",
+        "location": "Ocean City, MD",
+        "dates": "August 3-8, 2026",
+        "description": "52-year-old deep-sea fishing tournament",
+        "change": "New format: fish 3 of 6 days (Mon-Sat)",
+        "significance": "Oldest and most prestigious offshore tournament"
+      },
+      {
+        "name": "Ocean City Tuna Tournament",
+        "location": "Ocean City, MD",
+        "anniversary": "39th (2026)",
+        "description": "World's largest tuna tournament",
+        "prize_pool": "$1M+ payout in recent years (record breaking)"
+      },
+      {
+        "name": "Huk Big Fish Classic",
+        "location": "Ocean City, MD",
+        "dates": "July 24-26, 2026",
+        "edition": "13th annual"
+      },
+      {
+        "name": "MidAtlantic Tournament",
+        "location": "Cape May/Ocean City",
+        "dates": "August 16-21, 2026",
+        "registration": "August 16",
+        "fishing_days": "August 17-21"
+      },
+      {
+        "name": "Battle for the Buckle",
+        "location": "Ocean City, MD",
+        "dates": "June 25-28, 2026",
+        "description": "Ocean City's first and only exclusive Saltwater Cowboy tournament"
+      },
+      {
+        "name": "Howard County Spring Fishing Tournament",
+        "location": "Howard County",
+        "date": "May 2, 2026",
+        "type": "Catch-and-release",
+        "format": "Boat or shoreline",
+        "prizes": "Youth 13 and under win prizes/trophies; adults win prize money"
+      },
+      {
+        "name": "Guardian of the Pearl Fishing Tournament",
+        "location": "Rock Hall",
+        "dates": "June 6-8 (Captain's Meeting June 6, tournament June 7-8)"
+        "host": "Rock Hall Volunteer Fire Company"
+      },
+      {
+        "name": "Millers Island Land Fishing Invitational",
+        "location": "Back River (Sparrows Point)",
+        "prize": "$3,500 for heaviest 3-catfish stringer",
+        "target": "Invasive catfish removal"
+      },
+      {
+        "name": "Eric Altemus Memorial Catfish Tournament",
+        "location": "Chesapeake City",
+        "date": "June 13, 2026",
+        "venue": "Safe Harbor Bohemia Vista"
+      },
+      {
+        "name": "St. Croix Bassmaster Open",
+        "location": "Upper Chesapeake Bay",
+        "dates": "July 23-25, 2026"
+      },
+      {
+        "name": "Boatyard Bar & Grill Opening Day Rockfish Tournament",
+        "location": "Annapolis",
+        "type": "Catch-and-release",
+        "beneficiaries": "Chesapeake Bay Foundation, CCA Maryland, Annapolis Police Youth Fishing Camp"
+      }
+    ],
+    "invasive_species_tournaments_2026": [
+      {
+        "focus": "Blue catfish and invasive species removal",
+        "description": "Multiple tournaments throughout 2026 to reward anglers for removing invasive species",
+        "benefit": "Tournament entries fund removal programs"
+      }
+    ]
+  },
+  "hunting_events_2026": [
+    {
+      "name": "Explore the Shore Outdoor Expo",
+      "date": "Saturday, February 21, 2026",
+      "location": "Cambridge, MD (Eastern Shore)",
+      "venue": "The Packing House (1920 restored building, Phillips Packing Company)",
+      "type": "One-day family-friendly festival",
+      "features": [
+        "Outdoor gear exhibits",
+        "Local business booths",
+        "Workshops",
+        "Vendor exhibitions",
+        "Local craft food and beverages",
+        "Official Bucks-Bears-Stags measuring event"
+      ],
+      "description": "First-ever Explore the Shore celebrates hunting, fishing, camping, outdoor traditions on Maryland's Shore"
+    },
+    {
+      "name": "National Outdoor Show",
+      "date": "February 27-28, 2026",
+      "location": "Cambridge, MD",
+      "time_start": "Friday 5:00 PM"
+    },
+    {
+      "name": "Maryland Home + Garden Show",
+      "dates": "February 28-March 1 & March 6-8, 2026",
+      "location": "Timonium Fairgrounds Cow Palace",
+      "note": "While garden-focused, attracts outdoor recreation attendees"
+    },
+    {
+      "name": "Frederick Home & Garden Expo",
+      "date": "2026-03-21",
+      "location": "Frederick, MD",
+      "features": "Home and outdoor living exhibitors, DIY sessions, giveaways"
+    }
+  ],
+  "specialized_guides_and_outfitters": {
+    "sika_deer_hunting": [
+      {
+        "name": "Blackwater Sika Hunting",
+        "url": "https://blackwatersikahunting.com/",
+        "type": "Guided hunts",
+        "location": "Eastern Shore, Maryland"
+      },
+      {
+        "name": "Nanticoke Outfitters",
+        "url": "https://nanticokeoutfitters.com/",
+        "services": "Guided hunts - Sika deer and ducks",
+        "location": "Eastern Shore"
+      },
+      {
+        "name": "Muddy Marsh Outfitters",
+        "url": "https://www.muddymarsh.com/",
+        "type": "Guide service"
+      },
+      {
+        "name": "Branded Outdoors",
+        "url": "https://www.brandedoutdoors.com/",
+        "services": "Sika, whitetail, turkey hunting"
+      },
+      {
+        "name": "DOA Outfitters",
+        "url": "https://www.doaoutfitters.com/",
+        "focus": "Sika deer, big game, and duck hunting"
+      }
+    ],
+    "snakehead_fishing": [
+      {
+        "name": "Lowland Outfitters",
+        "url": "https://www.lowlandoutfitters.com",
+        "location": "Dorchester County, MD",
+        "services": "Snakehead fishing tours and guides"
+      }
+    ],
+    "charter_services": [
+      {
+        "name": "Sawyer Charters",
+        "url": "http://www.sawyercharters.com/",
+        "location": "Eastern Shore",
+        "focus": "Chesapeake Bay rockfish, striped bass, croakers"
+      },
+      {
+        "name": "Griffin's Guide Service",
+        "url": "https://griffinsguideservice.com/",
+        "location": "Chesapeake Bay region",
+        "focus": "Striped bass and other species"
+      }
+    ],
+    "light_tackle_instruction": [
+      {
+        "name": "Chesapeake Light Tackle",
+        "url": "https://www.chesapeakelighttackle.com/",
+        "content_type": "Video instruction",
+        "focus": "Light tackle techniques, panfish, striped bass, red drum"
+      }
+    ]
+  },
+  "local_expert_tips": {
+    "hunting_insights": [
+      "Eastern Shore (Pocomoke River) is experiencing LOWER pressure than center of state - underutilized gem location",
+      "Garrett County (Mt. Nebo, Savage River) holds quality deer but requires early season edge hunting strategy",
+      "Sika deer hunting peaks mid-October (rut) - vocalization/bugling crucial; hunt phragmites edges and oak patches",
+      "Sika deer are primarily nocturnal and use marshes - challenging but rewarding hunting",
+      "Most critical success factor: practice weapon proficiency - limited opportunities at big bucks"
+    ],
+    "fishing_insights": [
+      "April 2026 is active spring fishing period: stripers spawning, shad running, flounder beginning",
+      "Striped bass: Tide and current critical - fish concentrate where current meets obstructions",
+      "Winter (Dec-Mar) best for TROPHY stripers in Chesapeake Bay",
+      "Snakehead: Mattawoman Creek has biggest fish but high pressure; Pomonkey Creek is hidden gem with less pressure",
+      "Snakehead simple rig: minnow + bobber works, topwater frogs in shallow weeds",
+      "White perch spawn (spring): use bloodworms and grass shrimp on bottom rigs",
+      "Chesapeake Bay panfishing (perch, crappie, bluegill) described as 'therapeutic' compared to striped bass competition"
+    ],
+    "seasonal_activity": [
+      "April-May: Stripers migrating to rivers, shad spawning, flounder season beginning, white perch at peak spawn",
+      "June-August: Summer striped bass patterns (spot live bait in middle/upper bay), snakehead peak activity",
+      "September-November: Sika deer rut (mid-October), deer season begins, bait flows create feeding frenzies",
+      "December-March: Trophy striped bass season, winter bow hunting continues"
+    ]
+  },
+  "community_event_highlights": {
+    "notable_tournaments": [
+      "White Marlin Open (52 years, Aug 2026) - prestige, tradition, deep-sea",
+      "Ocean City Tuna (39 years, $1M+ payouts) - largest tuna tournament in world",
+      "Amped Up Outdoors events (Gauntlet Snakehead, Perch-A-Palooza) - community, grassroots"
+    ],
+    "participation_opportunities": [
+      "MD Catfish Tournaments 2026 - invasive species removal with rewards",
+      "Coastal Conservation Association events - access-focused, resource protection",
+      "Youth-oriented: Howard County Spring Tournament, Kent Island youth derbies, Northwest Club kids' events",
+      "Conservation: Trout Unlimited chapters (5+ active), Maryland Bass Nation tournaments"
+    ]
+  },
+  "data_quality_notes": {
+    "sources_checked": 87,
+    "coverage_gaps": [
+      "Real-time Reddit discussions not accessible via standard search",
+      "Some forum pages blocked by CAPTCHA or access restrictions",
+      "YouTube channel list page (Feedspot) blocked from direct scraping",
+      "WatermelonDB chat knowledge base not scraped (existing data format sufficient)"
+    ],
+    "high_confidence_sources": [
+      "Official DNR resources and Fish & Hunt Maryland",
+      "Magazine websites (FishTalk, On The Water) with current 2026 reports",
+      "Tournament websites with confirmed 2026 dates",
+      "Forum URLs confirmed accessible",
+      "Facebook group links verified"
+    ],
+    "recommendations": [
+      "Integrate top 5-10 forum links into app Resources section",
+      "Feature FishTalk Magazine fishing reports in Fish tab (weekly updates)",
+      "Add podcast recommendations to AI chat knowledge base",
+      "Link to tournament calendars in Resources (fishing tournaments especially)",
+      "Highlight seasonal guides (snakehead, stripers, sika deer) in activity-specific AI responses",
+      "Create 'Community Events' calendar widget from tournament data",
+      "Include 'Hidden Gem WMA' feature in Hunt map overlays"
+    ]
+  }
+}

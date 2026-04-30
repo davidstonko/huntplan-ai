@@ -1,0 +1,175 @@
+{
+  "source_url": "https://www.eregulations.com/maryland/hunting/public-hunting-lands",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "Maryland Public Hunting Lands Overview",
+      "description": "Types of public lands allowing hunting in Maryland",
+      "land_types": [
+        "Cooperative Wildlife Management Areas (CWMAs)",
+        "Fishery Management Areas (FMAs)",
+        "Maryland-National Capital Park and Planning Commission lands",
+        "State Forests",
+        "State Parks (some)",
+        "Wildlife Management Areas (WMAs)",
+        "Natural Environment Areas (NEAs)",
+        "Natural Resources Management Areas (NRMAs)",
+        "County properties",
+        "Federal lands",
+        "Municipal properties"
+      ]
+    },
+    {
+      "category": "County-Specific Hunting Areas",
+      "county": "St. Mary's County",
+      "opportunities": "Multiple county-managed hunting areas",
+      "accessibility": "Public hunting opportunities available",
+      "contact": "St. Mary's County Recreation and Parks"
+    },
+    {
+      "county": "Charles County",
+      "opportunities": "County park hunting program",
+      "parks_with_hunting": "Some county parks allow hunting",
+      "contact": "Charles County Parks and Recreation",
+      "restrictions": "Due to general small size and active nature of county parks, hunting not permitted at some facilities"
+    },
+    {
+      "county": "Calvert County",
+      "opportunities": "Hunting on select county properties",
+      "contact": "Calvert Parks and Recreation",
+      "program": "Calvert Nature Society manages some hunting areas"
+    },
+    {
+      "county": "Garrett County",
+      "opportunities": "County public hunting lands",
+      "description": "Extensive hunting opportunities in rural western county",
+      "popular_areas": "Multiple WMAs and state forest access"
+    },
+    {
+      "county": "Allegany County",
+      "opportunities": "County public hunting areas",
+      "primary_lands": "Access to state forests and WMAs",
+      "hunting_areas": "Diverse habitat types for various species"
+    },
+    {
+      "category": "County Park Hunting Restrictions",
+      "description": "Limitations on hunting in county facilities",
+      "reason": "General small size and active nature of county parks",
+      "typical_restrictions": "Hunting and use/possession of firearms not permitted at many facilities",
+      "exceptions": "Some county parks designated for hunting use"
+    },
+    {
+      "category": "State Parks with Hunting",
+      "description": "Selected state parks allowing limited hunting",
+      "park_types": [
+        "Natural Environment Areas (NEAs)",
+        "Natural Resources Management Areas (NRMAs)"
+      ],
+      "examples": [
+        {
+          "name": "Patapsco Valley State Park",
+          "hunting_type": "Designated hunting areas",
+          "areas": "Multiple numbered hunting areas (1-15)",
+          "access": "Detailed maps available from DNR"
+        },
+        {
+          "name": "Sandy Point State Park",
+          "hunting_type": "Deer archery",
+          "area": "Corcoran Area (approximately 215 acres)",
+          "requirement": "Daily reservation required",
+          "limit": "Maximum 18 hunters per day"
+        },
+        {
+          "name": "Severn Run NEA",
+          "hunting_type": "Deer archery only",
+          "acreage": "Approximately 490 acres",
+          "requirement": "Daily reservations through Myrtle Grove Wildlife Office",
+          "limit": "Maximum 18 hunters per day"
+        },
+        {
+          "name": "Fair Hill NRMA",
+          "hunting_type": "Archery"
+        }
+      ]
+    },
+    {
+      "category": "Natural Resources Management Areas (NRMAs)",
+      "description": "Park-managed properties with limited hunting access",
+      "examples": [
+        "Holly Beach Farm NRMA",
+        "Morgan Run NEA",
+        "Soldiers Delight NEA"
+      ],
+      "access_regulations": {
+        "entry_time": "1.5 hours before sunrise",
+        "exit_time": "1.5 hours after sunset",
+        "applies_to": [
+          "Gunpowder Falls SP",
+          "Patapsco Valley SP",
+          "North Point SP",
+          "Soldiers Delight NEA",
+          "Morgan Run NEA",
+          "Sandy Point SP",
+          "Holly Beach Farm NRMA"
+        ]
+      }
+    },
+    {
+      "category": "Holly Beach Farm NRMA",
+      "status": "Currently restricted",
+      "reason": "Development of management plan",
+      "future_plan": "Will include public access options",
+      "current_access": "Reservation required to visit property"
+    },
+    {
+      "category": "Cooperative Wildlife Management Areas (CWMAs)",
+      "description": "Private landowner partnerships for hunting access",
+      "structure": "Partnership between Maryland DNR and private landowners",
+      "purpose": "Provide public hunting opportunities on private lands",
+      "distribution": "Throughout Maryland in multiple counties",
+      "access": "Generally require permission and follow landowner rules"
+    },
+    {
+      "category": "Fishery Management Areas (FMAs)",
+      "description": "Public lands managed for fishing and some hunting",
+      "purpose": "Fish habitat and recreational fishing access",
+      "hunting": "Some FMAs allow hunting outside of fishing season"
+    },
+    {
+      "category": "Wildlife Management Areas (WMAs)",
+      "total_count": 64,
+      "total_acreage": 128000,
+      "county_distribution": 19,
+      "description": "Primary public hunting lands in Maryland",
+      "organization": "Divided into regions: Eastern, Central, Western, Southern",
+      "access": "Generally open to public hunting with valid license"
+    },
+    {
+      "category": "How to Find County Hunting Areas",
+      "steps": [
+        "Contact your county Recreation Department",
+        "Visit eRegulations.com for public hunting lands list",
+        "Check Maryland DNR website for designated areas",
+        "Use Maryland Protected Lands Dashboard for mapping",
+        "Call Maryland DNR at 855-855-3906"
+      ]
+    },
+    {
+      "category": "Typical County Hunting Restrictions",
+      "common_restrictions": [
+        "Firearm discharge not permitted in populated areas",
+        "Hunting seasons vary by location",
+        "Archery often available where firearms are restricted",
+        "Permit or registration may be required",
+        "Access hours may be limited"
+      ]
+    },
+    {
+      "category": "Contact Information",
+      "maryland_dnr": "855-855-3906",
+      "website": "dnr.maryland.gov",
+      "county_contacts": "Individual county recreation departments",
+      "local_wildlife_office": "Regional Wildlife Offices throughout state"
+    }
+  ]
+}

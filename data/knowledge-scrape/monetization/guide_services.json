@@ -1,0 +1,225 @@
+{
+  "source_urls": [
+    "https://griffinsguideservice.com/",
+    "https://www.hooksetguideservicemd.com/",
+    "https://www.visitmaryland.org/chesapeake-bay-fishing-charters-crabbing-tours",
+    "https://www.captgootee.com/",
+    "https://bjguideservice.com/",
+    "https://www.talbotcountyoutfitter.com/",
+    "https://harrisonsoutfitterservice.com/",
+    "https://www.brandedoutdoors.com/"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "fishing_charter_guides": [
+      {
+        "name": "Griffin's Guide Service",
+        "specialty": "Light tackle fishing",
+        "target_species": ["Redfish (Red Drum)"],
+        "location": "Chesapeake Bay",
+        "seasonal_availability": "Spring through fall",
+        "type": "Premiere light tackle operation",
+        "website": "https://griffinsguideservice.com/"
+      },
+      {
+        "name": "Hookset Guide Service",
+        "specialty": "Light tackle fishing",
+        "location": "Southern Maryland and Chesapeake Bay",
+        "coverage_area": "Chesapeake Bay and beyond",
+        "type": "Professional guide service",
+        "website": "https://www.hooksetguideservicemd.com/"
+      },
+      {
+        "name": "Chesapeake Coastal Charters",
+        "specialty": "Fly fishing and light tackle",
+        "coverage": "Throughout Chesapeake Bay",
+        "trip_types": [
+          "Fly fishing trips",
+          "Light tackle trips"
+        ],
+        "website": "https://chesapeakecoastalcharters.com/"
+      },
+      {
+        "name": "Chesapeake Bay Sport Fishing",
+        "location": "Stevensville, Kent Island",
+        "alternate_location": "Pasadena near Annapolis (seasonal)",
+        "awards": "Top Ten Fishing Charter in America 2025, 2024",
+        "website": "https://chesapeakebaysportfishing.com/"
+      },
+      {
+        "name": "Bay Hunters Charter Fishing",
+        "location": "Shady Side, Western Shore",
+        "coverage": "Chesapeake's Western Shore",
+        "seasons": "April through December",
+        "target_species": [
+          "Rockfish/Striped Bass",
+          "White Perch",
+          "Spot",
+          "Bluefish",
+          "Spanish Mackerel",
+          "Speckled Trout",
+          "Red Drum",
+          "Catfish"
+        ]
+      },
+      {
+        "name": "Capt. Phil Gootee Fishing Charters and Tours",
+        "specialty": "Premier Chesapeake Bay fishing charters",
+        "specialization": "Striped bass and other sought-after species",
+        "website": "https://www.captgootee.com/"
+      },
+      {
+        "name": "Maryland Fishing and Hunting, LLC",
+        "services": [
+          "Fishing charters",
+          "Cruises",
+          "Crabbing charters",
+          "Lighthouse tours",
+          "Waterfowl hunting"
+        ],
+        "location": "Chesapeake Bay",
+        "type": "Premier charter boat service",
+        "website": "https://www.marylandfishingandhunting.com/"
+      },
+      {
+        "name": "Miss Grace Charters",
+        "focus": "Fishing and cruising",
+        "location": "Chesapeake Bay",
+        "type": "Charter service"
+      },
+      {
+        "name": "Wound Tight Charters",
+        "location": "Chesapeake Beach and Ocean City",
+        "focus": "Fishing charters"
+      },
+      {
+        "name": "Rockin' Rowan Fish Charters",
+        "location": "Chesapeake Bay",
+        "type": "Fishing charter service"
+      }
+    ],
+    "charter_services_overview": {
+      "common_features": [
+        "Equipment provided",
+        "Licenses available",
+        "Private charter options",
+        "Walk-on trip options",
+        "Specialized fishing techniques"
+      ],
+      "species_targeted": [
+        "Striped Bass/Rockfish",
+        "Redfish",
+        "White Perch",
+        "Bluefish",
+        "Spanish Mackerel",
+        "Speckled Trout",
+        "Catfish"
+      ],
+      "seasons": "Year-round with seasonal variations"
+    },
+    "hunting_guides": [
+      {
+        "name": "B & J Guide Service",
+        "specialty": "Whitetail deer and waterfowl",
+        "location": "Maryland's Eastern Shore & Atlantic Flyway",
+        "years_in_business": "40+ years",
+        "description": "Professional hunting guide",
+        "website": "https://bjguideservice.com/"
+      },
+      {
+        "name": "DOA Outfitters",
+        "contact": "Joe Austin",
+        "specialty": [
+          "Sika deer hunting",
+          "Whitetail deer hunting"
+        ],
+        "hunt_types": [
+          "Archery",
+          "Muzzleloader",
+          "Rifle"
+        ],
+        "deer_size": "Sika and Whitetail 150-175 B&C",
+        "description": "One of few offering multiple hunting methods for rare sika deer"
+      },
+      {
+        "name": "Nanticoke Outfitters",
+        "location": "Eastern Shore salt marshes",
+        "specialties": [
+          "Sika deer",
+          "Puddle ducks",
+          "Sea ducks",
+          "Diver ducks",
+          "Whitetail",
+          "Turkey"
+        ],
+        "website": "https://nanticokeoutfitters.com/"
+      },
+      {
+        "name": "Talbot County Outfitters",
+        "location": "Talbot County, Eastern Shore",
+        "specialties": [
+          "Whitetail deer",
+          "Sika deer",
+          "Canadian geese",
+          "Sea ducks",
+          "Turkey"
+        ],
+        "description": "Top destination for quality hunts",
+        "website": "https://www.talbotcountyoutfitter.com/"
+      },
+      {
+        "name": "Harrison's Outfitter Service",
+        "contact": "Danny B. Harrison",
+        "type": "Licensed guide",
+        "years_guiding_since": 1974,
+        "specialty": "Whitetail deer hunts",
+        "other_game": "Additional game species",
+        "website": "https://harrisonsoutfitterservice.com/"
+      },
+      {
+        "name": "Winter Farms Hunting",
+        "years_in_business": "3+ generations",
+        "specialties": [
+          "Waterfowl hunts",
+          "Whitetail deer hunts",
+          "Sika deer hunts",
+          "Turkey hunts"
+        ],
+        "location": "Maryland",
+        "website": "https://winterfarmshunting.com/"
+      },
+      {
+        "name": "Branded Outdoors",
+        "specialties": [
+          "Sika deer hunting",
+          "Whitetail deer hunting",
+          "Turkey hunting"
+        ],
+        "website": "https://www.brandedoutdoors.com/"
+      },
+      {
+        "name": "Muddy Bottom Outfitters",
+        "specialties": [
+          "Deer hunting",
+          "Turkey hunting"
+        ],
+        "website": "https://www.mbohunts.com/"
+      },
+      {
+        "name": "Duck Hunting MD",
+        "location": "Tilghman Island",
+        "specialties": [
+          "Waterfowl hunting",
+          "Deer hunting",
+          "Turkey hunting"
+        ],
+        "website": "https://www.duckhuntingmd.com/"
+      }
+    ],
+    "hunting_guides_regional_note": {
+      "concentration": "Majority based on Maryland's Eastern Shore",
+      "reason": "Known for quality deer hunting opportunities",
+      "primary_game": "Whitetail and sika deer, waterfowl"
+    }
+  }
+}

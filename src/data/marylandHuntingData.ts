@@ -8,6 +8,55 @@
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
+// DATA FRESHNESS METADATA
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Hunting-regulation freshness metadata.
+ *
+ * Everything in MD_SEASONS / MD_BAG_LIMITS describes the regulations that MD
+ * DNR published for the 2025-2026 license year. DNR traditionally publishes
+ * the next year's Hunter's Guide in mid-to-late summer, so there is a known
+ * window between ~July and the archery opener (first Friday of September)
+ * when the data in this file is the MOST RECENT PUBLISHED set but no longer
+ * describes the upcoming season.
+ *
+ * The UI surfaces this as a banner on the Regulations screen. The banner
+ * becomes more prominent after `nextSeasonExpectedBy` so users are never
+ * misled about whether they're reading "current" regulations.
+ *
+ * When 2026-2027 data is published:
+ *   1. Update every MD_SEASONS entry with the new dates
+ *   2. Update MD_BAG_LIMITS if any limits changed
+ *   3. Bump REGULATIONS_META.seasonLabel, publishedOn, nextSeasonExpectedBy
+ */
+export interface RegulationsMeta {
+  /** Human-readable label of the season this data describes (e.g. "2025-2026"). */
+  seasonLabel: string;
+  /** ISO date when MD DNR published this season's Hunter's Guide. */
+  publishedOn: string;
+  /** ISO date after which we expect DNR to have published the NEXT season. */
+  nextSeasonExpectedBy: string;
+  /** Official DNR source users should check for the current regulations. */
+  sourceUrl: string;
+}
+
+export const REGULATIONS_META: RegulationsMeta = {
+  seasonLabel: '2025-2026',
+  publishedOn: '2025-07-15',
+  nextSeasonExpectedBy: '2026-08-01',
+  sourceUrl: 'https://dnr.maryland.gov/huntersguide',
+};
+
+/**
+ * Returns true if today is on or after `nextSeasonExpectedBy` — meaning the
+ * data in this file is stale relative to the current license year.
+ */
+export function isRegulationsStale(now: Date = new Date()): boolean {
+  return now >= new Date(REGULATIONS_META.nextSeasonExpectedBy);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SEASONS DATA STRUCTURE
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -51,16 +100,6 @@ export interface BagLimitRule {
   timePeriod: string; // 'daily', 'season', 'calendar year'
   notes: string;
   countyRestrictions?: string[]; // If empty, statewide
-}
-
-export interface RutPhase {
-  phase: string;
-  startMonth: number;
-  startDay: number;
-  endMonth: number;
-  endDay: number;
-  description: string;
-  huntingTips: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -783,68 +822,6 @@ export const MD_BAG_LIMITS: BagLimitRule[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MARYLAND WHITETAIL RUT CALENDAR
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Whitetail rut timeline for Maryland.
- * Provides guidance on deer behavior and hunting strategy by phase.
- * Based on historical breeding patterns in Eastern US populations.
- */
-export const MD_RUT_CALENDAR: RutPhase[] = [
-  {
-    phase: 'Pre-Rut',
-    startMonth: 10,
-    startDay: 20,
-    endMonth: 11,
-    endDay: 1,
-    description: 'Bucks starting to scrape and rub. Increased movement at dawn and dusk.',
-    huntingTips:
-      'Hunt travel corridors, rub lines, and scrape areas. Focus on doe bedding areas. Best hunting: dawn and dusk.',
-  },
-  {
-    phase: 'Seeking Phase',
-    startMonth: 11,
-    startDay: 1,
-    endMonth: 11,
-    endDay: 7,
-    description: 'Bucks actively seeking does. All-day movement peaks as bucks cruise looking for estrous does.',
-    huntingTips:
-      'All-day sits can be productive. Stay on stand throughout daylight. Use doe estrus scent. Rattle and grunt.',
-  },
-  {
-    phase: 'Peak Rut',
-    startMonth: 11,
-    startDay: 7,
-    endMonth: 11,
-    endDay: 20,
-    description: 'Peak breeding activity. Bucks chasing does throughout the day. Best overall hunting period.',
-    huntingTips:
-      'All-day hunting is ideal. Expect increased movement all day. Less caution from bucks. Use all techniques.',
-  },
-  {
-    phase: 'Post-Rut',
-    startMonth: 11,
-    startDay: 20,
-    endMonth: 12,
-    endDay: 5,
-    description: 'Bucks recovering from rut. Reduced movement. Does concentrate on feeding and recovery.',
-    huntingTips:
-      'Focus on food sources: acorns, agricultural fields, browse. Sit food sources in early morning and late afternoon.',
-  },
-  {
-    phase: 'Second Rut',
-    startMonth: 12,
-    startDay: 10,
-    endMonth: 12,
-    endDay: 20,
-    description: 'Unbred does cycle again, triggering a secondary rut period. Bucks active again briefly.',
-    huntingTips:
-      'Secondary hunting opportunity. Expect moderate activity. Smaller than peak rut but still productive.',
-  },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
 // HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -894,24 +871,428 @@ export function getBagLimitInfo(species: string): BagLimitRule[] {
   );
 }
 
-/**
- * Get the current rut phase for a given date.
- * Returns the matching RutPhase or null if outside rut season.
- */
-export function getCurrentRutPhase(date: Date): RutPhase | null {
-  const month = date.getMonth() + 1; // getMonth() returns 0-11
-  const day = date.getDate();
+// ─────────────────────────────────────────────────────────────────────────────
+// WATERFOWL HUNTING — PUBLIC BLINDS, BLIND DRAWS, & REGULATIONS
+// ─────────────────────────────────────────────────────────────────────────────
 
+export interface WaterfowlBlindSite {
+  id: string;
+  name: string;
+  county: string;
+  wmaName: string;
+  blindCount: number;
+  blindType: 'shoreline' | 'offshore' | 'pit' | 'field' | 'mixed';
+  gooseFields?: number;
+  reservationRequired: boolean;
+  reservationMethod: 'daily_draw' | 'lottery' | 'first_come' | 'online';
+  accessMethod: 'walk_in' | 'boat_required' | 'both';
+  adaAccessible: boolean;
+  tidalZone: 'tidal' | 'non_tidal';
+  primarySpecies: string[];
+  center: [number, number]; // [lon, lat]
+  notes: string;
+  dnrUrl: string;
+}
+
+export interface WaterfowlRegulationDetail {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  requirement: 'required' | 'recommended' | 'info';
+}
+
+/** Maryland public waterfowl blind sites — MD DNR managed */
+export const MD_WATERFOWL_BLINDS: WaterfowlBlindSite[] = [
+  {
+    id: 'blind_ehor',
+    name: 'Eastern Neck NWR Blinds',
+    county: 'Kent',
+    wmaName: 'Eastern Neck National Wildlife Refuge',
+    blindCount: 6,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'first_come',
+    accessMethod: 'walk_in',
+    adaAccessible: true,
+    tidalZone: 'tidal',
+    primarySpecies: ['Canada Goose', 'Mallard', 'Black Duck', 'Canvasback', 'Scaup'],
+    center: [-76.22, 39.03],
+    notes: 'Federal refuge. Waterfowl hunting by permit only on designated days. 2 ADA-accessible blinds. Check FWS website for specific hunt dates.',
+    dnrUrl: 'https://www.fws.gov/refuge/eastern-neck',
+  },
+  {
+    id: 'blind_blackwater',
+    name: 'Blackwater NWR Blinds',
+    county: 'Dorchester',
+    wmaName: 'Blackwater National Wildlife Refuge',
+    blindCount: 25,
+    blindType: 'mixed',
+    gooseFields: 4,
+    reservationRequired: true,
+    reservationMethod: 'lottery',
+    accessMethod: 'both',
+    adaAccessible: true,
+    tidalZone: 'tidal',
+    primarySpecies: ['Canada Goose', 'Snow Goose', 'Mallard', 'Pintail', 'Teal', 'Black Duck'],
+    center: [-76.10, 38.42],
+    notes: 'Largest blind site in MD. 25 blinds + 4 goose fields. Lottery draw required. 3 ADA-accessible blinds. Premier waterfowl destination on Eastern Shore. Refuge hunts on specific dates only.',
+    dnrUrl: 'https://www.fws.gov/refuge/blackwater',
+  },
+  {
+    id: 'blind_deal_island',
+    name: 'Deal Island WMA Blinds',
+    county: 'Somerset',
+    wmaName: 'Deal Island WMA',
+    blindCount: 12,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'walk_in',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Black Duck', 'Mallard', 'Pintail', 'Teal', 'Bufflehead'],
+    center: [-75.95, 38.17],
+    notes: 'Somerset County tidal marshes. Daily draw at designated check station 1 hour before shooting time. Excellent black duck habitat.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/dealisland.aspx',
+  },
+  {
+    id: 'blind_fairmount',
+    name: 'Fairmount WMA Blinds',
+    county: 'Somerset',
+    wmaName: 'Fairmount WMA',
+    blindCount: 8,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'walk_in',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Black Duck', 'Mallard', 'Teal', 'Pintail'],
+    center: [-75.87, 38.14],
+    notes: 'Adjacent to Deal Island. Tidal marsh blinds. Daily draw system. Good late-season hunting.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/fairmount.aspx',
+  },
+  {
+    id: 'blind_pocomoke',
+    name: 'Pocomoke River WMA Blinds',
+    county: 'Worcester',
+    wmaName: 'Pocomoke River WMA',
+    blindCount: 6,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'both',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Mallard', 'Black Duck', 'Wood Duck', 'Teal'],
+    center: [-75.56, 38.10],
+    notes: 'Pocomoke River swamp habitat. Mix of tidal and freshwater marshes. Some blinds require boat access.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/pocomoke.aspx',
+  },
+  {
+    id: 'blind_lecompte',
+    name: 'LeCompte WMA Blinds',
+    county: 'Dorchester',
+    wmaName: 'LeCompte WMA',
+    blindCount: 4,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'walk_in',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Canada Goose', 'Mallard', 'Black Duck', 'Teal'],
+    center: [-76.05, 38.50],
+    notes: 'Eastern Shore marsh habitat. 4 blinds with daily draw. Good early-season teal and late-season goose hunting.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/lecompte.aspx',
+  },
+  {
+    id: 'blind_idylwild',
+    name: 'Idylwild WMA Blinds',
+    county: 'Talbot',
+    wmaName: 'Idylwild WMA',
+    blindCount: 4,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'walk_in',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Canada Goose', 'Mallard', 'Scaup', 'Canvasback'],
+    center: [-76.18, 38.78],
+    notes: 'Talbot County, Eastern Shore. Chesapeake Bay tidal marshes. Good diver duck hunting.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/idylwild.aspx',
+  },
+  {
+    id: 'blind_millington',
+    name: 'Millington WMA Blinds',
+    county: 'Kent',
+    wmaName: 'Millington WMA',
+    blindCount: 6,
+    blindType: 'mixed',
+    gooseFields: 2,
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'walk_in',
+    adaAccessible: true,
+    tidalZone: 'non_tidal',
+    primarySpecies: ['Canada Goose', 'Mallard', 'Teal', 'Wood Duck'],
+    center: [-75.85, 39.25],
+    notes: 'Upper Eastern Shore. Non-tidal impoundments and goose fields. 1 ADA-accessible blind. Good early season for wood duck and teal.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/millington.aspx',
+  },
+  {
+    id: 'blind_susquehanna',
+    name: 'Susquehanna Flats Blinds',
+    county: 'Cecil',
+    wmaName: 'Susquehanna Flats',
+    blindCount: 15,
+    blindType: 'offshore',
+    reservationRequired: false,
+    reservationMethod: 'first_come',
+    accessMethod: 'boat_required',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Canvasback', 'Redhead', 'Scaup', 'Bufflehead', 'Goldeneye', 'Canada Goose'],
+    center: [-76.05, 39.52],
+    notes: 'Legendary Chesapeake Bay waterfowl area. Offshore blinds require boat. Premier canvasback hunting in the Atlantic Flyway. No reservation required but limited stakes.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowlblind.aspx',
+  },
+  {
+    id: 'blind_back_river',
+    name: 'Back River Neck WMA Blinds',
+    county: 'Anne Arundel',
+    wmaName: 'Back River Neck WMA',
+    blindCount: 4,
+    blindType: 'shoreline',
+    reservationRequired: true,
+    reservationMethod: 'daily_draw',
+    accessMethod: 'walk_in',
+    adaAccessible: false,
+    tidalZone: 'tidal',
+    primarySpecies: ['Canada Goose', 'Mallard', 'Black Duck', 'Bufflehead'],
+    center: [-76.47, 39.20],
+    notes: 'Central Maryland tidal marsh. Close to Baltimore. Daily draw at check station.',
+    dnrUrl: 'https://dnr.maryland.gov/wildlife/Pages/publiclands/central/backriver.aspx',
+  },
+];
+
+/** Waterfowl-specific regulations and requirements for Maryland */
+export const MD_WATERFOWL_REGULATIONS: WaterfowlRegulationDetail[] = [
+  {
+    id: 'wf_reg_hip',
+    category: 'Licensing',
+    title: 'Harvest Information Program (HIP) Registration',
+    description: 'All waterfowl hunters in Maryland must register with the HIP program before hunting migratory birds. Free registration available online at the USFWS website. Must be renewed annually.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_duck_stamp',
+    category: 'Licensing',
+    title: 'Federal Duck Stamp',
+    description: 'All waterfowl hunters 16+ must purchase a Federal Migratory Bird Hunting and Conservation Stamp ($25). Available at post offices, online, or through the USFWS E-Stamp program. Must be signed across the face.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_md_stamp',
+    category: 'Licensing',
+    title: 'Maryland Migratory Game Bird Stamp',
+    description: 'Required for hunting ducks, geese, and other migratory birds in Maryland. Available through Maryland DNR licensing system. Separate from the federal duck stamp.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_steel_shot',
+    category: 'Equipment',
+    title: 'Non-Toxic Shot Required',
+    description: 'Lead shot is prohibited for all waterfowl hunting. Must use approved non-toxic shot: steel, bismuth, tungsten-iron, tungsten-matrix, or other USFWS-approved alternatives. No shot size larger than T-shot.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_plugged_gun',
+    category: 'Equipment',
+    title: 'Plugged Shotgun',
+    description: 'Shotguns must be plugged to hold no more than 3 shells total (1 in chamber + 2 in magazine). Applies to all migratory bird hunting.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_shooting_hours',
+    category: 'Timing',
+    title: 'Legal Shooting Hours',
+    description: 'Waterfowl hunting begins 30 minutes before sunrise and ends at sunset. Check MD DNR for exact daily times. Shooting hours differ from upland game seasons.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_blind_draw',
+    category: 'Access',
+    title: 'Public Blind Lottery & Daily Draw',
+    description: 'Most MD DNR-managed waterfowl blinds require either a pre-season lottery (Blackwater NWR) or a daily draw at the check station (most WMAs). Hunters must arrive at the check station 1 hour before legal shooting time. Daily draw results are final. Some federal refuge hunts require separate permits.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_boat_blinds',
+    category: 'Access',
+    title: 'Private & Stake Blinds',
+    description: 'Private permanent blinds on public waters require a DNR permit. Stake blind sites are licensed annually through a competitive application. All permanent blinds must display a valid license plate. No hunting within 150 yards of another blind without permission.',
+    requirement: 'info',
+  },
+  {
+    id: 'wf_reg_flyway',
+    category: 'Regulations',
+    title: 'Atlantic Flyway Framework',
+    description: 'Maryland is in the Atlantic Flyway. Season dates and bag limits are set within federal frameworks established by the USFWS based on annual breeding population surveys. Maryland cannot exceed federal maximums.',
+    requirement: 'info',
+  },
+  {
+    id: 'wf_reg_species_limits',
+    category: 'Bag Limits',
+    title: 'Species-Specific Daily Bag Limits',
+    description: 'Within the 6-duck daily limit: Mallard (4, only 2 hens), Black Duck (2), Canvasback (1), Redhead (2), Scaup (1 early season / 2 late season), Pintail (1), Mottled Duck (1), Wood Duck (3). Possession limit is 3x daily bag.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_goose_species',
+    category: 'Bag Limits',
+    title: 'Goose Species Limits',
+    description: 'Canada Goose: 5 per day during regular season, 15 per day during late season (Jan-Feb). Snow Goose: 25 per day during conservation season (no plug required, electronic calls allowed). Light geese have separate liberal season.',
+    requirement: 'required',
+  },
+  {
+    id: 'wf_reg_tidal_zones',
+    category: 'Zones',
+    title: 'Tidal vs. Non-Tidal Zones',
+    description: 'Maryland distinguishes between tidal and non-tidal waterfowl hunting zones. Tidal zones include Chesapeake Bay, its tributaries, and Atlantic coastal waters. Season dates may differ between zones. Check specific zone boundaries on MD DNR website.',
+    requirement: 'info',
+  },
+  {
+    id: 'wf_reg_sunday',
+    category: 'Timing',
+    title: 'Sunday Waterfowl Hunting',
+    description: 'Sunday hunting for waterfowl is permitted on private land and in some public areas during regular waterfowl seasons. Check specific WMA rules as some restrict Sunday hunting.',
+    requirement: 'info',
+  },
+];
+
+/** Blind draw calendar — key dates for waterfowl blind applications */
+export const MD_BLIND_DRAW_CALENDAR = [
+  {
+    id: 'draw_lottery_app',
+    event: 'Seasonal Blind Lottery Application Opens',
+    dateRange: 'July 1 - August 15',
+    description: 'Apply for pre-season lottery drawings for Blackwater NWR and other federal refuge hunts. Applications via MD DNR website.',
+    url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowlblind.aspx',
+  },
+  {
+    id: 'draw_lottery_results',
+    event: 'Lottery Results Announced',
+    dateRange: 'September 1 - September 15',
+    description: 'Pre-season lottery results posted on MD DNR website. Successful applicants notified by email.',
+    url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowlblind.aspx',
+  },
+  {
+    id: 'draw_early_teal',
+    event: 'Early Teal Season',
+    dateRange: 'September 1 - September 15',
+    description: 'Early teal season. Daily draws at applicable WMAs. Blue-winged and green-winged teal only.',
+    url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowl.aspx',
+  },
+  {
+    id: 'draw_regular_open',
+    event: 'Regular Waterfowl Season Opens',
+    dateRange: 'Late October',
+    description: 'Regular duck and goose seasons open. Daily draws resume at WMA check stations. Arrive 1 hour before legal shooting time.',
+    url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowl.aspx',
+  },
+  {
+    id: 'draw_late_goose',
+    event: 'Late Canada Goose Season',
+    dateRange: 'January - February',
+    description: 'Extended goose season with liberal bag limit (15 per day). Good opportunity on Eastern Shore agricultural fields.',
+    url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowl.aspx',
+  },
+  {
+    id: 'draw_snow_goose',
+    event: 'Conservation Snow Goose Season',
+    dateRange: 'January - April',
+    description: 'Liberal snow goose conservation season. No plug required. Electronic calls permitted. No daily bag limit or possession limit.',
+    url: 'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/waterfowl.aspx',
+  },
+];
+
+/** Helper: Get all blind sites for a county */
+export function getBlindsByCounty(county: string): WaterfowlBlindSite[] {
+  return MD_WATERFOWL_BLINDS.filter(
+    (b) => b.county.toLowerCase() === county.toLowerCase()
+  );
+}
+
+/** Helper: Get all ADA-accessible blind sites */
+export function getAccessibleBlinds(): WaterfowlBlindSite[] {
+  return MD_WATERFOWL_BLINDS.filter((b) => b.adaAccessible);
+}
+
+/** Helper: Get blind sites by tidal zone */
+export function getBlindsByZone(zone: 'tidal' | 'non_tidal'): WaterfowlBlindSite[] {
+  return MD_WATERFOWL_BLINDS.filter((b) => b.tidalZone === zone);
+}
+
+/** Helper: Get waterfowl regulations by category */
+export function getWaterfowlRegsByCategory(category: string): WaterfowlRegulationDetail[] {
+  return MD_WATERFOWL_REGULATIONS.filter(
+    (r) => r.category.toLowerCase() === category.toLowerCase()
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// 2026-04-26 (fork merge): rut-phase stubs.
+// chatKnowledge.ts imports these. The richer rut model lives in
+// services/rutCalendarService.ts (V2.3 Phase D.1 — moon-phase + temporal
+// scoring). These stubs keep chatKnowledge functional until it's rewired
+// to consume rutCalendarService directly.
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface RutPhaseInfo {
+  /** Phase name (e.g., 'Pre-rut', 'Chase', 'Post-rut'). */
+  phase: string;
+  startMonth: number;  // 1-12
+  startDay: number;    // 1-31
+  endMonth: number;
+  endDay: number;
+  description: string;
+  /** Concise hunting strategy tip for this phase. */
+  huntingTips: string;
+}
+
+export const MD_RUT_CALENDAR: RutPhaseInfo[] = [
+  { phase: 'Pre-rut', startMonth: 10, startDay: 15, endMonth: 11, endDay: 4,
+    description: 'Bucks scrape and rub aggressively. Increased daylight movement.',
+    huntingTips: 'Hunt rub lines and scrape edges; sit dawn and last light.' },
+  { phase: 'Seeking', startMonth: 11, startDay: 5, endMonth: 11, endDay: 9,
+    description: 'Bucks cruise looking for receptive does. Best week to be in the woods.',
+    huntingTips: 'All-day sits in funnels between bedding and food.' },
+  { phase: 'Chase', startMonth: 11, startDay: 10, endMonth: 11, endDay: 14,
+    description: 'Peak chasing. Daytime movement is at its highest.',
+    huntingTips: 'Rattling and grunting can pull cruising bucks; stay all day.' },
+  { phase: 'Breeding', startMonth: 11, startDay: 15, endMonth: 11, endDay: 25,
+    description: 'Bucks lock down with does. Movement slows but key buck activity continues.',
+    huntingTips: 'Find a hot doe; watch doe bedding areas and travel corridors.' },
+  { phase: 'Post-rut', startMonth: 11, startDay: 26, endMonth: 12, endDay: 15,
+    description: 'Bucks recover and feed heavily. Late-season food sources are productive.',
+    huntingTips: 'Standing corn, beans, and acorn drops draw recovering bucks.' },
+  { phase: 'Second-rut', startMonth: 12, startDay: 16, endMonth: 12, endDay: 31,
+    description: 'Late-cycle does come back into estrus. A small but real movement bump.',
+    huntingTips: 'Cold-front afternoons over food are the highest-percentage sits.' },
+];
+
+export function getCurrentRutPhase(now: Date = new Date()): RutPhaseInfo | null {
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const after = (sm: number, sd: number) => m > sm || (m === sm && d >= sd);
+  const before = (em: number, ed: number) => m < em || (m === em && d <= ed);
   for (const phase of MD_RUT_CALENDAR) {
-    // Check if date falls within phase
-    const startDateNum = phase.startMonth * 100 + phase.startDay;
-    const endDateNum = phase.endMonth * 100 + phase.endDay;
-    const currentDateNum = month * 100 + day;
-
-    if (currentDateNum >= startDateNum && currentDateNum <= endDateNum) {
+    if (after(phase.startMonth, phase.startDay) && before(phase.endMonth, phase.endDay)) {
       return phase;
     }
   }
-
   return null;
 }

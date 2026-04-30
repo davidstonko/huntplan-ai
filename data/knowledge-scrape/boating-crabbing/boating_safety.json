@@ -1,0 +1,72 @@
+{
+  "source_urls": [
+    "https://dnr.maryland.gov/nrp/pages/boatingsafety/state-requirements-for-recreational-vessels.aspx",
+    "https://www.boaterexam.com/usa/maryland/regulations/",
+    "https://www.boat-ed.com/maryland/boating_law/",
+    "https://dnr.maryland.gov/nrp/pages/boatingsafety/safety_certificate.aspx"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "boating_license": {
+      "legal_name": "Certificate of Boating Safety Education",
+      "common_name": "Boating License",
+      "who_requires_it": "Anyone born on or after July 1, 1972 operating any mechanically propelled vessel on Maryland waters",
+      "course_length_hours": "Minimum 8 hours",
+      "requirements": "Attend all classroom sessions and achieve 80% on final exam",
+      "online_courses_accepted": true,
+      "online_requirement": "Must be NASBLA approved"
+    },
+    "vessel_registration": {
+      "requirement": "All vessels with a motor must be titled and registered with Maryland DNR",
+      "registration_validity": "2 years",
+      "registration_decals_required": true,
+      "registration_card": {
+        "must_carry_onboard": true,
+        "readily_available": true,
+        "for_inspection": "Must be available for law enforcement inspection"
+      }
+    },
+    "personal_flotation_devices": {
+      "general_requirement": {
+        "requirement": "At least 1 wearable PFD per person onboard",
+        "applies_to": "Regardless of vessel length",
+        "types_acceptable": ["Type I", "Type II", "Type III", "Type V"],
+        "must_be_coast_guard_approved": true,
+        "must_be_in_serviceable_condition": true,
+        "must_be_readily_available": true,
+        "must_be_appropriately_sized": true
+      },
+      "children_under_13": {
+        "requirement": "Must wear Coast Guard-approved life jacket",
+        "applies_to": "Boats less than 21 feet in length"
+      },
+      "children_under_4": {
+        "additional_safety_requirements": true,
+        "details": "Additional strap secured between child's legs and grab handle for lift assistance"
+      },
+      "vessels_over_16_feet": {
+        "additional_requirement": "At least one Type IV PFD (ring buoy or seat cushion)"
+      },
+      "personal_watercraft_pwc": {
+        "requirement": "All PWC occupants must wear a PFD at all times",
+        "applies": "While underway"
+      },
+      "persons_being_towed": {
+        "requirement": "Must wear Type I, II, III, or V Coast Guard approved PFD"
+      }
+    },
+    "personal_watercraft_pwc_rules": {
+      "operator_minimum_age": 16,
+      "operator_must_have": "Boating safety certificate",
+      "occupants_must_wear": "US Coast Guard approved Type I, II, III, or V PFD at all times"
+    },
+    "boating_under_influence": {
+      "illegal": true,
+      "applies_to": "Operating boat while under influence of alcohol or drugs",
+      "penalties": {
+        "jail_time": "Up to 1 year",
+        "fines": "Up to $1,000"
+      }
+    }
+  }
+}

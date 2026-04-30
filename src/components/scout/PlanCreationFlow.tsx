@@ -29,15 +29,18 @@ interface PlanCreationFlowProps {
   activePlanId: string | null;
 }
 
+// 2026-04-26 (fork merge): icon strings updated to match expanded
+// HuntWaypointType (V3 taxonomy). 'food-plot' → 'food_plot',
+// 'water'/'crossing'/'sign' → closest hunting equivalents.
 const ICON_OPTIONS: { icon: WaypointIcon; label: string }[] = [
   { icon: 'stand', label: 'Tree Stand' },
   { icon: 'blind', label: 'Ground Blind' },
   { icon: 'camera', label: 'Trail Cam' },
   { icon: 'feeder', label: 'Feeder' },
-  { icon: 'food-plot', label: 'Food Plot' },
-  { icon: 'water', label: 'Water' },
-  { icon: 'crossing', label: 'Crossing' },
-  { icon: 'sign', label: 'Sign/Rub' },
+  { icon: 'food_plot', label: 'Food Plot' },
+  { icon: 'water_source', label: 'Water' },
+  { icon: 'deer_crossing', label: 'Crossing' },
+  { icon: 'buck_sign', label: 'Sign/Rub' },
   { icon: 'custom', label: 'Custom Pin' },
 ];
 
@@ -135,7 +138,9 @@ export default function PlanCreationFlow({
         </View>
         {currentPlan?.parkingPoint && (
           <View style={styles.confirmRow}>
-            <Text style={styles.confirmIcon}>{WAYPOINT_ICONS.parking}</Text>
+            <View style={styles.confirmChip}>
+              <Text style={styles.confirmChipText}>{WAYPOINT_ICONS.parking}</Text>
+            </View>
             <Text style={styles.confirmText}>
               Parking set at {currentPlan.parkingPoint.lat.toFixed(4)}, {currentPlan.parkingPoint.lng.toFixed(4)}
             </Text>
@@ -146,7 +151,7 @@ export default function PlanCreationFlow({
             <Text style={styles.cancelText}>Skip</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mapTapBtn} onPress={handleSetParking}>
-            <Text style={styles.mapTapText}>{'\uD83D\uDCCD'} Tap Map to Set</Text>
+            <Text style={styles.mapTapText}>Tap Map to Set</Text>
           </TouchableOpacity>
           {currentPlan?.parkingPoint && (
             <TouchableOpacity style={styles.nextBtn} onPress={() => setStep('annotate')}>
@@ -186,7 +191,14 @@ export default function PlanCreationFlow({
               ]}
               onPress={() => setSelectedWaypointIcon(opt.icon)}
             >
-              <Text style={styles.iconEmoji}>{WAYPOINT_ICONS[opt.icon]}</Text>
+              <View
+                style={[
+                  styles.iconChip,
+                  selectedWaypointIcon === opt.icon && styles.iconChipActive,
+                ]}
+              >
+                <Text style={styles.iconChipText}>{WAYPOINT_ICONS[opt.icon]}</Text>
+              </View>
               <Text style={styles.iconLabel}>{opt.label}</Text>
             </TouchableOpacity>
           ))}
@@ -194,7 +206,7 @@ export default function PlanCreationFlow({
 
         <TouchableOpacity style={styles.mapTapBtn} onPress={handleAddWaypoint}>
           <Text style={styles.mapTapText}>
-            {WAYPOINT_ICONS[selectedWaypointIcon]} Tap Map to Place {ICON_OPTIONS.find(o => o.icon === selectedWaypointIcon)?.label}
+            Tap Map to Place {ICON_OPTIONS.find(o => o.icon === selectedWaypointIcon)?.label}
           </Text>
         </TouchableOpacity>
 
@@ -396,7 +408,20 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
   },
-  confirmIcon: { fontSize: 18 },
+  confirmChip: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    backgroundColor: Colors.moss,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmChipText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
   confirmText: { fontSize: 12, color: Colors.sage },
 
   // Icon picker
@@ -419,9 +444,23 @@ const styles = StyleSheet.create({
     borderColor: Colors.moss,
     backgroundColor: Colors.forestDark,
   },
-  iconEmoji: {
-    fontSize: 22,
-    marginBottom: 2,
+  iconChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: Colors.oak,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  iconChipActive: {
+    backgroundColor: Colors.moss,
+  },
+  iconChipText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
   iconLabel: {
     fontSize: 8,

@@ -24,6 +24,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- App Store Connect requires either ITSAppUsesNonExemptEncryption or
+	     ITSEncryptionExportComplianceCode. Setting to false avoids prompts. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -36,9 +40,27 @@
 	<key>NSMotionUsageDescription</key>
 	<string>MDHuntFishOutdoors uses motion data to improve location accuracy while tracking your routes in the field and to reduce battery usage during background GPS recording.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>MDHuntFishOutdoors uses your location to show nearby public lands, track your routes in the field, and help you navigate to trailheads and parking areas.</string>
+	<string>MDHuntFishOutdoors uses your location in the background to record the GPS track of a hunt, hike, or scouting trip so you can review your route when you return.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>MDHuntFishOutdoors uses your location to show nearby public lands, center the map on your position, and help you navigate to trailheads and parking areas.</string>
+	<string>MDHuntFishOutdoors uses your location to show nearby public hunting lands, water access sites, and trailheads, and to center the map on where you are.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MDHuntFishOutdoors uses your camera so you can attach geotagged photos to Deer Camp and Group Camp posts — e.g., a trail-cam setup, a fish caught, or a campsite layout.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MDHuntFishOutdoors accesses your photo library so you can attach existing photos to Deer Camp and Group Camp posts.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MDHuntFishOutdoors saves GPX/KML track exports, map screenshots, and camp photos to your photo library so you can share them with others later.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>MDHuntFishOutdoors uses your local network so offline Mapbox tile caches can be prepared and reused on your device.</string>
+	<!-- UIBackgroundModes: only `location` and `fetch` are claimed.
+	     `remote-notification` was REMOVED 2026-04-24 per App Store Review
+	     Guideline 2.5.4 — V2.3 Build 4 ships only local notifications via
+	     @notifee/react-native; there is no APNS server-push path. Re-add if
+	     real APNS handlers + backend push land. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -56,7 +78,49 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>MaterialCommunityIcons.ttf</string>
+		<string>Fontisto.ttf</string>
+		<string>Octicons.ttf</string>
+		<string>Feather.ttf</string>
+		<string>FontAwesome6_Regular.ttf</string>
+		<string>Entypo.ttf</string>
+		<string>FontAwesome5_Brands.ttf</string>
+		<string>AntDesign.ttf</string>
+		<string>Foundation.ttf</string>
+		<string>Ionicons.ttf</string>
+		<string>FontAwesome5_Solid.ttf</string>
+		<string>FontAwesome5_Regular.ttf</string>
+		<string>FontAwesome.ttf</string>
+		<string>Zocial.ttf</string>
+		<string>EvilIcons.ttf</string>
+		<string>FontAwesome6_Solid.ttf</string>
+		<string>SimpleLineIcons.ttf</string>
+		<string>FontAwesome6_Brands.ttf</string>
+		<string>MaterialIcons.ttf</string>
+	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<!-- Phase 5C: Deep linking support for Camp invites and Hike trips.
+	     Two URL schemes registered: legacy `huntmaryland` (V2.x) and
+	     V2.3 brand-aligned `mdhuntfish`. Universal Links bind via
+	     apple-app-site-association at the bundle ID. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.davidstonko.huntmaryland</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>huntmaryland</string>
+				<string>mdhuntfish</string>
+			</array>
+		</dict>
+	</array>
+	<key>FlexibleWebLinks</key>
+	<true/>
 </dict>
 </plist>

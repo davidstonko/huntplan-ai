@@ -8,60 +8,66 @@ import {
   Animated,
   Pressable,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Colors from '../../theme/colors';
 import { ActivityMode, useActivityMode } from '../../context/ActivityModeContext';
+import ModeLogo from '../common/ModeLogo';
 
 /**
- * Mode configuration: emoji, label, and accent color for each activity
+ * Mode → root-stack route name mapping. Kept in sync with AppNavigator's
+ * per-mode Tab.Navigator names so the header dropdown can cross-navigate
+ * between mode-specific tab stacks without funneling back through the
+ * ModePicker home screen.
  */
-const MODE_CONFIG: Record<
-  ActivityMode,
-  { emoji: string; label: string; accent: string; sublabel: string }
-> = {
-  hunt: {
-    emoji: '\uD83C\uDFAF',
-    label: 'MD Hunt',
-    accent: Colors.moss,
-    sublabel: 'Hunting',
-  },
-  fish: {
-    emoji: '\uD83D\uDC1F',
-    label: 'MD Fish',
-    accent: Colors.info,
-    sublabel: 'Fishing',
-  },
-  hike: {
-    emoji: '\uD83E\uDD7E',
-    label: 'MD Hike',
-    accent: Colors.bark,
-    sublabel: 'Hiking',
-  },
-  crab: {
-    emoji: '\uD83E\uDD80',
-    label: 'MD Crab',
-    accent: Colors.rust,
-    sublabel: 'Crabbing',
-  },
-  boat: {
-    emoji: '\uD83D\uDEA4',
-    label: 'MD Boat',
-    accent: Colors.forestDark,
-    sublabel: 'Boating',
-  },
+const MODE_ROUTE: Record<ActivityMode, 'HuntTabs' | 'FishTabs' | 'CampTabs' | 'HikeTabs'> = {
+  hunt: 'HuntTabs',
+  fish: 'FishTabs',
+  camp: 'CampTabs',
+  hike: 'HikeTabs',
 };
 
 /**
- * Only show modes that are fully implemented.
- * Hike, Crab, Boat deferred to Phase 5 — hidden until features are built.
+ * Mode configuration: label, accent color, and sublabel. The visual glyph
+ * for each mode is rendered by `<ModeLogo />` — no letter tokens or emoji.
  */
-const MODES: ActivityMode[] = ['hunt', 'fish'];
+const MODE_CONFIG: Record<
+  ActivityMode,
+  { label: string; accent: string; sublabel: string }
+> = {
+  hunt: {
+    label: 'Hunt',
+    accent: Colors.moss,
+    sublabel: 'Deer camp, public lands, scouting, regulations',
+  },
+  fish: {
+    label: 'Fish',
+    accent: '#0277BD',
+    sublabel: 'Angler access, stocking, tides, regulations',
+  },
+  camp: {
+    label: 'Camp',
+    accent: '#E67E22',
+    sublabel: 'Campgrounds, trip planner, gear, group camp',
+  },
+  hike: {
+    label: 'Hike',
+    accent: '#2E7D32',
+    sublabel: 'Appalachian Trail, state-park trails, trip planner',
+  },
+};
+
+// All four V2.2.0 activity modes. Camp (Phase 5A) and Hike (Phase 5B) tab
+// stacks are wired in AppNavigator alongside Hunt and Fish; each mode
+// presents its own screens via ActivityMode-driven branching.
+const MODES: ActivityMode[] = ['hunt', 'fish', 'camp', 'hike'];
 
 /**
  * ActivityModePicker - Dropdown in the navigation header that lets users
- * switch between MD Hunt, MD Fish, MD Hike, etc.
+ * switch between MDHuntFishOutdoors modes: Hunt, Fish, Camp, and Hike.
  */
 export default function ActivityModePicker() {
   const { activeMode, setActiveMode } = useActivityMode();
+  const navigation = useNavigation<any>();
   const [showDropdown, setShowDropdown] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -85,8 +91,13 @@ export default function ActivityModePicker() {
   };
 
   const selectMode = (mode: ActivityMode) => {
-    setActiveMode(mode);
     closeDropdown();
+    if (mode === activeMode) return;
+    setActiveMode(mode);
+    // Navigate to the mode's dedicated tab stack. React Navigation climbs
+    // up the navigator tree to find the matching route in the root Stack
+    // (which owns ModePicker + the four mode tab stacks).
+    navigation.navigate(MODE_ROUTE[mode]);
   };
 
   return (
@@ -97,7 +108,9 @@ export default function ActivityModePicker() {
         onPress={openDropdown}
         activeOpacity={0.7}
       >
-        <Text style={styles.headerEmoji}>{config.emoji}</Text>
+        <View style={styles.headerMarkWrap}>
+          <ModeLogo mode={activeMode} size="sm" accent={config.accent} />
+        </View>
         <Text style={styles.headerTitle}>{config.label}</Text>
         <Text style={styles.chevron}>{'\u25BC'}</Text>
       </TouchableOpacity>
@@ -124,7 +137,9 @@ export default function ActivityModePicker() {
                   onPress={() => selectMode(mode)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.modeEmoji}>{modeConf.emoji}</Text>
+                  <View style={styles.rowMarkWrap}>
+                    <ModeLogo mode={mode} size="md" accent={modeConf.accent} />
+                  </View>
                   <View style={styles.modeTextContainer}>
                     <Text
                       style={[
@@ -164,9 +179,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 4,
   },
-  headerEmoji: {
-    fontSize: 18,
-    marginRight: 6,
+  headerMarkWrap: {
+    marginRight: 8,
   },
   headerTitle: {
     fontSize: 18,
@@ -175,10 +189,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   chevron: {
-    fontSize: 18,
+    fontSize: 10,
     color: Colors.tan,
-    marginLeft: 6,
-    marginTop: 1,
+    marginLeft: 4,
+    marginTop: 2,
   },
 
   // Modal
@@ -217,31 +231,33 @@ const styles = StyleSheet.create({
   },
   dropdownItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: Colors.mud,
   },
   dropdownItemActive: {
     backgroundColor: Colors.forestDark,
   },
-  modeEmoji: {
-    fontSize: 22,
-    marginRight: 12,
+  rowMarkWrap: {
+    marginRight: 14,
+    marginTop: 2,
   },
   modeTextContainer: {
     flex: 1,
   },
   modeLabel: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.textPrimary,
+    marginBottom: 4,
   },
   modeSublabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.textMuted,
-    marginTop: 1,
+    marginTop: 2,
+    lineHeight: 16,
   },
   activeIndicator: {
     width: 8,
@@ -249,6 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginLeft: 8,
   },
+
   // MD stripe
   mdStripe: {
     flexDirection: 'row',

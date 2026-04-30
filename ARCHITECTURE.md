@@ -1,7 +1,7 @@
 # MDHuntFishOutdoors Architecture
 
-**Last updated:** 2026-04-02
-**Version:** V2 live (App Store), V3 backend live on Render
+**Last updated:** 2026-04-04
+**Version:** V3 Build 5 live (App Store), backend live on Render, Phase 4 (Fishing) in progress
 
 ---
 
@@ -72,12 +72,15 @@ Map | Scout | AI | Deer Camp | Resources
 - **Deer Camp:** Collaborative shared maps, member management, WebSocket sync
 - **Resources:** Segmented control (Regulations | Links & Guides), quick-access toolbar
 
-### Fish Mode (3 tabs — basic)
+### Fish Mode (5 tabs — Phase 4)
 ```
-Map | AI | Resources
+Fish Map | Spots | AI | Fish Camp | Resources
 ```
-- Map has 6 DNR quick-link cards (no fishing-specific data overlays yet)
-- AI and Resources share Hunt mode screens
+- **Fish Map:** Full Mapbox map — 307 public fishing access sites, 68 trout stocking locations, 61 fishing ground polygons, 16 hatcheries. Filters for location type, waterbody, species, amenities. TideWidget overlay.
+- **Spots:** Fishing spot planning — save spots, record fishing trips, annotations (mirrors Scout tab)
+- **AI:** Fishing-focused RAG chat — regulations, species ID, stocking reports, tides
+- **Fish Camp:** Collaborative shared fishing maps with friends (mirrors Deer Camp)
+- **Resources:** Segmented control (Regulations | Links & Guides | Out of State) — fishing-specific content
 
 ### Hike/Crab/Boat (placeholder — ComingSoonScreen)
 
@@ -370,6 +373,59 @@ backend/
 
 ---
 
+---
+
+## 14. Fishing Module Architecture (Phase 4)
+
+### Data Sources
+- **PublicFishingAccessSites** — 307 point locations with 20+ attribute fields (amenities, species, ratings, ramp, shore fishing, etc.)
+- **TroutStockingActivities** — 68 stocking locations with species, fish count, activity date
+- **FishingGrounds** — 61 Chesapeake Bay popular fishing area polygons
+- **FishHatcheries** — 16 state hatchery facilities
+- **eRegulations MD Fishing** — Species seasons, bag limits, size limits, gear restrictions
+- **NOAA Tides API** — Tide predictions for 10+ MD stations (api.tidesandcurrents.noaa.gov)
+
+### Data Pipeline
+`scripts/generate_maryland_fishing_data.py` queries 4 ArcGIS REST services, merges into:
+- `src/data/marylandFishingData.ts` — 436+ typed fishing locations
+- `src/data/mdFishingGISData.json` — Fishing ground polygon GeoJSON
+- `src/data/marylandFishingRegs.ts` — Structured regulations by species
+- `src/data/fishingChatKnowledge.ts` — AI RAG knowledge base
+
+### Map Layer System (Fish Mode)
+- Point markers: Access sites (blue), Stocking locations (green), Hatcheries (orange)
+- Polygon overlays: Fishing grounds (semi-transparent blue fill)
+- Filters: Location type, Waterbody, Species, Amenities, Recently Stocked
+- TideWidget overlay: Next high/low tide from nearest NOAA station
+- StockingBanner: "Recently Stocked!" badges on fresh locations
+
+### New Services
+- `tidalService.ts` — NOAA Tides API, 24h cache, offline fallback
+- `stockingService.ts` — Live trout stocking from FeatureServer, 24h TTL
+
+### Context Additions
+- `FishingDataContext.tsx` — Fishing spots + trips CRUD (AsyncStorage-backed, mirrors ScoutDataContext)
+
+### Screen Additions
+- `FishMapScreen.tsx` — REBUILT from link cards to full Mapbox map
+- `FishSpotsScreen.tsx` — Fishing spot planning (mirrors ScoutScreen)
+- `FishCampScreen.tsx` — Collaborative fishing maps (mirrors DeerCampScreen)
+- `FishRegulationsScreen.tsx` — Seasons, Can I Fish?, Licenses
+- `FishResourcesScreen.tsx` — Curated fishing links
+- `FishOutOfStateScreen.tsx` — Nonresident fishing guide
+
+See `FISHING_BUILD_PLAN.md` for detailed sprint breakdown and `SHARED_COMPONENTS_PLAN.md` for cross-mode reusability analysis.
+
+### Cross-Mode Shared Components
+A codebase audit identified that ~70% of hunting code is already mode-agnostic. Key shared components:
+- **AnnotationLayer, TrackMeBar, MeasureTool, CompassOverlay** — 100% reusable, zero changes
+- **ScoutDataContext, DeerCampContext** — 90%+ generic, need mode-aware storage keys
+- **PlanSidebar, PlanCreationFlow** — 90% generic, need config-driven labels/icons
+- **`activityModeConfig.ts`** (new) — Central config per mode: filters, waypoint icons, labels, AI chat prompts
+- Each future module (Crab, Boat, Hike) needs only ~30-40% new code
+
+---
+
 ## Summary
 
-MDHuntFishOutdoors is a production app (V2 on App Store, backend live on Render) with comprehensive offline-first hunting features for Maryland. The modular architecture supports multi-activity expansion (Fish, Hike, Crab, Boat) and multi-state data packs. The 14-module backend provides full API coverage. Primary gaps are in push notification routing, offline network indication, pressure trend analysis, and cloud sync for scout plans.
+MDHuntFishOutdoors is a production app (V3 Build 5 on App Store, backend live on Render) with comprehensive offline-first hunting features for Maryland. Phase 4 (Fishing) adds full fishing module with 436+ GIS locations, NOAA tidal data, live trout stocking updates, and fishing-specific regulations — mirroring the hunting module's 5-tab architecture. The modular design supports continued expansion to Crabbing, Boating, and Hiking modules plus multi-state data packs.

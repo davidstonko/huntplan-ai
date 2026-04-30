@@ -6,15 +6,18 @@
 import { Model } from '@nozbe/watermelondb';
 import { text, date, readonly } from '@nozbe/watermelondb/decorators';
 
+// TypeScript type augmentation (properties set by decorators at runtime)
+interface SharedAnnotationModel {
+  campId: string;
+  annotationType: string;
+  createdBy: string;
+  dataJson: string;
+  importedFromPlanId: string;
+  createdAt: Date | number;
+}
+
 class SharedAnnotationModel extends Model {
   static table = 'shared_annotations';
-
-  campId!: string;
-  annotationType!: string; // 'waypoint' | 'route' | 'area' | 'track'
-  createdBy!: string;
-  dataJson!: string; // Full annotation payload
-  importedFromPlanId!: string | null;
-  createdAt!: Date;
 
   get data(): any {
     try {
@@ -29,18 +32,24 @@ class SharedAnnotationModel extends Model {
   }
 }
 
-// Apply decorators programmatically
-const applyDecorator = (decorator: any, target: any, key: string) => {
-  const descriptor = decorator(target, key, Object.getOwnPropertyDescriptor(target, key) || { configurable: true, writable: true, enumerable: true });
-  if (descriptor) Object.defineProperty(target, key, descriptor);
-};
+// WatermelonDB decorators — guarded for V2 (AsyncStorage mode)
+try {
+  const proto = SharedAnnotationModel.prototype as any;
+  const applyDecorator = (decorator: any, key: string) => {
+    const descriptor = decorator(proto, key, undefined);
+    if (descriptor) Object.defineProperty(proto, key, descriptor);
+  };
 
-applyDecorator(text('camp_id'), SharedAnnotationModel.prototype, 'campId');
-applyDecorator(text('annotation_type'), SharedAnnotationModel.prototype, 'annotationType');
-applyDecorator(text('created_by'), SharedAnnotationModel.prototype, 'createdBy');
-applyDecorator(text('data_json'), SharedAnnotationModel.prototype, 'dataJson');
-applyDecorator(text('imported_from_plan_id'), SharedAnnotationModel.prototype, 'importedFromPlanId');
-applyDecorator(date('created_at'), SharedAnnotationModel.prototype, 'createdAt');
-applyDecorator(readonly, SharedAnnotationModel.prototype, 'createdAt');
+  applyDecorator(text('camp_id'), 'campId');
+  applyDecorator(text('annotation_type'), 'annotationType');
+  applyDecorator(text('created_by'), 'createdBy');
+  applyDecorator(text('data_json'), 'dataJson');
+  applyDecorator(text('imported_from_plan_id'), 'importedFromPlanId');
+  applyDecorator(date('created_at'), 'createdAt');
+  applyDecorator(readonly, 'createdAt');
+} catch (e) {
+  // WatermelonDB not active in V2 — decorators skipped
+  if (__DEV__) console.log('[WatermelonDB] Decorators deferred for SharedAnnotationModel');
+}
 
 export default SharedAnnotationModel;

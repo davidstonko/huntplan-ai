@@ -1,0 +1,132 @@
+{
+  "source_url": "https://dnr.maryland.gov/Pages/DNR_TrailMaps.aspx",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "Maryland Trail Maps Resources",
+      "description": "Comprehensive trail mapping system for all public lands",
+      "coverage": "State Parks, State Forests, Wildlife Management Areas, Federal Lands",
+      "data_layers": [
+        "Trail routes and types",
+        "Parking areas",
+        "Access points",
+        "Water access",
+        "Amenities"
+      ],
+      "search_capabilities": "Search for specific sites and locations across state"
+    },
+    {
+      "category": "Interactive Trails and Recreation Atlas",
+      "description": "Official Maryland DNR digital mapping tool",
+      "features": [
+        "Select data layers to display",
+        "Choose base maps",
+        "Search specific sites and locations",
+        "Get updated mapping products",
+        "Real-time trail information"
+      ],
+      "access": "Web-based interactive map available from DNR website"
+    },
+    {
+      "category": "WMA Trail Maps",
+      "description": "Detailed trail information for Wildlife Management Areas",
+      "number_of_wmas": 64,
+      "total_acres": 128000,
+      "county_distribution": 19,
+      "map_details": [
+        "Trail routes with difficulty ratings",
+        "Parking areas with GPS coordinates",
+        "Water access points",
+        "Seasonal closures",
+        "Restricted areas"
+      ]
+    },
+    {
+      "example_wma": "Browns Branch Wildlife Management Area",
+      "parking_example": {
+        "name": "Parking Area #3",
+        "location": "North side of Hall Road",
+        "gps_latitude": 39.155734,
+        "gps_longitude": -75.945884
+      },
+      "state": "Delaware",
+      "county": "Sussex County"
+    },
+    {
+      "category": "Patapsco Valley State Park",
+      "description": "Hunting area maps available with trail details",
+      "map_type": "PDF hunting maps showing designated hunting areas",
+      "area_designations": [
+        "Area 1",
+        "Area 2",
+        "Area 3",
+        "Area 4",
+        "Area 5",
+        "Area 6",
+        "Area 7",
+        "Area 8",
+        "Area 12",
+        "Area 13",
+        "Area 15"
+      ],
+      "accessibility": "Maps available from Maryland DNR website"
+    },
+    {
+      "category": "Public Hunting Maps and Directions",
+      "description": "Maryland DNR public hunting land map resources",
+      "content": [
+        "Public hunting land locations",
+        "Detailed directions to access points",
+        "Parking area locations",
+        "Trail descriptions",
+        "Seasonal information"
+      ],
+      "organization": "Maps organized by region and land type",
+      "source": "Maryland DNR Forests and Wildlife Services"
+    },
+    {
+      "category": "Maryland Protected Lands Dashboard",
+      "description": "ArcGIS interactive dashboard for all protected lands",
+      "functionality": [
+        "View all public lands on interactive map",
+        "Filter by land type and activity",
+        "Get land detail information",
+        "Access manager contact information",
+        "Find specific amenities"
+      ]
+    },
+    {
+      "category": "State Forest Maps",
+      "description": "Detailed maps for individual state forests",
+      "forests_with_maps": [
+        "Savage River State Forest",
+        "Green Ridge State Forest",
+        "Pocomoke State Forest",
+        "Potomac-Garrett State Forest"
+      ],
+      "map_features": [
+        "Trail systems",
+        "Hunting zones",
+        "Parking areas",
+        "Campgrounds",
+        "Water access"
+      ]
+    },
+    {
+      "category": "ADA Accessible Areas",
+      "description": "Accessible hunting and recreation areas in Maryland",
+      "information_available": true,
+      "notes": "ADA accessible parking and trails identified on individual WMA maps"
+    },
+    {
+      "category": "Map Access Methods",
+      "options": [
+        "Interactive online maps on DNR website",
+        "Individual WMA webpage PDFs",
+        "State Parks visitor centers",
+        "Forest Service ranger offices",
+        "Mobile apps for field navigation"
+      ]
+    }
+  ]
+}

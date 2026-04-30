@@ -1,0 +1,132 @@
+{
+  "source_urls": [
+    "https://www.jellystonemaryland.com/",
+    "https://www.sunoutdoors.com/maryland/sun-outdoors-frontier-town",
+    "https://www.visitmaryland.org/listing/cabins-lodges/yogi-bears-jellystone-park",
+    "https://www.glamping.com/destinations/north-america/united-states/maryland/",
+    "https://mdglamping.com/"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "jellystone_park_williamsport": {
+      "name": "Yogi Bear's Jellystone Park Williamsport, MD",
+      "location": "Williamsport, Maryland",
+      "distance_from_baltimore": "Short distance from Baltimore",
+      "theme": "Family-friendly park with water park activities",
+      "season_open": "March 27 - November 29, 2026",
+      "peak_season": "June 5 - August 23, 2026",
+      "cabin_types": 9,
+      "max_cabin_capacity": 16,
+      "cabin_amenities": [
+        "Full bathrooms",
+        "Kitchens",
+        "Private bedrooms",
+        "Screened-in porches"
+      ],
+      "activities": [
+        "Lazy river",
+        "Mini golf",
+        "Jumping pillows",
+        "Laser tag",
+        "Water park"
+      ],
+      "camping_options": [
+        "Luxury cabins",
+        "RV sites",
+        "Tent camping"
+      ]
+    },
+    "frontier_town_berlin": {
+      "name": "Sun Outdoors Frontier Town",
+      "formerly_known_as": "Frontier Town RV Resort & Campground",
+      "location": "Berlin, Maryland",
+      "region": "Eastern Shore, south of Ocean City",
+      "theme": "Wild West themed resort",
+      "waterfront": "Sinepuxent Bay shores",
+      "total_campsites": "Almost 700",
+      "accommodations": [
+        "RV sites",
+        "Tent camping",
+        "Vacation cabins",
+        "Cottages",
+        "Covered wagons"
+      ],
+      "amenities_and_activities": [
+        "Frontier Town Water Park",
+        "Western Experience",
+        "18-hole miniature golf",
+        "Swimming pool",
+        "Go Ape high ropes course",
+        "Zip line",
+        "Arcade",
+        "On-site dining",
+        "Restaurants",
+        "Bars"
+      ],
+      "facilities": [
+        "Full arcade",
+        "Mini golf course",
+        "Ice cream shop",
+        "Multiple stores",
+        "Restaurants",
+        "Bars",
+        "Ropes course"
+      ]
+    },
+    "washington_dc_capitol_koa": {
+      "name": "Washington, DC/Capitol KOA",
+      "location": "Rolling countryside",
+      "distance_to_dc": "Convenient access to Washington, DC",
+      "distance_to_baltimore": "Easy venture to Baltimore",
+      "distance_to_annapolis": "Easy venture to Annapolis",
+      "theme": "Mid-Atlantic regional KOA"
+    },
+    "glamping_options": {
+      "definition": "Glamping combines camping's nature setting with luxury comforts like beds, warm showers, and electricity",
+      "accommodation_types": [
+        "Cabins",
+        "Vintage Airstream trailers",
+        "Canvas bell tents",
+        "Yurts",
+        "Treehouses"
+      ]
+    },
+    "glamping_destinations": {
+      "wild_yough": {
+        "name": "Wild Yough Glamping",
+        "location": "Garrett County, Maryland",
+        "region": "Mountaintop playground",
+        "feature": "Youghiogheny River - state-designated wild and scenic river",
+        "specialty": "Glamping introduction to Garrett County"
+      },
+      "savage_river_lodge": {
+        "name": "Savage River Lodge",
+        "location": "Western Maryland",
+        "acres": 700,
+        "terrain": "Mountains",
+        "accommodations": [
+          "Luxury cabins",
+          "Yurts"
+        ],
+        "setting": "Savage River State Forest",
+        "rating": "Ultimate in East Coast glamorous camping"
+      },
+      "little_bennett_campground": {
+        "name": "Little Bennett Campground",
+        "location": "Clarksburg, Maryland",
+        "setting": "Heavily wooded",
+        "premium_accommodations": [
+          "Yurts",
+          "Luxury canvas structures"
+        ],
+        "amenities": [
+          "Spacious interiors",
+          "Comfortable furnishings",
+          "Electricity",
+          "Climate control options"
+        ],
+        "season": "Year-round"
+      }
+    }
+  }
+}

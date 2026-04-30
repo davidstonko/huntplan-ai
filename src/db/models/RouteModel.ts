@@ -6,14 +6,17 @@
 import { Model } from '@nozbe/watermelondb';
 import { text, date, readonly } from '@nozbe/watermelondb/decorators';
 
+// TypeScript type augmentation (properties set by decorators at runtime)
+interface RouteModel {
+  planId: string;
+  label: string;
+  pointsJson: string;
+  color: string;
+  createdAt: Date | number;
+}
+
 class RouteModel extends Model {
   static table = 'routes';
-
-  planId!: string;
-  label!: string;
-  pointsJson!: string; // JSON-serialized array of {lat, lng}
-  color!: string | null;
-  createdAt!: Date;
 
   get points(): Array<{ lat: number; lng: number }> {
     try {
@@ -28,17 +31,23 @@ class RouteModel extends Model {
   }
 }
 
-// Apply decorators programmatically
-const applyDecorator = (decorator: any, target: any, key: string) => {
-  const descriptor = decorator(target, key, Object.getOwnPropertyDescriptor(target, key) || { configurable: true, writable: true, enumerable: true });
-  if (descriptor) Object.defineProperty(target, key, descriptor);
-};
+// WatermelonDB decorators — guarded for V2 (AsyncStorage mode)
+try {
+  const proto = RouteModel.prototype as any;
+  const applyDecorator = (decorator: any, key: string) => {
+    const descriptor = decorator(proto, key, undefined);
+    if (descriptor) Object.defineProperty(proto, key, descriptor);
+  };
 
-applyDecorator(text('plan_id'), RouteModel.prototype, 'planId');
-applyDecorator(text('label'), RouteModel.prototype, 'label');
-applyDecorator(text('points_json'), RouteModel.prototype, 'pointsJson');
-applyDecorator(text('color'), RouteModel.prototype, 'color');
-applyDecorator(date('created_at'), RouteModel.prototype, 'createdAt');
-applyDecorator(readonly, RouteModel.prototype, 'createdAt');
+  applyDecorator(text('plan_id'), 'planId');
+  applyDecorator(text('label'), 'label');
+  applyDecorator(text('points_json'), 'pointsJson');
+  applyDecorator(text('color'), 'color');
+  applyDecorator(date('created_at'), 'createdAt');
+  applyDecorator(readonly, 'createdAt');
+} catch (e) {
+  // WatermelonDB not active in V2 — decorators skipped
+  if (__DEV__) console.log('[WatermelonDB] Decorators deferred for RouteModel');
+}
 
 export default RouteModel;

@@ -73,7 +73,40 @@ export interface PresenceEvent {
   online_members: OnlineMember[];
 }
 
-export type CampEvent = AnnotationEvent | PhotoEvent | LocationEvent | PresenceEvent;
+export interface ChatMessageEvent {
+  type: 'chat_message';
+  message_id: string;
+  user_id: string;
+  username: string;
+  color: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface TypingEvent {
+  type: 'typing';
+  user_id: string;
+  username: string;
+  color: string;
+}
+
+export interface ChatReactionEvent {
+  type: 'chat_reaction';
+  message_id: string;
+  user_id: string;
+  username: string;
+  emoji: string;
+  timestamp: string;
+}
+
+export interface ChatDeleteEvent {
+  type: 'chat_delete';
+  message_id: string;
+  user_id: string;
+  timestamp: string;
+}
+
+export type CampEvent = AnnotationEvent | PhotoEvent | LocationEvent | PresenceEvent | ChatMessageEvent | TypingEvent | ChatReactionEvent | ChatDeleteEvent;
 
 // ── WebSocket Client ───────────────────────────────────────────
 
@@ -97,6 +130,10 @@ export class CampWebSocket {
   public onAnnotationDelete: ((event: AnnotationEvent) => void) | null = null;
   public onPhotoAdded: ((event: PhotoEvent) => void) | null = null;
   public onLocationUpdate: ((event: LocationEvent) => void) | null = null;
+  public onChatMessage: ((event: ChatMessageEvent) => void) | null = null;
+  public onTyping: ((event: TypingEvent) => void) | null = null;
+  public onChatReaction: ((event: ChatReactionEvent) => void) | null = null;
+  public onChatDelete: ((event: ChatDeleteEvent) => void) | null = null;
   public onError: ((error: string) => void) | null = null;
 
   constructor(campId: string, token: string) {
@@ -222,6 +259,44 @@ export class CampWebSocket {
   }
 
   /**
+   * Send a chat message to the camp.
+   */
+  sendChatMessage(text: string): void {
+    this.send({
+      type: 'chat_message',
+      text,
+    });
+  }
+
+  /**
+   * Send typing indicator to camp.
+   */
+  sendTyping(): void {
+    this.send({ type: 'typing' });
+  }
+
+  /**
+   * Send a reaction to a chat message.
+   */
+  sendChatReaction(messageId: string, emoji: string): void {
+    this.send({
+      type: 'chat_reaction',
+      message_id: messageId,
+      emoji,
+    });
+  }
+
+  /**
+   * Delete a chat message (sender only).
+   */
+  sendChatDelete(messageId: string): void {
+    this.send({
+      type: 'chat_delete',
+      message_id: messageId,
+    });
+  }
+
+  /**
    * Share current location with camp members (opt-in).
    */
   sendLocationUpdate(lat: number, lng: number, heading?: number, speed?: number): void {
@@ -273,6 +348,22 @@ export class CampWebSocket {
 
       case 'photo_added':
         this.onPhotoAdded?.(data as PhotoEvent);
+        break;
+
+      case 'chat_message':
+        this.onChatMessage?.(data as ChatMessageEvent);
+        break;
+
+      case 'typing':
+        this.onTyping?.(data as TypingEvent);
+        break;
+
+      case 'chat_reaction':
+        this.onChatReaction?.(data as ChatReactionEvent);
+        break;
+
+      case 'chat_delete':
+        this.onChatDelete?.(data as ChatDeleteEvent);
         break;
 
       case 'location_update':

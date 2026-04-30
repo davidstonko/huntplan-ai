@@ -1,0 +1,148 @@
+{
+  "source_url": "https://www.eregulations.com/maryland/fishing/freshwater-seasons-sizes-limits",
+  "date_accessed": "2026-04-11",
+  "data": {
+    "trout_regulations": {
+      "brook_trout": {
+        "minimum_size": "None",
+        "maximum_size": "None",
+        "daily_creel_limit": "Combined with brown trout - see below",
+        "combined_limit_with_brown": "2 fish per day",
+        "special_restrictions": "Brook trout must be immediately released in certain designated areas (creel limit 0)"
+      },
+      "brown_trout": {
+        "minimum_size": "None",
+        "maximum_size": "None",
+        "daily_creel_limit": "Combined with brook trout - 2 fish per day"
+      },
+      "rainbow_and_other_trout": {
+        "minimum_size": "None",
+        "put_and_take_areas": {
+          "daily_creel_limit": "5 daily, 10 possession",
+          "application": "All put-and-take trout areas"
+        },
+        "delayed_harvest_areas": {
+          "note": "Regulations vary by location and season"
+        }
+      },
+      "youth_trout_area": {
+        "age_limit": "Under 16 years old",
+        "daily_creel": "2 trout per child",
+        "restriction": "Brook trout NOT allowed"
+      }
+    },
+    "panfish_regulations": {
+      "black_crappie": {
+        "minimum_size": "None",
+        "daily_creel": "15 fish per day"
+      },
+      "bluegill": {
+        "note": "Same as black crappie",
+        "daily_creel": "15 fish per day"
+      },
+      "white_perch_freshwater": {
+        "note": "See tidal section for tidal white perch"
+      }
+    },
+    "catfish_freshwater": {
+      "blue_catfish": {
+        "fishing_season": "Year-round",
+        "minimum_size": "None",
+        "maximum_size": "None",
+        "daily_creel": "No daily limit"
+      },
+      "channel_catfish": {
+        "note": "Similar to blue catfish"
+      }
+    },
+    "bass_regulations": {
+      "largemouth_bass": {
+        "minimum_size": "12 inches",
+        "daily_creel": "5 fish per day"
+      },
+      "smallmouth_bass": {
+        "minimum_size": "12 inches",
+        "daily_creel": "5 fish per day"
+      }
+    },
+    "walleye_regulations": {
+      "general": {
+        "minimum_size": "15 inches",
+        "daily_creel": "5 fish per day",
+        "possession_limit": "10 fish"
+      },
+      "deep_creek_lake_special": {
+        "protected_slot": {
+          "minimum": "18 inches",
+          "maximum": "21 inches",
+          "restriction": "Protected length - must be released if caught in slot"
+        },
+        "closures": "March 1 - April 15 (closed to harvest)",
+        "open_season": "April 16 - February 28/29"
+      }
+    },
+    "saugeye_regulations": {
+      "deep_creek_lake": {
+        "note": "Proposed regulation consistent with walleye",
+        "minimum_size": "15 inches",
+        "daily_creel": "5 fish per day",
+        "possession": "10 fish"
+      }
+    },
+    "muskie_regulations": {
+      "minimum_size": "40 inches",
+      "daily_creel": "1 fish per day",
+      "note": "Striped muskie in some waters may have different limits"
+    },
+    "pike_regulations": {
+      "note": "Varies by water body - check specific water regulations"
+    },
+    "free_fishing_days_freshwater": [
+      {
+        "date": "June 6, 2026",
+        "requirement": "No license needed"
+      },
+      {
+        "date": "June 13, 2026",
+        "requirement": "No license needed"
+      },
+      {
+        "date": "July 4, 2026",
+        "requirement": "No license needed"
+      }
+    ],
+    "trout_management_areas": {
+      "put_and_take": {
+        "description": "Waters stocked regularly for immediate harvest",
+        "stocking": "Multiple times per season",
+        "access": "Call 800-688-3467 for locations"
+      },
+      "delayed_harvest": {
+        "description": "Alternates between catch-and-release and harvest seasons",
+        "purpose": "Extend angling opportunities throughout year",
+        "example": "Potomac Garrett State Forest"
+      }
+    },
+    "special_designation_waters": {
+      "note": "Some waters have special regulations - check eRegulations for specific water bodies",
+      "access": "https://www.eregulations.com/maryland/fishing/"
+    },
+    "notable_freshwater_fisheries": {
+      "deep_creek_lake": {
+        "primary_species": ["Walleye", "Saugeye", "Smallmouth bass"],
+        "special_regulations": "Yes - see walleye section"
+      }
+    },
+    "gear_restrictions": {
+      "note": "Most freshwater areas allow standard fishing methods",
+      "delayed_harvest_catch_release_periods": "Gear restrictions apply only during C&R periods"
+    },
+    "license_required": {
+      "resident_annual": "$32",
+      "nonresident_annual": "$55",
+      "trout_stamp_resident": "$20",
+      "trout_stamp_nonresident": "$30",
+      "exception": "Youth under 16 require no license"
+    }
+  }
+}

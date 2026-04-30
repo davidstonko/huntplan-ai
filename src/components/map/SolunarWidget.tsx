@@ -25,15 +25,22 @@ interface SolunarWidgetProps {
   date?: string;
 }
 
-const MOON_ICONS: Record<string, string> = {
-  'New Moon': '🌑',
-  'Waxing Crescent': '🌒',
-  'First Quarter': '🌓',
-  'Waxing Gibbous': '🌔',
-  'Full Moon': '🌕',
-  'Waning Gibbous': '🌖',
-  'Last Quarter': '🌗',
-  'Waning Crescent': '🌘',
+/**
+ * Short-code label per moon phase. Replaces the emoji moon glyphs we
+ * shipped in V1 — Build 9 professionalism pass dropped emoji as primary
+ * widget symbols, and the phase_name text is right next to the chip
+ * anyway, so the chip's job is to give a quick anchor without competing
+ * with the label.
+ */
+const MOON_CODES: Record<string, string> = {
+  'New Moon': 'NEW',
+  'Waxing Crescent': 'WXC',
+  'First Quarter': '1Q',
+  'Waxing Gibbous': 'WXG',
+  'Full Moon': 'FULL',
+  'Waning Gibbous': 'WNG',
+  'Last Quarter': '3Q',
+  'Waning Crescent': 'WNC',
 };
 
 const RATING_COLORS: Record<string, string> = {
@@ -56,7 +63,7 @@ export default function SolunarWidget({ latitude, longitude, date }: SolunarWidg
   if (!data) return null;
 
   const ratingColor = RATING_COLORS[data.rating.label] || Colors.textMuted;
-  const moonIcon = MOON_ICONS[data.moon.phase_name] || '🌙';
+  const moonCode = MOON_CODES[data.moon.phase_name] || 'MOON';
 
   return (
     <View style={styles.container}>
@@ -66,7 +73,9 @@ export default function SolunarWidget({ latitude, longitude, date }: SolunarWidg
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.8}
       >
-        <Text style={styles.moonIcon}>{moonIcon}</Text>
+        <View style={styles.moonChip}>
+          <Text style={styles.moonChipText}>{moonCode}</Text>
+        </View>
         <View>
           <Text style={[styles.ratingText, { color: ratingColor }]}>
             {data.rating.label}
@@ -80,7 +89,7 @@ export default function SolunarWidget({ latitude, longitude, date }: SolunarWidg
         <View style={styles.expandedPanel}>
           {/* Moon Info */}
           <View style={styles.moonRow}>
-            <Text style={styles.moonPhase}>{moonIcon} {data.moon.phase_name}</Text>
+            <Text style={styles.moonPhase}>{data.moon.phase_name}</Text>
             <Text style={styles.moonIllum}>{data.moon.illumination_pct}% illuminated</Text>
           </View>
 
@@ -168,7 +177,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
-  moonIcon: { fontSize: 18 },
+  moonChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: Colors.mud,
+    minWidth: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  moonChipText: {
+    color: Colors.tan,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
   ratingText: { fontSize: 12, fontWeight: '700' },
   ratingScore: { fontSize: 10, color: Colors.textMuted },
   expandedPanel: {

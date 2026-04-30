@@ -1,0 +1,199 @@
+{
+  "source_urls": [
+    "https://campnab.com/affiliate",
+    "https://www.reserveamerica.com/",
+    "https://www.basspro.com/",
+    "https://www.cabelas.com/",
+    "https://www.amazon.com/",
+    "https://www.undercanvas.com/",
+    "https://dnr.maryland.gov/publiclands/pages/campinginfo.aspx"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "camping_reservation_affiliates": [
+      {
+        "name": "Campnab",
+        "service": "Camping reservation monitoring and booking assistance",
+        "commission_single_scan": "$3 per referral",
+        "commission_membership": "$7 per membership referral",
+        "note": "New customers only",
+        "website": "https://campnab.com/affiliate",
+        "integration_potential": "Could embed Campnab links in app for campground availability alerts"
+      },
+      {
+        "name": "ReserveAmerica",
+        "service": "Official Maryland State Parks camping reservations",
+        "location": "https://www.reserveamerica.com/",
+        "note": "Check ReserveAmerica affiliate program availability",
+        "integration_potential": "Direct booking links to Maryland state park campgrounds"
+      },
+      {
+        "name": "Recreation.gov",
+        "service": "Federal recreation area camping",
+        "note": "Handles Assateague Island and other federal campgrounds",
+        "integration_potential": "Campground discovery for federal lands"
+      }
+    ],
+    "guide_service_partnerships": {
+      "fishing_guides": {
+        "opportunity": "Partner with local fishing charter companies for booking commissions",
+        "example_services": [
+          "Griffin's Guide Service",
+          "Hookset Guide Service",
+          "Chesapeake Bay Sport Fishing"
+        ],
+        "commission_potential": "Negotiate per-booking or percentage commissions"
+      },
+      "hunting_guides": {
+        "opportunity": "Directory listing + booking integration with hunting outfitters",
+        "example_services": [
+          "B & J Guide Service",
+          "Talbot County Outfitters",
+          "Winter Farms Hunting"
+        ],
+        "commission_potential": "Negotiate per-booking fees"
+      }
+    },
+    "gear_and_equipment_affiliates": [
+      {
+        "name": "Amazon Associates",
+        "current_usage": "Already integrated for camp/hike gear (mdoutdoors-20 tag)",
+        "commission_rate": "Typically 3-10% depending on product category",
+        "products": [
+          "Camping equipment",
+          "Fishing gear",
+          "Hunting supplies",
+          "Hiking boots",
+          "Backpacks",
+          "Tents",
+          "Cooking equipment"
+        ],
+        "integration": "Links in equipment recommendations across modes"
+      },
+      {
+        "name": "Bass Pro Shops / Cabela's",
+        "note": "Check affiliate program - owned by same parent company",
+        "products": [
+          "Fishing equipment",
+          "Hunting gear",
+          "Camping supplies",
+          "Boating safety equipment"
+        ],
+        "integration_potential": "Equipment recommendations for specific sports"
+      },
+      {
+        "name": "REI",
+        "service": "Outdoor gear retailer",
+        "commission_potential": "Check REI affiliate commission program",
+        "products": [
+          "Hiking boots",
+          "Backpacks",
+          "Camping gear",
+          "Climbing equipment"
+        ]
+      },
+      {
+        "name": "Savage River Outfitters",
+        "service": "Local fly shop partnership",
+        "opportunity": "Commission on fly fishing gear sales",
+        "integration_potential": "Featured in fly fishing guides and Savage River section"
+      }
+    ],
+    "lodging_and_glamping_affiliates": [
+      {
+        "name": "Airbnb",
+        "service": "Vacation rental and glamping listings",
+        "commission_potential": "Referral fee program available",
+        "products": [
+          "Cabins",
+          "Glamping accommodations",
+          "Unique outdoor stays"
+        ],
+        "integration_potential": "Embedded booking links in campground and lodging sections"
+      },
+      {
+        "name": "Booking.com",
+        "service": "Hotel and accommodation booking",
+        "commission_potential": "Affiliate program available",
+        "products": ["Hotels near hiking/camping areas"],
+        "integration_potential": "Lodging options near major trails and parks"
+      },
+      {
+        "name": "KOA",
+        "service": "Private campground chain",
+        "commission_potential": "Check KOA affiliate partnership program",
+        "integration_potential": "Featured in private campground listings"
+      },
+      {
+        "name": "Jellystone Park",
+        "service": "Family-friendly private campground",
+        "commission_potential": "Negotiate booking commissions"
+      }
+    ],
+    "map_and_navigation_potential": [
+      {
+        "name": "Mapbox Enterprise",
+        "note": "Already using Mapbox GL Native - could explore premium partnerships"
+      }
+    ],
+    "subscription_and_content_affiliates": [
+      {
+        "name": "AllTrails",
+        "service": "Trail database and hiking app",
+        "commission_potential": "Check affiliate partnership for linked trail data"
+      },
+      {
+        "name": "Hipcamp",
+        "service": "Unique camping experiences",
+        "commission_potential": "Affiliate commission on unique glamping bookings"
+      }
+    ],
+    "monetization_strategy_recommendations": {
+      "tier_1_quick_wins": [
+        {
+          "affiliate": "Amazon Associates (already live)",
+          "action": "Expand product recommendations for boating, crabbing, fishing"
+        },
+        {
+          "affiliate": "Campnab",
+          "action": "Add campground availability alerts with Campnab links (3-7 dollar per referral)"
+        },
+        {
+          "affiliate": "ReserveAmerica direct",
+          "action": "Check for affiliate program or sponsor partnership"
+        }
+      ],
+      "tier_2_expansion": [
+        {
+          "affiliate": "Guide service partnerships",
+          "action": "Create booking integration with local fishing/hunting guides"
+        },
+        {
+          "affiliate": "Bass Pro Shops / Cabela's",
+          "action": "Negotiate co-marketing or affiliate arrangement"
+        },
+        {
+          "affiliate": "Local glamping operators",
+          "action": "Feature Savage River Lodge, Wild Yough, etc. with booking links"
+        }
+      ],
+      "tier_3_premium": [
+        {
+          "affiliate": "REI membership benefits",
+          "action": "Co-promotion with hiking/camping content"
+        },
+        {
+          "affiliate": "Insurance partnerships",
+          "action": "Trip insurance for outdoor activities"
+        }
+      ]
+    },
+    "current_infrastructure": {
+      "amazon_associates": {
+        "tag": "mdoutdoors-20",
+        "usage": "Camping and hiking gear in Phase 5A/5B",
+        "status": "Active and generating revenue"
+      }
+    }
+  }
+}

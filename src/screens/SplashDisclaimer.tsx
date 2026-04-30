@@ -29,13 +29,11 @@ export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
             <View style={[styles.mdStripe, { backgroundColor: '#F5F5DC' }]} />
           </View>
 
-          {/* App Logo / Title */}
+          {/* App Title */}
           <View style={styles.logoArea}>
-            <Text style={styles.logoEmoji}>{'\uD83E\uDD8C'}</Text>
-            <Text style={styles.logoMark}>OMD</Text>
-            <Text style={styles.title}>OutdoorsMaryland</Text>
-            <Text style={styles.subtitle}>Hunt  {'\u00B7'}  Fish  {'\u00B7'}  Explore</Text>
-            <Text style={styles.crabLine}>{'\uD83E\uDD80'} The Free State's Outdoor Guide {'\uD83E\uDD80'}</Text>
+            <Text style={styles.title}>MDHuntFishOutdoors</Text>
+            <Text style={styles.subtitle}>Hunt  {'\u00B7'}  Fish  {'\u00B7'}  Camp  {'\u00B7'}  Hike</Text>
+            <Text style={styles.tagline}>Maryland's outdoor planning companion</Text>
           </View>
 
           {/* Disclaimer Card */}
@@ -45,15 +43,18 @@ export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
             </View>
 
             <Text style={styles.disclaimerText}>
-              OutdoorsMaryland is a planning tool designed to assist with hunting and other outdoor activities. This
-              application is NOT legal advice and does not replace your
-              responsibility to follow all applicable laws and regulations.
+              MDHuntFishOutdoors is a planning tool for hunting, fishing,
+              camping, and hiking in Maryland. This application is NOT legal
+              advice and does not replace your responsibility to follow all
+              applicable laws and regulations.
             </Text>
 
             <Text style={styles.disclaimerText}>
-              <Text style={styles.bold}>Always verify regulations</Text> with your
-              state Department of Natural Resources (DNR) before hunting. Seasons,
-              bag limits, and methods change frequently.
+              <Text style={styles.bold}>Always verify current rules</Text> with
+              the Maryland Department of Natural Resources (DNR), the U.S.
+              Forest Service, the National Park Service, and the Appalachian
+              Trail Conservancy as applicable. Seasons, limits, access rules,
+              and trail conditions change frequently.
             </Text>
 
             <Text style={styles.disclaimerText}>
@@ -61,25 +62,26 @@ export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
             </Text>
 
             <Text style={styles.bulletPoint}>
-              Obtaining required licenses and permits
+              Obtaining required licenses, permits, and reservations
             </Text>
             <Text style={styles.bulletPoint}>
-              Verifying current seasons and bag limits
+              Verifying current seasons, bag limits, and access windows
             </Text>
             <Text style={styles.bulletPoint}>
-              Understanding weapon restrictions and legal methods
+              Understanding weapon restrictions, fishing regulations, and
+              land-use rules
             </Text>
             <Text style={styles.bulletPoint}>
-              Confirming access rights to hunting lands
+              Confirming trail, campsite, and public-land access rights
             </Text>
             <Text style={styles.bulletPoint}>
-              Following all local, state, and federal hunting laws
+              Following all local, state, and federal laws
             </Text>
 
             <View style={styles.warningBar}>
               <Text style={styles.warningText}>
-                Data may not reflect current regulations. When in doubt, contact
-                your state DNR directly.
+                Data may not reflect current regulations or conditions. When
+                in doubt, contact the relevant agency directly.
               </Text>
             </View>
           </View>
@@ -91,12 +93,13 @@ export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
             onPress={onAccept}
             activeOpacity={0.7}
           >
-            <Text style={styles.acceptButtonText}>I Understand — Continue</Text>
+            <Text style={styles.acceptButtonText}>I understand — continue</Text>
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
             By continuing, you acknowledge this disclaimer and accept full
-            responsibility for verifying all hunting regulations.
+            responsibility for verifying current rules and conditions before
+            any trip.
           </Text>
         </View>
       </ScrollView>
@@ -133,35 +136,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 28,
   },
-  logoEmoji: {
-    fontSize: 52,
-    marginBottom: 8,
-  },
-  logoMark: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: Colors.oak,
-    letterSpacing: 4,
-    marginBottom: 4,
-  },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 30,
+    fontWeight: '800',
     color: Colors.tan,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.sage,
-    marginTop: 4,
+    marginTop: 6,
     letterSpacing: 2,
     fontWeight: '600',
   },
-  crabLine: {
+  tagline: {
     fontSize: 13,
     color: Colors.textMuted,
     marginTop: 8,
     letterSpacing: 0.3,
+    fontStyle: 'italic',
   },
   disclaimerBox: {
     backgroundColor: Colors.surface,

@@ -46,3 +46,19 @@ backend/*.pyc
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+ios/.xcode.env.local
+ios/.xcode.env.local
+
+# Python virtualenvs (added 2026-04-30)
+backend/venv/
+backend/.venv/
+**/__pycache__/
+*.pyc
+
+# Xcode build output
+build/
+ios/build/
+DerivedData/
+
+# macOS
+.DS_Store

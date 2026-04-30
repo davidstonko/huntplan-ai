@@ -1,0 +1,223 @@
+==============================================================================
+UNIVERSAL LINKS DEPLOYMENT — MDHuntFishOutdoors Camp Invite Sharing
+==============================================================================
+
+TASK COMPLETED: 2026-04-12
+
+All files created and deepLinkService.ts updated to support camp invite sharing
+via Universal Links and custom URL schemes.
+
+==============================================================================
+FILES CREATED
+==============================================================================
+
+1. apple-app-site-association (PROJECT ROOT)
+   Path: /huntmaryland-build/apple-app-site-association
+   Status: CREATED ✓
+   Deployment: Copy to GitHub Pages at .well-known/apple-app-site-association
+   Action: Replace TEAM_ID with actual Apple Developer Team ID
+
+2. join.html (PROJECT ROOT)
+   Path: /huntmaryland-build/join.html
+   Status: CREATED ✓
+   Deployment: Copy to GitHub Pages root
+   Features:
+     - Extracts ?camp=CAMP_ID from URL
+     - Attempts custom URL scheme: huntmaryland://join/CAMP_ID
+     - Falls back to App Store (Apple ID: 6761347484)
+     - Dark theme, responsive design
+     - Mobile-friendly with 1.5s timeout for app detection
+
+3. ios/HuntPlanAI/HuntPlanAI.entitlements
+   Path: /huntmaryland-build/ios/HuntPlanAI/HuntPlanAI.entitlements
+   Status: CREATED ✓
+   Content: Associated domains entitlement for applinks:davidstonko.github.io
+   Action: Xcode will auto-link this to Signing & Capabilities
+
+==============================================================================
+FILES MODIFIED
+==============================================================================
+
+1. src/services/deepLinkService.ts
+   Status: UPDATED ✓
+   Changes:
+     - parseInviteCode() now supports query params: ?camp=ABC123
+     - Added fallback patterns for multiple URL formats
+     - All existing handlers preserved (path-based, custom scheme, universal)
+
+   URL Formats Now Supported:
+     ✓ https://davidstonko.github.io/huntmaryland-site/join?camp=ABC123
+     ✓ huntmaryland://join?camp=ABC123
+     ✓ huntmaryland://join/ABC123
+     ✓ /join/ABC123
+     ✓ ?camp=ABC123 (any context)
+
+==============================================================================
+EXISTING CONFIG (NO CHANGES NEEDED)
+==============================================================================
+
+✓ ios/HuntPlanAI/Info.plist
+  - CFBundleURLTypes already registered
+  - URL scheme "huntmaryland" already configured
+  - No modifications required
+
+✓ src/services/deepLinkService.ts
+  - initializeDeepLinks() already in place
+  - handleDeepLink() already wired to DeerCampScreen
+  - shareCampInvite() already implements iOS share sheet
+  - Ready to use without additional changes
+
+==============================================================================
+TYPESCRIPT VERIFICATION
+==============================================================================
+
+Command: npx tsc --noEmit
+Result: PASSED ✓ (No errors)
+
+==============================================================================
+DEPLOYMENT STEPS
+==============================================================================
+
+STEP 1: Get Team ID
+  □ Log into: https://developer.apple.com/account
+  □ Navigate: Membership section
+  □ Find: Team ID (format: 7A1B2C3D4E)
+  □ Copy: Use in next step
+
+STEP 2: Update AASA with Team ID
+  □ Edit: /huntmaryland-build/apple-app-site-association
+  □ Replace: "TEAM_ID" with actual ID
+  □ Format: "7A1B2C3D4E.com.davidstonko.huntmaryland"
+
+STEP 3: Publish to GitHub Pages
+  □ Create directory: docs/.well-known/
+  □ Copy: apple-app-site-association → docs/.well-known/
+  □ Copy: join.html → docs/
+  □ Commit to GitHub
+  □ Verify AASA: https://davidstonko.github.io/.well-known/apple-app-site-association
+  □ Verify HTML: https://davidstonko.github.io/join.html
+
+STEP 4: Configure Xcode
+  □ Open: HuntPlanAI.xcodeproj in Xcode
+  □ Select: Target "HuntPlanAI"
+  □ Tab: "Signing & Capabilities"
+  □ Click: "+" button
+  □ Search: "Associated Domains"
+  □ Add: "applinks:davidstonko.github.io"
+  □ Verify: HuntPlanAI.entitlements syncs automatically
+
+STEP 5: Build & Test
+  □ Run: npx tsc --noEmit (verify no errors)
+  □ Run: cd ios && pod install
+  □ Build: Test on iPhone 12+
+  □ Test URL scheme: huntmaryland://join/TEST123
+  □ Test Universal Link: (after signing with Team ID)
+
+STEP 6: Archive for App Store
+  □ Run: npx tsc --noEmit (final check)
+  □ Build: Archive for distribution
+  □ Submit: To App Store with all changes
+
+==============================================================================
+USAGE IN APP
+==============================================================================
+
+To trigger camp invite sharing (DeerCampScreen or similar):
+
+  import { shareCampInvite } from '@/services/deepLinkService';
+
+  const handleShare = async () => {
+    await shareCampInvite('My Hunt Camp', 'ABC123DEF456');
+    // Opens iOS share sheet with:
+    // Message: "Join my Deer Camp \"My Hunt Camp\" on MDHuntFishOutdoors!"
+    // URL: https://davidstonko.github.io/huntmaryland-site/join/ABC123DEF456
+  };
+
+User taps link → iOS checks for app → Opens app to DeerCampScreen with inviteCode
+
+==============================================================================
+INVITE LINK EXAMPLES
+==============================================================================
+
+Share Link (to send to others):
+  https://davidstonko.github.io/huntmaryland-site/join/ABC123DEF456
+
+Custom URL Scheme (for testing):
+  huntmaryland://join/ABC123DEF456
+
+Fallback (if app not installed):
+  https://davidstonko.github.io/join.html?camp=ABC123DEF456
+  → Detects app not installed
+  → Redirects to App Store: https://apps.apple.com/app/id6761347484
+
+==============================================================================
+KEY IMPLEMENTATION DETAILS
+==============================================================================
+
+Universal Link Flow:
+  1. User shares: shareCampInvite('Hunt Camp', 'ABC123')
+  2. iOS share sheet shows link: https://davidstonko.github.io/.../join/ABC123
+  3. Recipient taps link on iOS
+  4. iOS checks AASA at davidstonko.github.io/.well-known/...
+  5. iOS verifies app entitlements match TEAM_ID
+  6. iOS opens app directly (no web view)
+  7. deepLinkService parses invite code
+  8. navigates to DeerCampScreen with autoJoin=true
+
+Custom URL Scheme Fallback:
+  1. join.html loads
+  2. Extracts ?camp=ABC123 from URL
+  3. Attempts: window.location.href = 'huntmaryland://join/ABC123'
+  4. If app opens: browser hidden, fallback doesn't trigger
+  5. If app not installed: timeout shows App Store fallback
+
+==============================================================================
+NOTES FOR DAVID
+==============================================================================
+
+1. TEAM_ID is CRITICAL — Without it, Universal Links won't work
+   - Find at: https://developer.apple.com/account > Membership
+   - Example format: A1B2C3D4E5F6G7H8I9
+   - Update both:
+     a) apple-app-site-association (appID field)
+     b) Xcode > Signing & Capabilities > Associated Domains
+
+2. GitHub Pages Setup
+   - Verify repo has "Pages" enabled in settings
+   - Serving from: /main branch (or /docs folder)
+   - Custom domain configured? (huntmaryland-site)
+   - Both files needed at davidstonko.github.io:
+     a) .well-known/apple-app-site-association (JSON)
+     b) join.html (HTML fallback)
+
+3. AASA Content-Type
+   - GitHub Pages should auto-serve as application/json
+   - If issues, ensure no .html extension
+
+4. Testing
+   - First test custom URL: huntmaryland://join/TEST123
+   - Then test Universal Links (requires app signed with real Team ID)
+   - Check logs: Settings > Developer > Universal Links & Handoff
+
+5. Content Security
+   - Never publish sensitive data in invite codes
+   - Consider: Invite codes should be unique, opaque identifiers
+   - Backend should validate code before allowing camp access
+
+==============================================================================
+DOCUMENT REFERENCE
+==============================================================================
+
+For full deployment guide, see: UNIVERSAL_LINKS_SETUP.md
+
+Troubleshooting tips included in that file.
+
+==============================================================================
+STATUS: READY FOR DEPLOYMENT ✓
+==============================================================================
+
+All files created and TypeScript verified.
+Awaiting Team ID replacement and GitHub Pages publication.
+
+Last Updated: 2026-04-12
+Next Steps: Replace TEAM_ID and push to GitHub Pages

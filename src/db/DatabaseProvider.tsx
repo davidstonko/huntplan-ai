@@ -1,31 +1,26 @@
 /**
- * DatabaseProvider — React context provider for WatermelonDB
- * Wraps the app to provide database access throughout the component tree.
- * Must be placed near the root of the app before contexts that use the database.
+ * DatabaseProvider — Placeholder for WatermelonDB (Phase 3+)
+ *
+ * WatermelonDB is NOT active in V2. The schema is defined but the database
+ * is not initialized until backend sync is ready (Phase 3+).
+ *
+ * This provider is a simple passthrough to avoid breaking the provider tree.
  */
 
-import React, { useMemo } from 'react';
-import { DatabaseProvider as WatermelonDatabaseProvider } from '@nozbe/watermelondb/react';
-import database from './index';
+import React from 'react';
 
 interface DatabaseProviderProps {
   children: React.ReactNode;
 }
 
 /**
- * Provides WatermelonDB database instance to the entire app.
- * Memoizes the database to prevent unnecessary re-renders.
+ * Passthrough provider — WatermelonDB disabled until Phase 3.
+ * When ready, this will wrap children with WatermelonDatabaseProvider.
  */
 export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   children,
 }) => {
-  const db = useMemo(() => database, []);
-
-  return (
-    <WatermelonDatabaseProvider database={db}>
-      {children}
-    </WatermelonDatabaseProvider>
-  );
+  return <>{children}</>;
 };
 
 export default DatabaseProvider;

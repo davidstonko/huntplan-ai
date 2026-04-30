@@ -1,0 +1,29 @@
+{
+ "id": "md-rocky-gap-ridge",
+ "name": "Evitts Ridge Trail",
+ "park": "Rocky Gap SP",
+ "trailhead": [
+  -78.66,
+  39.705
+ ],
+ "sources_tried": [
+  "osm_overpass_named",
+  "usgs_trails",
+  "osm_overpass_generic"
+ ],
+ "sources_returned": {
+  "osm_overpass_named": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout",
+  "usgs_trails": 22,
+  "osm_overpass_generic": 117
+ },
+ "chosen": null,
+ "cross_audit_m": null,
+ "confidence": "none",
+ "is_approximate": true,
+ "error": "no candidate with matching name within 3km of trailhead",
+ "published_miles": 7.0,
+ "tier2_source": "osm_overpass_relaxed",
+ "tier2_candidates": 157,
+ "tier2_chose": null,
+ "tier2_note": "no relaxed OSM candidate fit length+proximity"
+}

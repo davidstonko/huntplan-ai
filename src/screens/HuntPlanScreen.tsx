@@ -2,7 +2,7 @@
  * @file HuntPlanScreen.tsx
  * @description AI-powered hunt plan generator screen.
  * Users specify species, weapon, date, and location — the AI generates
- * a comprehensive plan with regulations, locations, timing, and strategy.
+ * a comprehensive plan with regulations, locations, timing, gear, and strategy.
  *
  * Accessible from the AI tab or Scout tab.
  *
@@ -10,7 +10,7 @@
  * @version 3.0.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -23,26 +23,31 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
-import Config from '../config';
-import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
-import { SearchableCountyPicker } from '../components/common/SearchableCountyPicker';
-import weatherService, { HuntingWeather } from '../services/weatherService';
-import { getSolunarData, SolunarData } from '../services/solunarService';
-import { getCurrentRutPhase } from '../data/marylandHuntingData';
+import { API_BASE_URL } from '../services/api';
 
-const SPECIES_OPTIONS = [
-  { value: 'deer', label: 'Deer', icon: '🦌' },
-  { value: 'turkey', label: 'Turkey', icon: '🦃' },
-  { value: 'waterfowl', label: 'Waterfowl', icon: '🦆' },
-  { value: 'bear', label: 'Bear', icon: '🐻' },
-  { value: 'small_game', label: 'Small Game', icon: '🐿️' },
+// Species picker: letter-code chip replaces earlier decorative emoji
+// icons per the Build 9 professionalism pass. Hunt abbreviations follow
+// common MD DNR tag-report vocabulary (WF for waterfowl, SG for small
+// game) so they read naturally to experienced hunters.
+const SPECIES_OPTIONS: { value: string; label: string; code: string }[] = [
+  { value: 'deer', label: 'Deer', code: 'DEER' },
+  { value: 'turkey', label: 'Turkey', code: 'TRKY' },
+  { value: 'waterfowl', label: 'Waterfowl', code: 'WF' },
+  { value: 'bear', label: 'Bear', code: 'BEAR' },
+  { value: 'small_game', label: 'Small Game', code: 'SG' },
 ];
 
+// 2026-04-29: Dropped "Shotgun" as a top-level method. MD DNR has three
+// distinct legal seasons — Archery, Firearms, Muzzleloader — and shotgun
+// is a *firearm subtype* (specifically required in shotgun-only zones
+// like Anne Arundel, Baltimore, Howard, Montgomery, Prince George's
+// counties). It is NOT a separate season. The AI Hunt Planner now
+// surfaces shotgun-only zone restrictions in its generated plan when
+// the user's chosen county requires shotgun.
 const WEAPON_OPTIONS = [
   { value: 'archery', label: 'Archery' },
   { value: 'firearms', label: 'Firearms' },
   { value: 'muzzleloader', label: 'Muzzleloader' },
-  { value: 'shotgun', label: 'Shotgun' },
 ];
 
 const MD_COUNTIES = [
@@ -53,73 +58,18 @@ const MD_COUNTIES = [
   'Wicomico', 'Worcester',
 ];
 
-/**
- * Returns the next Saturday from today as a Date object.
- * Used as the default hunt date in the plan generator.
- */
-function getNextSaturdayDate(): Date {
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // 0=Sun, 6=Sat
-  const daysUntilSaturday = dayOfWeek === 6 ? 7 : (6 - dayOfWeek);
-  const nextSat = new Date(today);
-  nextSat.setDate(today.getDate() + daysUntilSaturday);
-  nextSat.setHours(0, 0, 0, 0);
-  return nextSat;
-}
-
 export default function HuntPlanScreen() {
   const [species, setSpecies] = useState('deer');
   const [weapon, setWeapon] = useState('archery');
-  const [huntDate, setHuntDate] = useState(getNextSaturdayDate());
+  const [huntDate, setHuntDate] = useState(getNextSaturday());
   const [county, setCounty] = useState('');
   const [landName, setLandName] = useState('');
+  const [showCountyPicker, setShowCountyPicker] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<string | null>(null);
   const [sources, setSources] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  const [weather, setWeather] = useState<HuntingWeather | null>(null);
-  const [solunar, setSolunar] = useState<SolunarData | null>(null);
-  const [conditionsLoading, setConditionsLoading] = useState(false);
-  const [conditionsError, setConditionsError] = useState<string | null>(null);
-  const [showConditions, setShowConditions] = useState(false);
-
-  // Fetch weather and solunar conditions when date or county changes
-  useEffect(() => {
-    const fetchConditions = async () => {
-      // Only fetch if date is selected and we have a county (optional, but helps with location)
-      if (!huntDate) return;
-
-      setConditionsLoading(true);
-      setConditionsError(null);
-
-      try {
-        // Default to Maryland center if no county selected
-        // Garrett County (NW) as fallback: 39.40, -79.48
-        const lat = 39.4;
-        const lon = -79.48;
-
-        // Fetch weather and solunar data in parallel
-        const [huntingWeather, solunarData] = await Promise.all([
-          weatherService.getHuntingWeather(lat, lon),
-          getSolunarData(lat, lon, huntDate.toISOString().split('T')[0]),
-        ]);
-
-        setWeather(huntingWeather);
-        setSolunar(solunarData);
-        setShowConditions(true);
-      } catch (err) {
-        if (__DEV__) console.error('[HuntPlanScreen] Failed to fetch conditions:', err);
-        // Don't show error to user, just silently fail and don't show conditions
-        setShowConditions(false);
-      } finally {
-        setConditionsLoading(false);
-      }
-    };
-
-    fetchConditions();
-  }, [huntDate]);
 
   const generatePlan = async () => {
     setLoading(true);
@@ -128,7 +78,7 @@ export default function HuntPlanScreen() {
 
     try {
       const token = await AsyncStorage.getItem('@auth_access_token');
-      const res = await fetch(`${Config.API_BASE_URL}/api/v1/planner/ai/hunt-plan`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/planner/ai/hunt-plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +87,7 @@ export default function HuntPlanScreen() {
         body: JSON.stringify({
           species,
           weapon,
-          hunt_date: huntDate.toISOString().split('T')[0],
+          hunt_date: huntDate,
           county: county || undefined,
           land_name: landName || undefined,
           state: 'MD',
@@ -180,7 +130,14 @@ export default function HuntPlanScreen() {
                   style={[styles.speciesCard, species === s.value && styles.speciesCardActive]}
                   onPress={() => setSpecies(s.value)}
                 >
-                  <Text style={styles.speciesIcon}>{s.icon}</Text>
+                  <View
+                    style={[
+                      styles.speciesChip,
+                      species === s.value && styles.speciesChipActive,
+                    ]}
+                  >
+                    <Text style={styles.speciesChipText}>{s.code}</Text>
+                  </View>
                   <Text style={[styles.speciesLabel, species === s.value && styles.speciesLabelActive]}>
                     {s.label}
                   </Text>
@@ -204,19 +161,47 @@ export default function HuntPlanScreen() {
               ))}
             </View>
 
-            {/* Date Picker */}
-            <CalendarDatePicker
+            {/* Date */}
+            <Text style={styles.sectionLabel}>Planned Date</Text>
+            <TextInput
+              style={styles.input}
               value={huntDate}
-              onChange={setHuntDate}
-              label="Planned Date"
+              onChangeText={setHuntDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={Colors.textMuted}
             />
 
-            {/* County Picker */}
-            <SearchableCountyPicker
-              value={county}
-              onChange={setCounty}
-              label="County (optional)"
-            />
+            {/* County */}
+            <Text style={styles.sectionLabel}>County (optional)</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => setShowCountyPicker(!showCountyPicker)}
+            >
+              <Text style={county ? styles.inputText : styles.inputPlaceholder}>
+                {county || 'Select a county...'}
+              </Text>
+            </TouchableOpacity>
+            {showCountyPicker && (
+              <View style={styles.countyPicker}>
+                <TouchableOpacity
+                  style={styles.countyOption}
+                  onPress={() => { setCounty(''); setShowCountyPicker(false); }}
+                >
+                  <Text style={styles.countyOptionText}>Any County</Text>
+                </TouchableOpacity>
+                {MD_COUNTIES.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    style={[styles.countyOption, county === c && styles.countyOptionActive]}
+                    onPress={() => { setCounty(c); setShowCountyPicker(false); }}
+                  >
+                    <Text style={[styles.countyOptionText, county === c && styles.countyOptionTextActive]}>
+                      {c}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             {/* Specific Land */}
             <Text style={styles.sectionLabel}>Specific Public Land (optional)</Text>
@@ -228,16 +213,6 @@ export default function HuntPlanScreen() {
               placeholderTextColor={Colors.textMuted}
             />
 
-            {/* Conditions Preview Card */}
-            {showConditions && (weather || solunar) && (
-              <ConditionsPreviewCard
-                weather={weather}
-                solunar={solunar}
-                huntDate={huntDate}
-                loading={conditionsLoading}
-              />
-            )}
-
             {/* Generate Button */}
             <TouchableOpacity
               style={[styles.generateBtn, loading && styles.generateBtnDisabled]}
@@ -247,7 +222,7 @@ export default function HuntPlanScreen() {
             >
               {loading ? (
                 <View style={styles.loadingRow}>
-                  <ActivityIndicator color={Colors.mdWhite} size="small" />
+                  <ActivityIndicator color="#fff" size="small" />
                   <Text style={styles.generateBtnText}>Generating Plan...</Text>
                 </View>
               ) : (
@@ -302,143 +277,14 @@ export default function HuntPlanScreen() {
   );
 }
 
-// ─── Conditions Preview Card Component ──────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────
 
-interface ConditionsPreviewCardProps {
-  weather: HuntingWeather | null;
-  solunar: SolunarData | null;
-  huntDate: Date;
-  loading: boolean;
-}
-
-/**
- * Displays a collapsible card with weather, solunar, rut phase, and deer activity score.
- */
-function ConditionsPreviewCard({
-  weather,
-  solunar,
-  huntDate,
-  loading,
-}: ConditionsPreviewCardProps) {
-  const [expanded, setExpanded] = React.useState(false);
-  const rutPhase = getCurrentRutPhase(huntDate);
-
-  // Calculate deer activity score (1-10) based on weather, solunar, and rut
-  const calculateDeerActivityScore = (): number => {
-    let score = 5; // baseline
-
-    // Weather contribution (up to +3)
-    if (weather) {
-      score += weather.deerActivityIndex > 6 ? 2 : weather.deerActivityIndex > 4 ? 1 : 0;
-    }
-
-    // Solunar contribution (up to +2)
-    if (solunar) {
-      const solunarScore = solunar.rating.score || 50;
-      if (solunarScore >= 80) score += 2;
-      else if (solunarScore >= 65) score += 1;
-    }
-
-    // Rut phase contribution (up to +3)
-    if (rutPhase) {
-      if (rutPhase.phase === 'Peak Rut') score += 3;
-      else if (rutPhase.phase === 'Seeking Phase') score += 2;
-      else if (rutPhase.phase === 'Pre-Rut' || rutPhase.phase === 'Second Rut') score += 1;
-    }
-
-    return Math.min(10, Math.max(1, score));
-  };
-
-  const deerActivityScore = calculateDeerActivityScore();
-  const activityLabel =
-    deerActivityScore >= 8 ? 'Excellent' : deerActivityScore >= 6 ? 'Good' : 'Fair';
-  const activityColor =
-    deerActivityScore >= 8 ? Colors.moss : deerActivityScore >= 6 ? Colors.amber : Colors.mud;
-
-  return (
-    <View style={styles.conditionsCard}>
-      <TouchableOpacity
-        style={styles.conditionsHeader}
-        onPress={() => setExpanded(!expanded)}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.conditionsTitle}>
-          {expanded ? '▼' : '▶'} Hunt Conditions Preview
-        </Text>
-        {!expanded && deerActivityScore > 0 && (
-          <View
-            style={[
-              styles.activityBadge,
-            ]}
-          >
-            <Text style={[styles.activityBadgeText, { color: activityColor }]}>
-              {activityLabel}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
-
-      {expanded && (
-        <View style={styles.conditionsContent}>
-          {loading ? (
-            <ActivityIndicator color={Colors.moss} size="small" />
-          ) : (
-            <>
-              {/* Weather Section */}
-              {weather && weather.forecasts.length > 0 && (
-                <View style={styles.conditionSection}>
-                  <Text style={styles.conditionSectionLabel}>🌤️ Weather</Text>
-                  <Text style={styles.conditionText}>
-                    {weather.forecasts[0].temperature}°F • {weather.forecasts[0].shortForecast}
-                  </Text>
-                  <Text style={styles.conditionText}>
-                    Wind: {weather.forecasts[0].windSpeed}
-                  </Text>
-                </View>
-              )}
-
-              {/* Solunar Section */}
-              {solunar && (
-                <View style={styles.conditionSection}>
-                  <Text style={styles.conditionSectionLabel}>
-                    🌙 {solunar.moon.phase_name}
-                  </Text>
-                  <Text style={styles.conditionText}>
-                    Activity: {solunar.rating.label} ({solunar.rating.score}/100)
-                  </Text>
-                </View>
-              )}
-
-              {/* Rut Phase Section */}
-              {rutPhase && (
-                <View style={styles.conditionSection}>
-                  <Text style={styles.conditionSectionLabel}>🦌 Rut Phase</Text>
-                  <Text style={styles.conditionText}>{rutPhase.phase}</Text>
-                  <Text style={styles.conditionDesc}>{rutPhase.description}</Text>
-                </View>
-              )}
-
-              {/* Deer Activity Score */}
-              <View style={[styles.conditionSection, styles.activityScoreSection]}>
-                <Text style={styles.conditionSectionLabel}>Deer Activity Score</Text>
-                <View style={styles.scoreBar}>
-                  <View
-                    style={[
-                      styles.scoreBarFill,
-                      { width: `${deerActivityScore * 10}%`, backgroundColor: activityColor },
-                    ]}
-                  />
-                </View>
-                <Text style={[styles.scoreText, { color: activityColor }]}>
-                  {deerActivityScore}/10 — {activityLabel}
-                </Text>
-              </View>
-            </>
-          )}
-        </View>
-      )}
-    </View>
-  );
+function getNextSaturday(): string {
+  const d = new Date();
+  const day = d.getDay();
+  const daysUntilSat = (6 - day + 7) % 7 || 7;
+  d.setDate(d.getDate() + daysUntilSat);
+  return d.toISOString().split('T')[0];
 }
 
 // ─── Styles ─────────────────────────────────────────────────────
@@ -463,7 +309,24 @@ const styles = StyleSheet.create({
   speciesCardActive: {
     borderColor: Colors.moss, backgroundColor: Colors.forestDark,
   },
-  speciesIcon: { fontSize: 28, marginBottom: 4 },
+  speciesChip: {
+    width: 40,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: Colors.oak,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  speciesChipActive: {
+    backgroundColor: Colors.moss,
+  },
+  speciesChipText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
   speciesLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
   speciesLabelActive: { color: Colors.lichen },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -473,7 +336,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: Colors.moss, borderColor: Colors.moss },
   chipText: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600' },
-  chipTextActive: { color: Colors.mdWhite },
+  chipTextActive: { color: '#fff' },
   input: {
     backgroundColor: Colors.surface, borderRadius: 10, padding: 14,
     borderWidth: 1, borderColor: Colors.mud,
@@ -487,13 +350,13 @@ const styles = StyleSheet.create({
   countyOption: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6 },
   countyOptionActive: { backgroundColor: Colors.moss },
   countyOptionText: { fontSize: 14, color: Colors.textSecondary },
-  countyOptionTextActive: { color: Colors.mdWhite, fontWeight: '600' },
+  countyOptionTextActive: { color: '#fff', fontWeight: '600' },
   generateBtn: {
     backgroundColor: Colors.moss, paddingVertical: 16, borderRadius: 12,
     alignItems: 'center', marginTop: 28,
   },
   generateBtnDisabled: { opacity: 0.6 },
-  generateBtnText: { color: Colors.mdWhite, fontSize: 17, fontWeight: '700' },
+  generateBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   errorCard: {
     backgroundColor: Colors.rust + '20', borderRadius: 8, padding: 12, marginTop: 12,
@@ -522,83 +385,4 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 16, borderWidth: 1, borderColor: Colors.moss,
   },
   newPlanBtnText: { color: Colors.moss, fontSize: 15, fontWeight: '600' },
-  // Conditions preview card
-  conditionsCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-    marginTop: 20,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  conditionsHeader: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: Colors.forestDark,
-  },
-  conditionsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.lichen,
-  },
-  activityBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-  },
-  activityBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  conditionsContent: {
-    padding: 14,
-    gap: 12,
-  },
-  conditionSection: {
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    padding: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.moss,
-  },
-  conditionSectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.lichen,
-    marginBottom: 4,
-  },
-  conditionText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginBottom: 2,
-  },
-  conditionDesc: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 4,
-    fontStyle: 'italic',
-  },
-  activityScoreSection: {
-    marginTop: 8,
-    borderLeftColor: Colors.amber,
-  },
-  scoreBar: {
-    height: 8,
-    backgroundColor: Colors.mud,
-    borderRadius: 4,
-    marginVertical: 6,
-    overflow: 'hidden',
-  },
-  scoreBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  scoreText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
 });

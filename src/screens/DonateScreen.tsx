@@ -10,10 +10,11 @@ import {
   Platform,
 } from 'react-native';
 import Colors from '../theme/colors';
-import { Config } from '../config';
+import Config from '../config';
+import AppLogo from '../components/common/AppLogo';
 
 /**
- * DonateScreen — Support the OutdoorsMaryland Project
+ * DonateScreen — Support the MDHuntFishOutdoors Project
  *
  * Provides multiple ways for users to donate and support development:
  * - One-time donations via Stripe payment links
@@ -76,25 +77,12 @@ const SUPPORT_OPTIONS = [
   {
     id: 'venmo',
     label: 'Venmo',
-    color: '#008CFF',
+    color: Colors.info,
     getUrl: () => `venmo://paycharge?txn=pay&recipients=${DONATION_CONFIG.venmo}`,
     fallbackUrl: `https://venmo.com/${DONATION_CONFIG.venmo}`,
   },
-  {
-    id: 'buymeacoffee',
-    label: 'Buy Me a Coffee',
-    color: '#FFDD00',
-    textColor: '#000000',
-    getUrl: () => `https://buymeacoffee.com/${DONATION_CONFIG.buyMeACoffee}`,
-    fallbackUrl: `https://buymeacoffee.com/${DONATION_CONFIG.buyMeACoffee}`,
-  },
-  {
-    id: 'patreon',
-    label: 'Patreon (Monthly)',
-    color: '#FF424D',
-    getUrl: () => `https://patreon.com/${DONATION_CONFIG.patreon}`,
-    fallbackUrl: `https://patreon.com/${DONATION_CONFIG.patreon}`,
-  },
+  // Buy Me a Coffee and Patreon removed — pages not yet created
+  // Re-add once accounts are set up at buymeacoffee.com and patreon.com
 ];
 
 export default function DonateScreen() {
@@ -144,10 +132,10 @@ export default function DonateScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Hero Section — Mission */}
       <View style={styles.heroSection}>
-        <Text style={styles.heroEmoji}>{'\uD83E\uDD8C'}</Text>
-        <Text style={styles.heroTitle}>Support OutdoorsMaryland</Text>
+        <AppLogo size={56} />
+        <Text style={styles.heroTitle}>Support MDHuntFishOutdoors</Text>
         <Text style={styles.heroSubtitle}>
-          All of Maryland's outdoor adventures in one place — free. OutdoorsMaryland
+          All of Maryland's outdoor adventures in one place — free. MDHuntFishOutdoors
           brings together hunting regulations, public land maps, seasons, and local
           knowledge so you spend less time searching and more time in the field and on the water.
         </Text>
@@ -242,7 +230,7 @@ export default function DonateScreen() {
             <Text
               style={[
                 styles.paymentButtonText,
-                option.textColor ? { color: option.textColor } : null,
+                null,
               ]}
             >
               {option.label}
@@ -299,7 +287,7 @@ export default function DonateScreen() {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          OutdoorsMaryland is an independent project — not affiliated with MD DNR.
+          MDHuntFishOutdoors is an independent project — not affiliated with MD DNR.
           Every dollar goes directly to keeping this app free and improving it
           for Maryland's outdoor community.
         </Text>
@@ -445,7 +433,7 @@ const styles = StyleSheet.create({
   paymentButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: Colors.textOnAccent,
     letterSpacing: 0.3,
   },
   // Impact

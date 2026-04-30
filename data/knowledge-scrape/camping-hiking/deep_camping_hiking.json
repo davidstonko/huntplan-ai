@@ -1,0 +1,951 @@
+{
+  "metadata": {
+    "title": "Maryland Deep Camping & Hiking Research",
+    "last_updated": "2026-04-11",
+    "research_scope": [
+      "State park campgrounds (11 major parks)",
+      "Cabin rentals",
+      "Trail conditions & resources",
+      "Waterfall hikes",
+      "Mountain biking trails",
+      "Rock climbing areas",
+      "Scenic overlooks & viewpoints",
+      "Winter activities",
+      "Geocaching opportunities"
+    ],
+    "data_sources": [
+      "MD DNR official websites",
+      "Maryland State Park Reservation System (parkreservations.maryland.gov)",
+      "PATC (Potomac Appalachian Trail Club)",
+      "AllTrails, Hipcamp, Campendium",
+      "NOAA Appalachian Trail Conservancy",
+      "VisitMaryland.org"
+    ]
+  },
+  "state_park_campgrounds": {
+    "major_parks": [
+      {
+        "name": "Deep Creek Lake State Park",
+        "region": "Western Maryland",
+        "total_sites": 105,
+        "site_breakdown": {
+          "electric_sites": 23,
+          "basic_sites": 82
+        },
+        "specialty_accommodations": {
+          "mini_cabins": 2,
+          "yurts": 1,
+          "shelters": 1
+        },
+        "fees": {
+          "electric_sites": "$27.50/night",
+          "basic_sites": "$22.50/night (estimated)",
+          "reservation_fee": "$6.25"
+        },
+        "amenities": [
+          "Heated bathhouses",
+          "Dump station",
+          "Freshwater fill-up",
+          "Free boat trailer parking",
+          "Overnight dock slips (campers only)",
+          "3 camp loops (Browning, Beckman, Garrett)",
+          "Pet-friendly loops available"
+        ],
+        "seasonal_dates": "April 15 - December 15",
+        "loops": [
+          "Browning Loop (pet-friendly)",
+          "Beckman Loop (pet-friendly)",
+          "Garrett Loop (pet-friendly)",
+          "Delphia Brant Loop (pet-free)"
+        ],
+        "reservation_url": "https://parkreservations.maryland.gov/",
+        "phone": "1-888-432-2267",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/western/deepcreek.aspx"
+      },
+      {
+        "name": "Assateague Island State Park",
+        "region": "Eastern Shore",
+        "total_sites": 342,
+        "site_types": {
+          "primitive": "312 sites",
+          "electric": "30 sites (G-Loop and limited I-Loop)"
+        },
+        "fees": {
+          "primitive": "$30/night",
+          "electric": "$40/night"
+        },
+        "amenities": [
+          "Beach-front camping",
+          "Swimming beaches along entire campground",
+          "9 bathhouse/shower facilities",
+          "Centrally located dump site",
+          "Paved bike path parallel to main road",
+          "Fire rings & picnic tables",
+          "Famous wild horses on island"
+        ],
+        "seasonal_dates": "April - October",
+        "highlights": "Famous for wild horses, barrier island camping, beach access",
+        "booking_notes": "Extremely popular; book well in advance for summer and electric hookups",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/eastern/assateague.aspx",
+        "recreation_gov_url": "https://www.recreation.gov/camping/campgrounds/232507"
+      },
+      {
+        "name": "Elk Neck State Park",
+        "region": "Cecil County (Northeast)",
+        "total_sites": 331,
+        "site_breakdown": {
+          "full_hookup": 31,
+          "electric_only": 29,
+          "primitive_tent": 199,
+          "rustic_cabins": 9,
+          "mini_cabins": 7
+        },
+        "fees": {
+          "north_east_loop": "$36.50/night",
+          "chester_loop": "$27.50/night",
+          "standard_tent": "$21.50/night",
+          "reservation_fee": "$6.75"
+        },
+        "loops": [
+          "North East Camping Loop (28 electric, water, sewer)",
+          "Chester Camping Loop (19 electric hookups)",
+          "Elk Loop (56 standard tent)",
+          "Miles Loop (standard tent)",
+          "Wye Loop (68 standard tent)",
+          "Choptank Loop (standard tent)",
+          "Susquehanna Loop (standard tent)",
+          "Bohemia Loop (23 standard tent)"
+        ],
+        "amenities": [
+          "Electric hookups (50, 30, 20 amp available)",
+          "Water & sewer in select loops",
+          "Family-oriented wooded setting",
+          "Historical rustic cabins",
+          "Mini-camper cabins"
+        ],
+        "reservation_notes": "Book up to 1 year in advance; especially crowded summer/holidays",
+        "official_url": "https://dnr.maryland.gov/publiclands/Pages/central/ElkNeck/River-Camping-Area.aspx",
+        "reservation_system": "https://parkreservations.maryland.gov/"
+      },
+      {
+        "name": "Rocky Gap State Park",
+        "region": "Western Maryland (Flintstone)",
+        "total_sites": 278,
+        "electric_sites": 30,
+        "specialty_accommodations": {
+          "mini_cabins": 15,
+          "yurts": 1
+        },
+        "fees": "$23-29/night (base; varies by amenities, holidays, residency)",
+        "loops": [
+          "Ash Loop",
+          "Birch Loop",
+          "Chestnut Loop",
+          "Dogwood Loop",
+          "Elm Loop",
+          "Hickory Loop",
+          "Hemlock Loop",
+          "Ironwood Loop",
+          "Lakeside Loop",
+          "Spruce Loop"
+        ],
+        "amenities": [
+          "Dumping station",
+          "Hot water bathhouses in each loop",
+          "Scales & Tales Aviary",
+          "Nature center",
+          "Swimming beach",
+          "Playground",
+          "Rocky Gap Snacks shop",
+          "Camp store",
+          "Trail access to 20+ miles"
+        ],
+        "closure_notice": "CLOSED October 2026 - January 2028 for essential improvements",
+        "highlights": "Lakeside camping, well-maintained facilities, F & C loops pet-friendly",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/western/rockygap.aspx"
+      },
+      {
+        "name": "Cunningham Falls State Park",
+        "region": "Western Maryland (Thurmont)",
+        "total_sites": 158,
+        "area_breakdown": {
+          "william_houck": {
+            "basic_tent": 106,
+            "electric": 36
+          },
+          "manor": {
+            "electric_water": 24
+          }
+        },
+        "specialty": {
+          "cabins": 4
+        },
+        "fees": {
+          "range": "$21-65/night",
+          "day_use": "$3 MD residents, $5 non-residents"
+        },
+        "amenities": [
+          "Drinking water",
+          "Flush toilets & hot showers",
+          "Camp store",
+          "Snack bar",
+          "Dump station",
+          "Playground",
+          "Picnic area",
+          "Boat ramp",
+          "78-foot waterfall (Cunningham Falls)"
+        ],
+        "seasonal_dates": "April - October (Manor area)",
+        "highlights": "Maryland's largest waterfall, hiking to falls, scenic beauty",
+        "reservation_notes": "Book 6+ months ahead for peak season; cabins need even earlier booking",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/western/cunningham.aspx"
+      },
+      {
+        "name": "Assateague Island State Park Campground",
+        "region": "Eastern Shore",
+        "total_sites": 342,
+        "site_types": {
+          "primitive": 312,
+          "electric": 30
+        },
+        "fees": {
+          "primitive": "$30/night",
+          "electric": "$40/night"
+        },
+        "amenities": [
+          "9 bath/shower houses",
+          "Central dump site",
+          "Swimming beaches",
+          "Paved bike path",
+          "Fire rings & picnic tables",
+          "Beach-front camping",
+          "Wild horse viewing"
+        ],
+        "season": "April - October",
+        "notes": "Often fully booked, especially summer. Recommend advance booking."
+      },
+      {
+        "name": "Gambrill State Park",
+        "region": "Frederick County",
+        "total_sites": 28,
+        "site_breakdown": {
+          "basic": 13,
+          "tent_only": 9,
+          "electric": 6,
+          "camper_cabins": 4
+        },
+        "fees": {
+          "md_residents_basic": "$18.50 (Sun-Thu), $19.50 (Fri-Sat)",
+          "md_residents_electric": "$24.50 (Sun-Thu), $25.50 (Fri-Sat)",
+          "non_residents_basic": "$19.50 (Sun-Thu), $20.50 (Fri-Sat)",
+          "non_residents_electric": "$25.50 (Sun-Thu), $26.50 (Fri-Sat)",
+          "transaction_fee": "$6.25"
+        },
+        "amenities": [
+          "Picnic table & fire ring at each site",
+          "Dump station",
+          "Central bathhouse with hot showers",
+          "Flush toilets",
+          "Mountain overlooks",
+          "Middletown Overlook (dramatic western views)",
+          "North Frederick Overlook"
+        ],
+        "highlights": "Scenic mountain views, excellent for hiking enthusiasts",
+        "official_url": "https://dnr.maryland.gov/publiclands/Pages/western/Gambrill/Camping.aspx"
+      },
+      {
+        "name": "Patapsco Valley State Park",
+        "region": "Central Maryland",
+        "areas": [
+          {
+            "name": "Hollofield Area",
+            "sites": 73,
+            "rv_suitable": 26,
+            "hookups": "30-amp electric available",
+            "fees": "$25-35/night",
+            "season": "Open year-round"
+          },
+          {
+            "name": "Hilton Area",
+            "sites": 12,
+            "mini_cabins": 6,
+            "fees": "$20-50/night",
+            "season": "April - October"
+          }
+        ],
+        "day_use_fees": "$3 MD residents, $5 non-residents",
+        "amenities": [
+          "RV sites up to 40 feet",
+          "Forested terrain",
+          "Near Saw Mill Branch Stream",
+          "Electric hookups available"
+        ],
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/central/patapsco.aspx"
+      },
+      {
+        "name": "Janes Island State Park",
+        "region": "Eastern Shore (Somerset County)",
+        "total_sites": 104,
+        "breakdown": {
+          "no_electricity": "~82 sites",
+          "electric": "~22 sites"
+        },
+        "specialty": {
+          "mini_cabins": 9,
+          "full_service_cabins": 1,
+          "lodge": 1
+        },
+        "fees": {
+          "no_electricity": "$21.50/night",
+          "electric": "$27.50/night",
+          "mini_cabins": "$55.50/night",
+          "full_service_cabins": "$86.75/night"
+        },
+        "loops": [
+          "Loop A (day-use areas & marina)",
+          "Loop B (full electric hookups, RV-popular)",
+          "Loop C (tent camping, fewer electrical)"
+        ],
+        "amenities": [
+          "RV accommodations up to 30 feet",
+          "Electric, water, sewer hookups",
+          "Drinking water",
+          "Flush toilets & hot showers",
+          "Boat ramp ($7 MD residents, $9 non-residents)"
+        ],
+        "seasonal": "March 31 - November 26",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/eastern/janesisland.aspx"
+      },
+      {
+        "name": "New Germany State Park",
+        "region": "Western Maryland (Garrett County)",
+        "total_sites": 49,
+        "electric_sites": 2,
+        "loops": [
+          "Pines Loop",
+          "White Oak Loop (1 electric site #34)",
+          "Hemlock Loop (1 electric site #58, pet-friendly)"
+        ],
+        "fees": "$18-28/night",
+        "highlights": "Cross-country skiing & snowshoeing in winter, 10 groomed trails",
+        "upgrade_notice": "Water system & wastewater treatment plant upgrades 2026-2027 will require periodic closures",
+        "reservation_url": "https://parkreservations.maryland.gov/",
+        "phone": "1.888.432.2267",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/western/newgermany.aspx"
+      },
+      {
+        "name": "Big Run State Park",
+        "region": "Western Maryland (Garrett County, Savage River)",
+        "total_sites": 23,
+        "site_type": "Primitive RV sites",
+        "capacity": "Up to 29 feet RV length",
+        "amenities": [
+          "Picnic table & fire ring",
+          "Pit toilets (well-maintained)",
+          "Water station",
+          "Dump station",
+          "Group camping areas",
+          "Large picnic pavilion"
+        ],
+        "specialty": {
+          "glamping_tents": 6,
+          "operator": "Tentrr (safari-style, furnished)"
+        },
+        "activities": [
+          "Fishing (Savage River Reservoir)",
+          "Boating (non-motorized & electric only)",
+          "Hiking",
+          "Hunting (seasonal)"
+        ],
+        "year_round": true,
+        "highlights": "Reservoir access, scenic wilderness, glamping option",
+        "official_url": "https://dnr.maryland.gov/publiclands/pages/western/bigrun.aspx"
+      },
+      {
+        "name": "Herrington Manor State Park",
+        "region": "Western Maryland (Oakland, Garrett County)",
+        "park_size": "365 acres",
+        "camping": "No traditional campsites; cabins only",
+        "cabins": 20,
+        "cabin_type": "Furnished log cabins",
+        "amenities": [
+          "53-acre lake",
+          "Swimming",
+          "Canoeing & kayaking",
+          "Biking",
+          "Picnicking",
+          "Hiking",
+          "Tennis & volleyball",
+          "Basketball"
+        ],
+        "day_use_fees": {
+          "summer_weekends": "$3 person MD, $5 person non-MD",
+          "summer_weekdays": "$3 vehicle MD, $5 vehicle non-MD",
+          "other_seasons": "$3 vehicle MD, $5 vehicle non-MD"
+        },
+        "closure_notice": "May 1 - December 2, 2026: All 20 cabins & shelter CLOSED for renovations",
+        "winter_activities": [
+          "Cross-country skiing (10 miles of trails)",
+          "Snowshoeing",
+          "Winter hiking"
+        ],
+        "ski_rentals": "$20/2 hrs, $40/day",
+        "reservation_url": "https://parkreservations.maryland.gov/",
+        "phone": "1.888.432.2267"
+      }
+    ],
+    "cabin_rental_system": {
+      "overview": "Maryland offers 120+ full-service & camper cabins across state parks",
+      "reservation_method": "parkreservations.maryland.gov or 1-888-432-2267",
+      "min_stay": "2 nights year-round",
+      "exception": "3 nights during Memorial Day, 4th July, Labor Day weekends",
+      "advance_booking": "365 days in advance",
+      "price_range": "$45-90/night (mini cabins)",
+      "cabin_types": [
+        "Mini cabins (4-6 person capacity, rustic)",
+        "Full-service cabins (electricity, heat, water)",
+        "Yurts (glamping option)",
+        "Safari tents (Tentrr partnership)"
+      ]
+    }
+  },
+  "trail_conditions_and_resources": {
+    "appalachian_trail_maryland": {
+      "overview": {
+        "distance": "40 miles through Maryland",
+        "elevation_range": "250 ft (Potomac River) to 1,900 ft (High Rock)",
+        "difficulty": "Fairly easy by AT standards",
+        "elevation_gain_loss": "1,650 feet total",
+        "characteristics": "Pastoral views, wooded ridges, gentle grades, pastoral/farm setting"
+      },
+      "trail_sections": [
+        {
+          "section": "Section 1",
+          "route": "Pen Mar Park to Raven Rock Hollow",
+          "highlights": [
+            "High Rock Overlook (1,400 ft elevation, north view into PA)",
+            "Devil's Racecourse shelter area",
+            "High Rock viewpoint"
+          ]
+        },
+        {
+          "section": "Section 2",
+          "route": "Raven Rock to Annapolis Rock",
+          "features": "Multiple vista points, pastoral farmland"
+        },
+        {
+          "section": "Section 3",
+          "route": "Annapolis Rock to Weverton Cliffs",
+          "highlights": [
+            "Washington Monument (1,600 ft, 40-ft stone tower)",
+            "Annapolis Rock (1,762 ft, 2.2 mi hike, westward views)",
+            "Black Rock (1 mi further north, similar view)"
+          ]
+        },
+        {
+          "section": "Section 4",
+          "route": "Weverton Cliffs to Harpers Ferry",
+          "features": "River views, historical sites, final Maryland section"
+        }
+      ],
+      "notable_shelters": [
+        {
+          "name": "Ed Garvey Shelter",
+          "capacity": 12,
+          "water": "0.5 miles away via steep side trail",
+          "tent_sites": "2 (north and south of shelter)"
+        },
+        {
+          "name": "Devils Racecourse Shelter",
+          "capacity": 7,
+          "location": "Bottom of South Mountain",
+          "type": "3-sided shelter"
+        },
+        {
+          "name": "Raven Rock Shelter",
+          "location": "Along Pen Mar section"
+        },
+        {
+          "name": "Pine Knob Shelter",
+          "location": "Along Weverton Cliffs section"
+        }
+      ],
+      "backpacking_notes": "40 miles can be completed in 4-5 day backpacking trip; shelters spaced for day-hike distances",
+      "maintenance": "PATC maintains trail with 45 shelters, 49 rental cabins, 1 hostel across region; 1,000+ volunteers contribute 90,000+ hours annually",
+      "official_resources": [
+        "https://appalachiantrail.org/experience/hike-the-trail/explore-by-state/maryland/",
+        "https://www.patc.net/",
+        "https://dnr.maryland.gov/publiclands/pages/at.aspx",
+        "https://cnyhiking.com/ATinMaryland.htm"
+      ]
+    },
+    "trail_conditions_reporting": {
+      "patc_news": "https://www.patc.net/news",
+      "patc_events_meetup": "https://www.meetup.com/patchikes/",
+      "trail_conservancy": "https://appalachiantrail.org/experience/interactive-map/",
+      "resources": [
+        "Appalachian Trail Data Book",
+        "Thru-Hiker's Guide to the Appalachian Trail",
+        "WhiteBlaze.net (shelter listing with coordinates)"
+      ]
+    }
+  },
+  "waterfall_hikes": {
+    "major_waterfalls": [
+      {
+        "name": "Muddy Creek Falls",
+        "height": "53 feet",
+        "distinction": "Maryland's highest free-falling waterfall",
+        "location": "Swallow Falls State Park, Western Maryland",
+        "trail": "Swallow Falls Canyon Trail",
+        "distance": "1.25 miles",
+        "description": "Crashing, spectacular 53-ft waterfall along Muddy Creek with 4 sets of rapids"
+      },
+      {
+        "name": "Cunningham Falls",
+        "height": "78 feet",
+        "distinction": "Largest waterfall in Maryland",
+        "location": "Cunningham Falls State Park, Thurmont",
+        "trailhead": "William Houck area, 3 miles west of Thurmont on Rt. 77",
+        "routes": [
+          {
+            "name": "Lower Trail",
+            "distance": "0.5 mile",
+            "difficulty": "Easy"
+          },
+          {
+            "name": "Cliff Trail",
+            "distance": "0.75 mile",
+            "difficulty": "Moderate",
+            "description": "Rockier route"
+          }
+        ]
+      },
+      {
+        "name": "Kilgore Falls",
+        "height": "17 feet vertical drop",
+        "distinction": "2nd highest waterfall in Maryland",
+        "location": "Rocks State Park, Jarrettsville",
+        "distance": "Less than 0.5 mile from parking",
+        "difficulty": "Very easy",
+        "highlights": "Popular in summer, very short hike, perfect for families"
+      },
+      {
+        "name": "Cascade Falls",
+        "height": "Multiple cascades",
+        "location": "Baltimore",
+        "distance": "2.2 miles round trip",
+        "description": "First series of falls visible within 300 yards of trailhead; slightly hilly terrain"
+      },
+      {
+        "name": "Great Falls",
+        "location": "C&O Canal Towpath, Mile 14.3, Potomac, Maryland",
+        "description": "Must-visit highlight with dramatic Potomac River views; popular for hikers, cyclists, history buffs"
+      },
+      {
+        "name": "Swallow Falls",
+        "location": "Swallow Falls State Park, Western Maryland",
+        "trail_options": [
+          {
+            "name": "Canyon Loop Trail",
+            "distance": "1.5 miles",
+            "features": "Along Muddy Creek Falls, Swallow Tail, scenic Swallow Falls, Youghiogheny River views"
+          },
+          {
+            "name": "Longer Swallow Falls Trail",
+            "distance": "5.5 miles",
+            "features": "Through Garrett State Forest, past 300-year-old hemlocks"
+          }
+        ]
+      },
+      {
+        "name": "Rocks Falling Branch",
+        "aka": "Kilgore Falls",
+        "location": "Rocks State Park"
+      }
+    ],
+    "resources": [
+      "https://www.alltrails.com/us/maryland/waterfall",
+      "https://deepcreektimes.com/best-waterfalls-in-maryland-12-local-favorites-hidden-gems/",
+      "https://dctravelmag.com/waterfalls-in-maryland/"
+    ]
+  },
+  "scenic_overlooks_and_viewpoints": {
+    "major_overlooks": [
+      {
+        "name": "Annapolis Rock",
+        "elevation": "1,762 feet",
+        "latitude": 39.5609321,
+        "longitude": -77.5997121,
+        "distance": "2.2 mile hike",
+        "views": "Westward: Greenbrier Lake and Cumberland Valley",
+        "location": "South Mountain, along Appalachian Trail",
+        "difficulty": "Popular with hikers and rock climbers"
+      },
+      {
+        "name": "Black Rock",
+        "location": "1 mile further north from Annapolis Rock",
+        "views": "Similar vista to Annapolis Rock",
+        "access": "Along Appalachian Trail"
+      },
+      {
+        "name": "High Rock Overlook",
+        "elevation": "1,824 feet (High Rock summit); 1,400 ft (overlook)",
+        "latitude": 39.6950954,
+        "longitude": -77.5224899,
+        "location": "Pen Mar Park on Mount Quirac, Mason-Dixon Line",
+        "access": "Easy car access",
+        "features": [
+          "Covered pavilion viewing area",
+          "High rock outcropping (additional 50-60 ft)",
+          "Northern view into Pennsylvania"
+        ]
+      },
+      {
+        "name": "Washington Monument (South Mountain)",
+        "elevation": "1,600 feet",
+        "coordinates": "N39 29.934 W77 37.408",
+        "structure": "40-foot stone tower atop South Mountain",
+        "hike_distance": "0.4 mile round trip",
+        "difficulty": "Easy/fairly easy",
+        "views": "East and west views",
+        "location": "Along Appalachian Trail"
+      },
+      {
+        "name": "Gambrill State Park Overlooks",
+        "locations": [
+          {
+            "name": "Middletown Overlook",
+            "features": "Dramatic western sky views"
+          },
+          {
+            "name": "North Frederick Overlook",
+            "features": "Eastern stretch of Catoctin Mountain views"
+          }
+        ]
+      },
+      {
+        "name": "Catoctin Mountain Park Combination Loop",
+        "distance": "8 miles",
+        "features": [
+          "Cunningham Falls",
+          "Hog Rock",
+          "Blue Ridge Summit",
+          "Thurmont Vista",
+          "Wolf Rock",
+          "Chimney Rock"
+        ]
+      },
+      {
+        "name": "Hog Rock Nature Trail",
+        "location": "Catoctin Mountain Park, Thurmont",
+        "difficulty": "Moderate",
+        "features": "Established hardwood forests, boulder formations, vista views"
+      },
+      {
+        "name": "Maryland Heights Overlook",
+        "location": "Near Harpers Ferry",
+        "difficulty": "Challenging (700-ft ascent)",
+        "views": "Historic Harpers Ferry, Potomac River, Shenandoah River, Blue Ridge Mountains"
+      },
+      {
+        "name": "Dans Mountain State Park Scenic Overlook",
+        "elevation": "2,895 feet",
+        "features": "Sunset/sunrise viewing"
+      }
+    ],
+    "resources": [
+      "https://www.visithagerstown.com/best_views",
+      "https://www.mdmountainside.com/outdoors/overlooks/",
+      "https://www.alltrails.com/us/maryland/views"
+    ]
+  },
+  "day_hikes_summary": {
+    "top_day_hikes": [
+      {
+        "name": "Hog Rock & Wolf Rock Loop (Catoctin)",
+        "distance": "3.8 miles",
+        "difficulty": "Moderate",
+        "highlights": [
+          "Rock outcroppings",
+          "Forest scenery",
+          "Boulder formations"
+        ]
+      },
+      {
+        "name": "Sugarloaf Mountain Northern Peaks",
+        "aka": "Blue Trail",
+        "location": "40 miles north of DC, 20 miles south of Frederick",
+        "features": "Lovely views of central Maryland landscape"
+      },
+      {
+        "name": "Wolf Rock/Chimney Rock Loop",
+        "location": "Catoctin Mountain Park",
+        "distance": "Moderate",
+        "features": "Two interesting rock outcroppings, high vistas"
+      }
+    ]
+  },
+  "mountain_biking": {
+    "major_trail_systems": [
+      {
+        "name": "Green Ridge State Forest MTB Trail",
+        "region": "Western Maryland (Flintstone/Cumberland)",
+        "trail_system": "100+ miles of dirt roads and trails",
+        "main_loop": {
+          "name": "Green Ridge Mountain Bike Trail",
+          "distance": "12.5 miles",
+          "difficulty": "Moderate to difficult",
+          "markings": "White blazes and brown arrows",
+          "features": [
+            "Largely single track",
+            "Stream crossings",
+            "Technical climbs and descents",
+            "Mountain peaks and ridge views",
+            "Valley scenery",
+            "Rocky terrain",
+            "Numerous elevation changes"
+          ]
+        },
+        "history": "Hosted Maryland Mountain Bike State Championships; permanent 12-mile loop established",
+        "exploring": "Extensive crisscrossing dirt roads allow shorter or longer routes",
+        "official_url": "https://dnr.maryland.gov/forests/Pages/publiclands/Greenridge/Trails.aspx",
+        "resources": [
+          "https://www.trailforks.com/trails/green-ridge-state-forest-mtb-loop/",
+          "https://www.mtbproject.com/directory/8022833/green-ridge-state-forest"
+        ]
+      }
+    ],
+    "regional_resources": "https://more-mtb.org/collections/maryland-trails"
+  },
+  "rock_climbing": {
+    "major_climbing_areas": [
+      {
+        "name": "Annapolis Rock",
+        "elevation": "~1,700 feet",
+        "location": "South Mountain, Appalachian Trail",
+        "rock_type": "Moderate to tall cliffs (~50-70 feet)",
+        "route_types": [
+          "Top-rope (primary)",
+          "Some lead routes (Gunk-like structure with horizontal cracks)"
+        ],
+        "accessibility": "Very accessible recreation area"
+      },
+      {
+        "name": "Carderock Recreation Area",
+        "location": "Potomac River, just outside DC Beltway (495)",
+        "access": "Very accessible from south (near DC & Annapolis)",
+        "quality": "High quality climbing"
+      },
+      {
+        "name": "Great Falls",
+        "location": "Potomac River area"
+      },
+      {
+        "name": "Sugarloaf Mountain",
+        "elevation": "1,200 feet monadnock",
+        "location": "40 miles north of DC, 20 miles south of Frederick",
+        "description": "Small mountain with climbing opportunities"
+      },
+      {
+        "name": "Rock State Park",
+        "characteristics": "Small, short climbs with beautiful setting and fun moves"
+      },
+      {
+        "name": "Black Rocks",
+        "location": "Baltimore area"
+      }
+    ],
+    "instruction": {
+      "providers": "East Outdoors DC/MD/VA",
+      "teaching_locations": [
+        "Carderock, MD",
+        "Great Falls, VA",
+        "Annapolis Rock, MD"
+      ],
+      "staff": "Most experienced certified professionals in region"
+    },
+    "geographic_coverage": "Climbing found throughout Maryland from Chesapeake Bay to hills beyond Hagerstown; most climbing in central Maryland",
+    "resources": [
+      "https://www.mountainproject.com/area/106029417/maryland",
+      "https://potomacmountainclub.org/category/climbing-crags-beta/maryland-crags/"
+    ]
+  },
+  "winter_activities": {
+    "cross_country_skiing": {
+      "locations": [
+        {
+          "name": "Herrington Manor State Park",
+          "trails": "10 miles of groomed trails",
+          "difficulty": "Beginner to intermediate",
+          "rentals": "Available at Lake House (weekends) and Ranger Station (weekdays)",
+          "rental_fees": "$20/2 hours or $40/day (skis, boots, poles)"
+        },
+        {
+          "name": "New Germany State Park",
+          "trails": "10 miles of groomed trails",
+          "difficulty": "Flat trails for beginners to winding hills for experienced skiers",
+          "season": "Winter (snow-dependent)"
+        },
+        {
+          "name": "Herrington Manor to Swallow Falls Trail",
+          "distance": "5.5 miles",
+          "features": "Scenic path through Garrett State Forest"
+        }
+      ],
+      "other_popular_trails": [
+        "Torrey C. Brown Trail",
+        "C&O Canal Towpath",
+        "Western Maryland Rail Trail"
+      ]
+    },
+    "snowshoeing": {
+      "ideal_locations": [
+        "Savage River State Forest (#1 best spot)",
+        "Green Ridge State Forest",
+        "Rocky Gap State Park",
+        "C&O Canal",
+        "Great Allegheny Passage"
+      ]
+    },
+    "winter_hiking": {
+      "benefits": "Stunning views and solitude not found other seasons",
+      "locations": [
+        "All major trail systems (when snow-free or with traction aids)"
+      ]
+    },
+    "general_notes": "Snowmobiling also available in select areas; activity availability weather-dependent"
+  },
+  "geocaching": {
+    "overview": {
+      "activity": "Popular treasure-hunting activity on Maryland trails",
+      "geocaching_website": "https://www.geocaching.com/",
+      "md_geocaching_society": "https://www.mdgps.org/"
+    },
+    "cache_locations": [
+      {
+        "name": "Bohemia River State Park",
+        "status": "Part of Cache Across Maryland 2025",
+        "description": "Public recreation area with 5 miles of multi-use trails (hiking, biking, wildlife viewing, fishing, hunting)",
+        "program": "Caches specifically placed to showcase Maryland beauty for geocachers"
+      }
+    ],
+    "geocaching_resources": [
+      {
+        "name": "TrailLink",
+        "service": "Geocaching trails & trail maps with descriptions, reviews, photos, directions",
+        "url": "https://www.traillink.com/stateactivity/md-geocaching-trails/"
+      },
+      {
+        "name": "Nature Conservancy",
+        "service": "Geocaching at select public access preserves in Maryland",
+        "locations": "Throughout state"
+      },
+      {
+        "name": "Hagerstown Area",
+        "resource": "Visit Hagerstown & Washington County",
+        "description": "Geocaching at parks, museums, historical sites, natural beauty areas"
+      },
+      {
+        "name": "Anne Arundel County",
+        "service": "Geocaching in parks program"
+      }
+    ],
+    "appalachian_trail_restriction": {
+      "status": "Moratorium on caching",
+      "reason": "Most AT property under National Park Service stewardship; NPS does not allow geocaching on their lands"
+    },
+    "event_stacking": {
+      "description": "Hosting geocaching events in Maryland through official event stacking program",
+      "url": "https://gcwiki.atlassian.net/wiki/spaces/GEO/pages/533250/Maryland"
+    }
+  },
+  "camping_tips_and_best_practices": {
+    "reservation_strategy": [
+      "Popular parks (Assateague, Deep Creek, Rocky Gap) book months in advance",
+      "Reserve up to 1 year in advance through parkreservations.maryland.gov",
+      "Book 6+ months ahead for peak season (June-September)",
+      "Reserve even earlier for cabins and electric hookup sites",
+      "Summer weekends and holidays fill fastest"
+    ],
+    "best_value_options": [
+      "Owens Creek Campground, Catoctin Mountain Park - affordable & less crowded than Cunningham Falls",
+      "New Germany State Park - basic sites with minimal facilities",
+      "Big Run State Park - primitive sites at lower price points"
+    ],
+    "popular_campgrounds_ranking": [
+      "Rocky Gap State Park - lakeside, well-maintained, spacious sites, F & C loops pet-friendly",
+      "Assateague Island State Park - beach camping, wild horses, unique experience",
+      "Deep Creek Lake State Park - forested comfort, near water activities",
+      "Swallow Falls State Park - spectacular scenery, waterfall access, well-tended facilities"
+    ],
+    "pet_camping": [
+      "Deep Creek Lake - Browning, Beckman, Garrett loops allow pets; avoid Delphia Brant",
+      "Rocky Gap - F and C loops designated pet-friendly"
+    ],
+    "loop_specific_recommendations": [
+      "Assateague F and C loops ideal for large family tents",
+      "Deep Creek Lake - research loop options for sun/shade preference",
+      "Rocky Gap - Lakeside loop for water access; choose based on amenity preference"
+    ]
+  },
+  "appalachian_trail_specific_notes": {
+    "backpacking": {
+      "duration": "4-5 days for entire Maryland section",
+      "shelter_spacing": "Shelters positioned for day-hike distances",
+      "water_access": "Most shelters near water sources; verify current conditions before trip"
+    },
+    "day_hiking": {
+      "accessible_sections": [
+        "Pen Mar to High Rock - easy overlook hike",
+        "Annapolis Rock - 2.2 miles, popular day hike",
+        "Washington Monument loop - 0.4 mile, easy"
+      ]
+    },
+    "four_states_challenge": {
+      "description": "AT passes through 4 states in this region",
+      "hiking_tradition": "Challenge to hike all 4 states' AT sections",
+      "maryland_section": "Easy to moderate, good starting point"
+    }
+  },
+  "reservation_systems": {
+    "primary_system": {
+      "name": "Maryland State Park Reservations",
+      "url": "https://parkreservations.maryland.gov/",
+      "phone": "1-888-432-CAMP (2267)",
+      "international": "301-687-8160",
+      "hours": "24/7 online",
+      "advance": "365 days ahead"
+    },
+    "secondary_platforms": [
+      {
+        "name": "recreation.gov",
+        "coverage": "Select Maryland parks",
+        "url": "https://www.recreation.gov/discover/camping/Maryland/state"
+      },
+      {
+        "name": "ReserveAmerica",
+        "coverage": "Select Maryland parks",
+        "services": ["Camping", "Cabins", "Marina", "Day-use"]
+      }
+    ]
+  },
+  "resources_and_links": {
+    "official_md_dnr": "https://dnr.maryland.gov/publiclands/",
+    "state_parks_home": "https://dnr.maryland.gov/publiclands/pages/default.aspx",
+    "camping_info": "https://dnr.maryland.gov/publiclands/pages/campinginfo.aspx",
+    "appalachian_trail": "https://appalachiantrail.org/experience/hike-the-trail/explore-by-state/maryland/",
+    "patc_main": "https://www.patc.net/",
+    "patc_news_updates": "https://www.patc.net/news",
+    "trail_guides": [
+      "https://www.alltrails.com/us/maryland",
+      "https://www.hikingproject.com/",
+      "https://www.trailforks.com/"
+    ],
+    "trip_planning": [
+      "https://www.visitmaryland.org/",
+      "https://www.hipcamp.com/en-US/d/united-states/maryland",
+      "https://www.campendium.com/"
+    ]
+  }
+}

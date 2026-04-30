@@ -1,0 +1,26 @@
+{
+ "id": "md-deep-creek-lake-discovery",
+ "name": "Discovery Trail",
+ "park": "Deep Creek Lake SP",
+ "trailhead": [
+  -79.3017,
+  39.521
+ ],
+ "sources_tried": [
+  "osm_overpass_named",
+  "usgs_trails",
+  "osm_overpass_generic"
+ ],
+ "sources_returned": {
+  "osm_overpass_named": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout",
+  "usgs_trails": 22,
+  "osm_overpass_generic": "error: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout"
+ },
+ "chosen": null,
+ "cross_audit_m": null,
+ "confidence": "none",
+ "is_approximate": true,
+ "error": "no candidate with matching name within 3km of trailhead",
+ "published_miles": 1.2,
+ "tier2_error": "overpass: HTTP POST failed 2x: HTTP Error 504: Gateway Timeout"
+}

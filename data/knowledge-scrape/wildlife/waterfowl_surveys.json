@@ -1,0 +1,66 @@
+{
+  "source_url": "https://news.maryland.gov/dnr/2026/02/03/midwinter-waterfowl-survey-shows-second-consecutive-population-increase/",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "survey_year": 2026,
+      "survey_month": "January (first week)",
+      "total_waterfowl_counted": 926900,
+      "comparison_to_previous": "Higher than 705,300 in 2025",
+      "five_year_average": 684280,
+      "variance_from_average": "35% above average",
+      "species_breakdown": [
+        {
+          "species": "Canada Geese",
+          "count_2026": 509400,
+          "count_2025": 414200,
+          "five_year_average": 391200,
+          "status": "Increased"
+        },
+        {
+          "species": "Diving Ducks",
+          "count_2026": 239100,
+          "count_2025": 100200,
+          "five_year_average": 145860,
+          "status": "Increased significantly"
+        },
+        {
+          "species": "Dabbling Ducks",
+          "count_2026": 117300,
+          "count_2025": 126000,
+          "status": "Decreased"
+        }
+      ],
+      "weather_impact": "Cold weather December-January pushed more birds southward into Maryland's milder tidal waters",
+      "survey_history": "Annual survey conducted since early 1960s"
+    },
+    {
+      "survey_year": 2025,
+      "survey_month": "January (first week)",
+      "total_waterfowl_counted": 705300,
+      "comparison_to_2024": "Higher than 593,200 in 2024",
+      "five_year_average_2025": 624300,
+      "trend": "Second consecutive increase"
+    },
+    {
+      "survey_coverage": "Maryland's tidal shorelines and near-shore waterfowl habitat",
+      "areas_surveyed": [
+        "Chesapeake Bay",
+        "Tidal Potomac River",
+        "Atlantic coast shorelines"
+      ],
+      "methodology": "Aerial survey teams of pilots and biologists from Maryland DNR and U.S. Fish and Wildlife Service",
+      "frequency": "Annual since early 1960s"
+    },
+    {
+      "category": "Habitat",
+      "description": "Primary waterfowl wintering areas in Maryland",
+      "locations": [
+        "Chesapeake Bay tidal waters",
+        "Tidal Potomac River",
+        "Maryland Atlantic coast shorelines"
+      ],
+      "conditions": "Milder tidal waters attract waterfowl during cold winters"
+    }
+  ]
+}

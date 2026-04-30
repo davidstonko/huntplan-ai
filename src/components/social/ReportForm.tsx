@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import Colors from '../../theme/colors';
 
 interface ReportFormProps {
   onSubmit: (report: {
@@ -116,12 +115,12 @@ export default function ReportForm({ onSubmit, onCancel }: ReportFormProps) {
               ]}
             >
               {level === 'none'
-                ? '❌ None'
+                ? 'None'
                 : level === 'low'
-                  ? '💤 Low'
+                  ? 'Low'
                   : level === 'moderate'
-                    ? '⚡ Moderate'
-                    : '🔥 High'}
+                    ? 'Moderate'
+                    : 'High'}
             </Text>
           </TouchableOpacity>
         ))}
@@ -162,7 +161,7 @@ export default function ReportForm({ onSubmit, onCancel }: ReportFormProps) {
       />
 
       <Text style={styles.note}>
-        💡 Tip: Include time, weather, wind, and any fresh sign you observed.
+        Tip: Include time, weather, wind, and any fresh sign you observed.
         Location is kept coarse (county-level) for privacy.
       </Text>
 
@@ -190,7 +189,7 @@ export default function ReportForm({ onSubmit, onCancel }: ReportFormProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#1a1a1a',
   },
   contentContainer: {
     paddingHorizontal: 16,
@@ -199,20 +198,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#fff',
     marginBottom: 8,
   },
   pickerContainer: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.mud,
+    borderColor: '#444',
     overflow: 'hidden',
   },
   picker: {
-    color: Colors.textPrimary,
-    backgroundColor: Colors.surface,
+    color: '#fff',
+    backgroundColor: '#2a2a2a',
     height: 50,
   },
   activityButtons: {
@@ -225,34 +224,34 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 6,
     marginHorizontal: 4,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: Colors.mud,
+    borderColor: '#444',
     alignItems: 'center',
   },
   activityButtonActive: {
-    backgroundColor: Colors.oak,
-    borderColor: Colors.oak,
+    backgroundColor: '#8B7355',
+    borderColor: '#8B7355',
   },
   activityButtonText: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: '#aaa',
     fontWeight: '500',
   },
   activityButtonTextActive: {
-    color: Colors.mdWhite,
+    color: '#fff',
   },
   input: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: Colors.textPrimary,
+    color: '#fff',
     fontSize: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.mud,
+    borderColor: '#444',
   },
   largeInput: {
     height: 120,
@@ -260,12 +259,12 @@ const styles = StyleSheet.create({
   },
   note: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#888',
     fontStyle: 'italic',
     marginBottom: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#2a2a2a',
     borderRadius: 6,
   },
   buttonContainer: {
@@ -279,23 +278,23 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: Colors.oak,
+    borderColor: '#8B7355',
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: Colors.oak,
+    color: '#8B7355',
     fontWeight: '600',
     fontSize: 14,
   },
   submitButton: {
     flex: 1,
     paddingVertical: 12,
-    backgroundColor: Colors.oak,
+    backgroundColor: '#8B7355',
     borderRadius: 6,
     alignItems: 'center',
   },
   submitButtonText: {
-    color: Colors.mdWhite,
+    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },

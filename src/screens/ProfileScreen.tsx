@@ -11,9 +11,11 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
+import * as authService from '../services/authService';
 
 interface ProfileData {
   anonymousHandle: string;
+  email: string;
   dataPackMD: boolean;
   dataPackVA: boolean;
   dataPackPA: boolean;
@@ -22,6 +24,7 @@ interface ProfileData {
 
 const DEFAULT_PROFILE: ProfileData = {
   anonymousHandle: 'HunterMD_' + Math.floor(Math.random() * 9999),
+  email: '',
   dataPackMD: true,
   dataPackVA: false,
   dataPackPA: false,
@@ -35,6 +38,9 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<ProfileData>(DEFAULT_PROFILE);
   const [editHandle, setEditHandle] = useState(false);
   const [tempHandle, setTempHandle] = useState(DEFAULT_PROFILE.anonymousHandle);
+  const [tempEmail, setTempEmail] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailSaved, setEmailSaved] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -44,6 +50,14 @@ export default function ProfileScreen() {
           const parsed = JSON.parse(saved);
           setProfile(parsed);
           setTempHandle(parsed.anonymousHandle);
+          setTempEmail(parsed.email || '');
+        }
+
+        // Load email from auth service
+        const storedEmail = await authService.getEmail();
+        if (storedEmail) {
+          setTempEmail(storedEmail);
+          setProfile((prev) => ({ ...prev, email: storedEmail }));
         }
       } catch (e) {
         if (__DEV__) console.error('Error loading profile:', e);
@@ -69,12 +83,78 @@ export default function ProfileScreen() {
     setEditHandle(false);
   };
 
+  const handleSaveEmail = async () => {
+    if (!tempEmail.trim()) {
+      setTempEmail('');
+      setProfile({ ...profile, email: '' });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(tempEmail)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    setEmailSaving(true);
+    try {
+      const result = await authService.updateProfile({ email: tempEmail });
+      if (result) {
+        setProfile({ ...profile, email: tempEmail });
+        setEmailSaved(true);
+        // Hide checkmark after 2 seconds
+        setTimeout(() => setEmailSaved(false), 2000);
+      } else {
+        Alert.alert('Error', 'Failed to save email. Please try again.');
+      }
+    } catch (e) {
+      if (__DEV__) console.error('Error saving email:', e);
+      Alert.alert('Error', 'Failed to save email. Please try again.');
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
+      {/* Account */}
+      <Text style={styles.sectionTitle}>ACCOUNT</Text>
+      <View style={styles.card}>
+        <View style={styles.emailRow}>
+          <View style={styles.emailContent}>
+            <Text style={styles.label}>EMAIL (GMAIL)</Text>
+            <TextInput
+              style={styles.emailInput}
+              placeholder="your@email.com"
+              placeholderTextColor={Colors.textMuted}
+              value={tempEmail}
+              onChangeText={setTempEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              editable={!emailSaving}
+            />
+            <Text style={styles.subtext}>Optional — link your email to sync across devices and recover your account</Text>
+          </View>
+          {emailSaved && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+        <TouchableOpacity
+          style={[styles.linkEmailButton, emailSaving && styles.linkEmailButtonDisabled]}
+          onPress={handleSaveEmail}
+          disabled={emailSaving}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.linkEmailButtonText}>
+            {emailSaving ? 'SAVING...' : 'LINK EMAIL'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Profile */}
       <Text style={styles.sectionTitle}>ANONYMOUS PROFILE</Text>
       <View style={styles.card}>
@@ -216,6 +296,28 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
   },
+  emailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  emailContent: { flex: 1 },
+  emailInput: {
+    backgroundColor: Colors.background,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: Colors.textPrimary,
+    fontSize: 14,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: Colors.oak,
+  },
+  checkmark: { fontSize: 18, color: Colors.success, fontWeight: '700', marginTop: 4 },
+  linkEmailButton: {
+    backgroundColor: Colors.oak,
+    borderRadius: 6,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  linkEmailButtonDisabled: { opacity: 0.6 },
+  linkEmailButtonText: { color: Colors.textOnAccent, fontWeight: '700', fontSize: 12, letterSpacing: 0.5 },
   handleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   handleContent: { flex: 1 },
   label: { fontSize: 10, color: Colors.textMuted, letterSpacing: 1, marginBottom: 4 },

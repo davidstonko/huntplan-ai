@@ -1,0 +1,87 @@
+{
+  "source_url": "https://dnr.maryland.gov/wildlife/Pages/plants_wildlife/rte/rteanimals.aspx",
+  "date_accessed": "2026-04-11",
+  "data": [
+    {
+      "category": "Rare, Threatened, and Endangered Animals of Maryland",
+      "description": "Official state and federal list of protected wildlife",
+      "list_version": "November 2023",
+      "first_published": 1984,
+      "last_revision": 2021,
+      "data_sources": [
+        "Federal Endangered Species Act (ESA) list",
+        "State Threatened and Endangered Species list",
+        "Rare species under assessment"
+      ]
+    },
+    {
+      "species": "Bald Eagle",
+      "federal_status": "Removed from Federal Endangered Species list - August 2007",
+      "state_status": "Removed from Maryland Threatened and Endangered Species list - April 2010",
+      "conservation_success": "Major success story - recovered from endangered status",
+      "current_population": "383 nesting pairs documented in 2004",
+      "trend": "Increasing number overwintering in Maryland",
+      "current_range": "Breeding in most of Maryland's counties",
+      "notes": "No longer protected species - hunting not allowed but no special restrictions"
+    },
+    {
+      "category": "County-Specific Lists",
+      "description": "Rare, Threatened, and Endangered Species by County",
+      "available_counties": [
+        "Allegany County",
+        "Baltimore County",
+        "Frederick County",
+        "Garrett County",
+        "Montgomery County",
+        "Somerset County",
+        "St. Mary's County",
+        "Worcester County"
+      ],
+      "access": "Individual PDFs available from Maryland DNR website"
+    },
+    {
+      "category": "Species Categories",
+      "descriptions": [
+        {
+          "category": "Federal Endangered Species",
+          "definition": "Species occurring in Maryland on the federal list of Endangered and Threatened Wildlife and Plants under the ESA"
+        },
+        {
+          "category": "State Threatened and Endangered",
+          "definition": "Species on Maryland's official Threatened and Endangered Species list"
+        },
+        {
+          "category": "Rare and Species Under Assessment",
+          "definition": "Species considered rare or under assessment by Wildlife and Heritage Service"
+        }
+      ]
+    },
+    {
+      "category": "Data Collection Methods",
+      "description": "How Maryland developed the endangered species list",
+      "timespan": "40+ years of effort",
+      "sources": [
+        "Museums",
+        "Scientific literature",
+        "Unpublished documents",
+        "Reports from zoologists",
+        "Reports from amateur naturalists",
+        "Extensive field work by DNR scientists"
+      ]
+    },
+    {
+      "category": "Wildlife Diversity Conservation",
+      "description": "Maryland's comprehensive conservation planning",
+      "document": "Maryland Wildlife Diversity Conservation Plan (2005)",
+      "scope": "Statewide species conservation strategy"
+    },
+    {
+      "category": "Bald Eagle Specific Information",
+      "nesting_buffer_history": "Special buffer requirements existed when species was listed",
+      "current_nesting_areas": "Throughout Maryland",
+      "habitat": "Forested areas near water bodies",
+      "population_expansion": "Expanding from historic core areas",
+      "federal_protection": "Migratory Bird Treaty Act - cannot be hunted"
+    }
+  ]
+}

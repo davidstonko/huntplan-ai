@@ -10,8 +10,8 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import String, Integer, Boolean, Text, DateTime, Float
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db.database import Base
@@ -52,20 +52,11 @@ class User(Base):
     # Verification (optional — linked to state license number but number NOT stored)
     is_verified_hunter: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    # Notification preferences (JSONB)
-    notification_preferences: Mapped[dict] = mapped_column(
-        JSONB,
-        default={
-            "season_alerts": True,
-            "camp_activity": True,
-            "regulation_changes": True,
-            "weather_alerts": False,
-        },
-        nullable=False
-    )
-
     # Account status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_active_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    # Relationships
+    blind_favorites = relationship("LandownerBlindFavorite", back_populates="user", cascade="all, delete-orphan")
+    device_tokens = relationship("DeviceToken", back_populates="user", cascade="all, delete-orphan")

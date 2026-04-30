@@ -8,7 +8,7 @@
  * @version 3.0.0
  */
 
-import Config from '../config';
+import { API_BASE_URL } from './api';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -85,7 +85,7 @@ export async function getSolunarData(
     if (date) params.append('date', date);
 
     const res = await fetch(
-      `${Config.API_BASE_URL}/api/v1/integrations/solunar?${params.toString()}`,
+      `${API_BASE_URL}/api/v1/integrations/solunar?${params.toString()}`,
       { headers: { 'Content-Type': 'application/json' } },
     );
 
@@ -93,8 +93,7 @@ export async function getSolunarData(
       return await res.json();
     }
     return null;
-  } catch (error) {
-    if (__DEV__) console.error('[Solunar] Failed to fetch solunar data, using local calculation:', error);
+  } catch {
     // Offline — use local calculation
     return getLocalSolunarData(latitude, longitude, date);
   }
@@ -118,7 +117,7 @@ export async function getWeeklySolunar(
     if (startDate) params.append('start_date', startDate);
 
     const res = await fetch(
-      `${Config.API_BASE_URL}/api/v1/integrations/solunar/week?${params.toString()}`,
+      `${API_BASE_URL}/api/v1/integrations/solunar/week?${params.toString()}`,
       { headers: { 'Content-Type': 'application/json' } },
     );
 
@@ -127,8 +126,7 @@ export async function getWeeklySolunar(
       return data.days || [];
     }
     return [];
-  } catch (error) {
-    if (__DEV__) console.error('[Solunar] Failed to fetch weekly solunar forecast:', error);
+  } catch {
     return [];
   }
 }
@@ -136,10 +134,68 @@ export async function getWeeklySolunar(
 // ─── Local Fallback (Simplified) ─────────────────────────────────
 
 /**
+ * Synchronous offline-only weekly solunar forecast.
+ *
+ * Used by the Best Times screen so we always have something to show
+ * even when the backend is unreachable. The numbers come from the
+ * same local model as `getLocalSolunarData`, so dawn/dusk windows
+ * stay consistent with the per-day modal a user already saw.
+ */
+export function getLocalWeeklySolunar(
+  latitude: number,
+  longitude: number,
+  startDate?: Date,
+  days: number = 7,
+): WeeklySolunarDay[] {
+  const start = startDate ?? new Date();
+  const dayMs = 86_400_000;
+  // Anchor at UTC midnight of the *UTC* day the caller passed so that
+  // ISO date strings round-trip across timezones in tests + production.
+  const startUtc = Date.UTC(
+    start.getUTCFullYear(),
+    start.getUTCMonth(),
+    start.getUTCDate(),
+  );
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const out: WeeklySolunarDay[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(startUtc + i * dayMs);
+    const iso = d.toISOString().slice(0, 10);
+    const data = getLocalSolunarData(latitude, longitude, iso);
+    out.push({
+      date: iso,
+      day_of_week: dayNames[d.getUTCDay()],
+      rating: data.rating,
+      moon_phase: data.moon.phase_name,
+      illumination: data.moon.illumination_pct,
+      best_times_count: data.best_times.length,
+    });
+  }
+  return out;
+}
+
+/**
+ * Pick the day with the highest activity score in a weekly forecast.
+ * Returns `null` for an empty list. Ties: earliest date wins.
+ */
+export function bestSolunarDay(
+  week: WeeklySolunarDay[],
+): WeeklySolunarDay | null {
+  if (week.length === 0) return null;
+  return week.reduce((best, cur) =>
+    cur.rating.score > best.rating.score ? cur : best,
+  );
+}
+
+/**
  * Simplified local solunar calculation for offline use.
  * Less accurate than the backend but provides basic timing data.
+ *
+ * Exported so synchronous, offline-first callers (e.g. the Daily Briefing
+ * Sun & Moon panel — Phase A.29) can render sunrise/sunset and moon
+ * phase without an awaited fetch and without re-implementing the math.
  */
-function getLocalSolunarData(
+export function getLocalSolunarData(
   latitude: number,
   longitude: number,
   dateStr?: string,

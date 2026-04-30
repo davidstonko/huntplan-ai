@@ -1,0 +1,139 @@
+{
+  "source_urls": [
+    "https://www.visitmaryland.org/list/places-go-hiking",
+    "https://sportingnomad.com/best-hikes-in-maryland",
+    "https://www.nps.gov/choh/planyourvisit/billy-goat-trail.htm",
+    "https://trailsthatrock.com/hikes-near-baltimore/",
+    "https://www.komoot.com/guide/42551/hiking-in-maryland",
+    "https://www.alltrails.com/us/maryland/moderate"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "billy_goat_trail": {
+      "location": "Potomac, Maryland",
+      "park": "Chesapeake & Ohio Canal National Historical Park",
+      "total_length_miles": 1.7,
+      "length_section_a_miles": 1.75,
+      "difficulty": "Challenging/Strenuous",
+      "special_features": "Jagged cliffs, Potomac River views, waterfall views",
+      "highlights": [
+        "Most technical and challenging section"
+      ],
+      "challenges": [
+        "Nearly vertical rock scrambling",
+        "50-foot cliff climb",
+        "Not for faint of heart"
+      ],
+      "regional_appeal": "Local favorite for mountain-like feel near DC/Baltimore area",
+      "elevation_gain": "Steep descent"
+    },
+    "catoctin_mountain_park": {
+      "location": "Near Frederick, Maryland",
+      "notable_trails": [
+        {
+          "name": "Cunningham Falls Nature Trail",
+          "length_miles": 2.8,
+          "type": "Loop",
+          "difficulty": "Moderate",
+          "feature": "78-foot cascading waterfall"
+        },
+        {
+          "name": "Wolf Rock Loop Trail",
+          "difficulty": "Strenuous",
+          "features": [
+            "Wolf Rock formation",
+            "Chimney Rock formation"
+          ]
+        },
+        {
+          "name": "Catoctin Blue Trail",
+          "description": "Main trail through parks",
+          "jurisdiction": "State Parks and City of Frederick Watershed"
+        }
+      ]
+    },
+    "sugarloaf_mountain": {
+      "name": "Sugarloaf Mountain Recreation Area",
+      "location": "Near Baltimore and Washington, DC",
+      "regional_appeal": "Best rural hiking near Baltimore and Washington, D.C.",
+      "trails": [
+        {
+          "name": "Sugarloaf Mountain Loop",
+          "length_miles": 5.7,
+          "features": [
+            "Quartzite cliffs",
+            "Rewarding views"
+          ],
+          "difficulty": "Moderate"
+        },
+        {
+          "name": "Sugarloaf Mountain & Northern Peaks Loop",
+          "length_km": 11.1,
+          "length_time": "3:59",
+          "difficulty": "Difficult"
+        }
+      ]
+    },
+    "calvert_cliffs_state_park": {
+      "location": "Lusby, Calvert County, Maryland",
+      "total_trail_miles": 13,
+      "trail_status": "Marked foot trails open to public",
+      "primary_trail": "Red Trail (shortest to beach)",
+      "primary_trail_length_miles": 3.8,
+      "primary_trail_elevation_gain": 98,
+      "primary_trail_time_estimate": "1 to 1.5 hours",
+      "difficulty": "Moderate",
+      "suitability": "Good for beginners",
+      "trail_conditions": [
+        "Some wet areas",
+        "Root obstacles",
+        "Potential flooding",
+        "Standing water",
+        "Summer bug concerns"
+      ],
+      "recommendations": [
+        "Bring water (3.7 miles with steep sections)",
+        "Expect some steep sections on northern trail"
+      ],
+      "safety_warnings": [
+        {
+          "hazard": "Active cliff erosion and landslides",
+          "restriction": "Climbing cliffs and walking beneath prohibited",
+          "status": "Permanently closed",
+          "risk": "Serious injuries"
+        }
+      ]
+    },
+    "soldiers_delight_natural_area": {
+      "location": "Baltimore County, Maryland",
+      "name": "Soldiers Delight Natural Environmental Area",
+      "total_trail_miles": 7,
+      "trail_type": "Marked hiking trails",
+      "trail_conditions": [
+        "Some low-lying portions muddy",
+        "Gravel surfaces",
+        "Slippery when wet"
+      ],
+      "recommendations": [
+        "Waterproof hiking shoes or boots recommended"
+      ],
+      "features": "Natural environmental area with serpentine grassland ecosystem"
+    },
+    "other_notable_trails": [
+      {
+        "name": "Rocks State Park",
+        "description": "Popular hiking destination",
+        "features": ["Rock formations", "Water features"]
+      },
+      {
+        "name": "Gunpowder Falls State Park",
+        "description": "State park with extensive trail system",
+        "features": ["Falls", "Waterways"]
+      },
+      {
+        "name": "Loch Raven Reservoir",
+        "description": "Water-based hiking and outdoor recreation"
+      }
+    ]
+  }
+}

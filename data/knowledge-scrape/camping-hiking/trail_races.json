@@ -1,0 +1,71 @@
+{
+  "source_urls": [
+    "https://www.jfk50mile.org/",
+    "https://ultrasignup.com/register.aspx?did=134434",
+    "https://en.wikipedia.org/wiki/JFK_50_Mile",
+    "https://ultrarunning.com/calendar/state/maryland"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "jfk_50_mile": {
+      "name": "JFK 50 Mile",
+      "founded": 1963,
+      "founder": "William Joseph 'Buzz' Sawyer Jr.",
+      "original_organization": "Cumberland Valley Athletic Club (Hagerstown, Maryland boys)",
+      "significance": "Oldest continuously held ultramarathon in the US",
+      "edition_2026": "64th annual",
+      "date_2026": "Saturday, November 21, 2026",
+      "registration_opens": "March 1, 2026",
+      "start_time": "6:30 AM",
+      "start_type": "One mass start for entire field",
+      "distance_miles": 50,
+      "race_type": "Trail ultramarathon",
+      "terrain": "Mountain trail",
+      "region": "Western Maryland",
+      "website": "https://www.jfk50mile.org/",
+      "presented_by": "Altra",
+      "registration_platforms": [
+        "https://www.jfk50mile.org/",
+        "https://runsignup.com/Race/MD/Boonsboro/JFK50Mile"
+      ]
+    },
+    "catoctin_50k": {
+      "name": "Catoctin 50K Trail Run & Half Cat",
+      "trail_name": "Catoctin Blue Trail",
+      "location": "Maryland",
+      "jurisdiction": "State Parks and City of Frederick Watershed",
+      "first_race": "Saturday March 5, 1994",
+      "founders": "Rick and Nancy Hamilton",
+      "original_purpose": "Fun run",
+      "official_race_status": "1995 and 1996 onwards",
+      "date_2026": "June 20, 2026",
+      "race_type": "Trail ultramarathon",
+      "distances_offered": [
+        {
+          "distance": "25K",
+          "name": "Half Cat"
+        },
+        {
+          "distance": "50K",
+          "name": "Catoctin 50K"
+        }
+      ],
+      "course_description": "Out-and-back format",
+      "terrain": "Rocky, slow, difficult, demanding but runnable trails",
+      "trail_characteristics": [
+        "Relentless rocks",
+        "Relentless hills",
+        "Slow running surface",
+        "Difficult terrain"
+      ],
+      "difficulty_level": "Slow and demanding",
+      "registration_website": "https://ultrasignup.com/register.aspx?did=134434",
+      "training_opportunities": "Training groups available (e.g., Charm City Run)"
+    },
+    "ultra_running_calendar": {
+      "resource": "Maryland Ultra Running Calendar",
+      "website": "https://ultrarunning.com/calendar/state/maryland",
+      "note": "Comprehensive listing of ultramarathons in Maryland"
+    }
+  }
+}

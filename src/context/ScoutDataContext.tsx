@@ -66,7 +66,7 @@ function generateId(): string {
  * Convert WatermelonDB HuntPlanModel to plain HuntPlan interface.
  * Assembles all related waypoints, routes, and areas.
  */
-async function modelToHuntPlan(model: HuntPlanModel): Promise<HuntPlan> {
+async function modelToHuntPlan(model: any): Promise<HuntPlan> {
   const [waypoints, routes, areas] = await Promise.all([
     model.waypoints.fetch(),
     model.routes.fetch(),
@@ -82,6 +82,9 @@ async function modelToHuntPlan(model: HuntPlanModel): Promise<HuntPlan> {
           icon: 'parking',
           label: model.parkingLabel || 'Parking',
           notes: '',
+          createdAt: new Date().toISOString(),
+          sharedToCamp: false,
+          hiddenFromCamp: false,
         }
       : null;
 
@@ -93,22 +96,25 @@ async function modelToHuntPlan(model: HuntPlanModel): Promise<HuntPlan> {
     color: model.color,
     visible: model.visible,
     parkingPoint,
-    waypoints: waypoints.map((w: WaypointModel) => ({
+    waypoints: waypoints.map((w: any) => ({
       id: w.id,
       lat: w.lat,
       lng: w.lng,
       icon: (w.icon || 'custom') as any,
       label: w.label,
       notes: '',
+      createdAt: w.createdAt?.toISOString() || new Date().toISOString(),
+      sharedToCamp: w.sharedToCamp || false,
+      hiddenFromCamp: w.hiddenFromCamp || false,
     })),
-    routes: routes.map((r: RouteModel) => ({
+    routes: routes.map((r: any) => ({
       id: r.id,
       points: r.points.map((p: any) => [p.lng, p.lat] as [number, number]),
       style: 'solid' as const,
       label: r.label,
       distanceMeters: 0, // Computed from points at render time
     })),
-    areas: areas.map((a: DrawnAreaModel) => ({
+    areas: areas.map((a: any) => ({
       id: a.id,
       polygon: a.points.map((p: any) => [p.lng, p.lat] as [number, number]),
       label: a.label,
@@ -121,7 +127,7 @@ async function modelToHuntPlan(model: HuntPlanModel): Promise<HuntPlan> {
 /**
  * Convert WatermelonDB RecordedTrackModel to plain RecordedTrack interface.
  */
-function trackModelToTrack(model: RecordedTrackModel): RecordedTrack {
+function trackModelToTrack(model: any): RecordedTrack {
   return {
     id: model.id,
     name: model.name,
@@ -145,7 +151,7 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
 
     // Check if WatermelonDB already has data
     const existingPlans = await database
-      .get<HuntPlanModel>('hunt_plans')
+      .get('hunt_plans')
       .query()
       .fetch();
     if (existingPlans.length > 0) {
@@ -169,13 +175,13 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
     // Migrate plans
     if (plansJson) {
       const plansData = JSON.parse(plansJson) as HuntPlan[];
-      await database.write(async () => {
+      await database?.write(async () => {
         for (const plan of plansData) {
           const createdTime = new Date(plan.createdAt).getTime();
           const updatedTime = new Date(plan.updatedAt).getTime();
 
           const planModel = await database
-            .get<HuntPlanModel>('hunt_plans')
+            .get('hunt_plans')
             .create((p: any) => {
               p.name = plan.name;
               p.color = plan.color;
@@ -191,7 +197,7 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
           // Migrate waypoints
           for (const wp of plan.waypoints) {
             await database
-              .get<WaypointModel>('waypoints')
+              .get('waypoints')
               .create((w: any) => {
                 w.planId = planModel.id;
                 w.label = wp.label;
@@ -205,7 +211,7 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
           // Migrate routes
           for (const route of plan.routes) {
             await database
-              .get<RouteModel>('routes')
+              .get('routes')
               .create((r: any) => {
                 r.planId = planModel.id;
                 r.label = route.label;
@@ -220,7 +226,7 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
           // Migrate areas
           for (const area of plan.areas) {
             await database
-              .get<DrawnAreaModel>('drawn_areas')
+              .get('drawn_areas')
               .create((a: any) => {
                 a.planId = planModel.id;
                 a.label = area.label;
@@ -237,11 +243,11 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
     // Migrate tracks
     if (tracksJson) {
       const tracksData = JSON.parse(tracksJson) as RecordedTrack[];
-      await database.write(async () => {
+      await database?.write(async () => {
         for (const track of tracksData) {
           const createdTime = new Date(track.date).getTime();
           await database
-            .get<RecordedTrackModel>('recorded_tracks')
+            .get('recorded_tracks')
             .create((t: any) => {
               t.name = track.name;
               t.pointsJson = JSON.stringify(track.points);
@@ -279,7 +285,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
         // Load all plans from WatermelonDB
         const planModels = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .query()
           .fetch();
         const plansData = await Promise.all(planModels.map(modelToHuntPlan));
@@ -287,7 +293,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
         // Load all tracks from WatermelonDB
         const trackModels = await database
-          .get<RecordedTrackModel>('recorded_tracks')
+          .get('recorded_tracks')
           .query()
           .fetch();
         const tracksData = trackModels.map(trackModelToTrack);
@@ -319,10 +325,10 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       };
 
       // Write to WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         const nowTime = new Date().getTime();
         await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .create((p: any) => {
             p.id = newPlan.id;
             p.name = newPlan.name;
@@ -335,7 +341,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
             p.createdAt = nowTime;
             p.updatedAt = nowTime;
           });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error creating plan:', err);
       });
 
@@ -348,9 +354,9 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
   const updatePlan = useCallback((updated: HuntPlan) => {
     // Write to WatermelonDB asynchronously
-    database.write(async () => {
+    database?.write(async () => {
       const model = await database
-        .get<HuntPlanModel>('hunt_plans')
+        .get('hunt_plans')
         .find(updated.id);
       await model.update((p: any) => {
         p.name = updated.name;
@@ -362,7 +368,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
         p.parkingLabel = updated.parkingPoint?.label ?? null;
         p.updatedAt = new Date().getTime();
       });
-    }).catch((err) => {
+    }).catch((err: any) => {
       if (__DEV__) console.warn('[ScoutDataContext] Error updating plan:', err);
     });
 
@@ -376,12 +382,12 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
   const deletePlan = useCallback((planId: string) => {
     // Delete from WatermelonDB asynchronously
-    database.write(async () => {
+    database?.write(async () => {
       const model = await database
-        .get<HuntPlanModel>('hunt_plans')
+        .get('hunt_plans')
         .find(planId);
       await model.destroyPermanently();
-    }).catch((err) => {
+    }).catch((err: any) => {
       if (__DEV__) console.warn('[ScoutDataContext] Error deleting plan:', err);
     });
 
@@ -396,9 +402,9 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Write to WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         const model = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         const plan = updated.find((p) => p.id === planId);
         if (plan) {
@@ -406,7 +412,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
             p.visible = plan.visible;
           });
         }
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error toggling visibility:', err);
       });
 
@@ -429,9 +435,9 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Write to WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         await database
-          .get<WaypointModel>('waypoints')
+          .get('waypoints')
           .create((w: any) => {
             w.id = waypoint.id;
             w.planId = planId;
@@ -444,12 +450,12 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
         // Update plan's updatedAt timestamp
         const planModel = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         await planModel.update((p: any) => {
           p.updatedAt = new Date().getTime();
         });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error adding waypoint:', err);
       });
 
@@ -466,20 +472,20 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Delete from WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         const waypoint = await database
-          .get<WaypointModel>('waypoints')
+          .get('waypoints')
           .find(waypointId);
         await waypoint.destroyPermanently();
 
         // Update plan's updatedAt timestamp
         const planModel = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         await planModel.update((p: any) => {
           p.updatedAt = new Date().getTime();
         });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error removing waypoint:', err);
       });
 
@@ -497,9 +503,9 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Write to WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         await database
-          .get<RouteModel>('routes')
+          .get('routes')
           .create((r: any) => {
             r.id = route.id;
             r.planId = planId;
@@ -513,12 +519,12 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
         // Update plan's updatedAt timestamp
         const planModel = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         await planModel.update((p: any) => {
           p.updatedAt = new Date().getTime();
         });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error adding route:', err);
       });
 
@@ -535,20 +541,20 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Delete from WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         const route = await database
-          .get<RouteModel>('routes')
+          .get('routes')
           .find(routeId);
         await route.destroyPermanently();
 
         // Update plan's updatedAt timestamp
         const planModel = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         await planModel.update((p: any) => {
           p.updatedAt = new Date().getTime();
         });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error removing route:', err);
       });
 
@@ -566,9 +572,9 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Write to WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         await database
-          .get<DrawnAreaModel>('drawn_areas')
+          .get('drawn_areas')
           .create((a: any) => {
             a.id = area.id;
             a.planId = planId;
@@ -581,12 +587,12 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
 
         // Update plan's updatedAt timestamp
         const planModel = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         await planModel.update((p: any) => {
           p.updatedAt = new Date().getTime();
         });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error adding area:', err);
       });
 
@@ -603,20 +609,20 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Delete from WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         const area = await database
-          .get<DrawnAreaModel>('drawn_areas')
+          .get('drawn_areas')
           .find(areaId);
         await area.destroyPermanently();
 
         // Update plan's updatedAt timestamp
         const planModel = await database
-          .get<HuntPlanModel>('hunt_plans')
+          .get('hunt_plans')
           .find(planId);
         await planModel.update((p: any) => {
           p.updatedAt = new Date().getTime();
         });
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error removing area:', err);
       });
 
@@ -629,10 +635,10 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
     setTracks((prev) => [...prev, track]);
 
     // Write to WatermelonDB asynchronously
-    database.write(async () => {
+    database?.write(async () => {
       const createdTime = new Date(track.date).getTime();
       await database
-        .get<RecordedTrackModel>('recorded_tracks')
+        .get('recorded_tracks')
         .create((t: any) => {
           t.id = track.id;
           t.name = track.name;
@@ -644,7 +650,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
           t.visible = track.visible;
           t.createdAt = createdTime;
         });
-    }).catch((err) => {
+    }).catch((err: any) => {
       if (__DEV__) console.warn('[ScoutDataContext] Error saving track:', err);
     });
   }, []);
@@ -653,12 +659,12 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
     setTracks((prev) => prev.filter((t) => t.id !== trackId));
 
     // Delete from WatermelonDB asynchronously
-    database.write(async () => {
+    database?.write(async () => {
       const track = await database
-        .get<RecordedTrackModel>('recorded_tracks')
+        .get('recorded_tracks')
         .find(trackId);
       await track.destroyPermanently();
-    }).catch((err) => {
+    }).catch((err: any) => {
       if (__DEV__) console.warn('[ScoutDataContext] Error deleting track:', err);
     });
   }, []);
@@ -670,9 +676,9 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
       );
 
       // Write to WatermelonDB asynchronously
-      database.write(async () => {
+      database?.write(async () => {
         const model = await database
-          .get<RecordedTrackModel>('recorded_tracks')
+          .get('recorded_tracks')
           .find(trackId);
         const track = updated.find((t) => t.id === trackId);
         if (track) {
@@ -680,7 +686,7 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
             t.visible = track.visible;
           });
         }
-      }).catch((err) => {
+      }).catch((err: any) => {
         if (__DEV__) console.warn('[ScoutDataContext] Error toggling track visibility:', err);
       });
 

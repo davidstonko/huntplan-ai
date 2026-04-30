@@ -1,0 +1,150 @@
+{
+  "source_url": "https://dnr.maryland.gov/Pages/service_hunting_license.aspx",
+  "date_accessed": "2026-04-11",
+  "description": "Complete Maryland hunting license fees and stamp costs for 2025-2026",
+  "data": {
+    "resident_licenses": {
+      "regular_resident": {
+        "name": "Regular Resident Hunting License",
+        "age_range": "16-64 years old",
+        "cost": 35,
+        "validity": "Issued through July 31 of next year",
+        "includes": "Basic hunting privileges statewide"
+      },
+      "senior_resident": {
+        "name": "Senior Resident Hunting License",
+        "age_range": "65+ years old",
+        "cost": 5,
+        "validity": "Issued through July 31 of next year",
+        "discount_percentage": 85
+      },
+      "junior_resident": {
+        "name": "Junior Resident Hunting License",
+        "age_range": "Under 16 years old",
+        "cost": 10.50,
+        "validity": "One annual free license upon completing hunter safety course",
+        "includes": "Archery Stamp and Muzzleloader Stamp"
+      },
+      "lifetime_resident": {
+        "name": "Lifetime Resident Hunting License",
+        "description": "Permanent hunting license valid for lifetime",
+        "cost": "Available at DNR Service Centers only",
+        "includes": [
+          "Bow stamp",
+          "Muzzleloader stamp",
+          "Sika deer stamp",
+          "Furbearer permit"
+        ],
+        "notes": "Price varies - contact DNR Service Centers"
+      },
+      "disabled_veteran": {
+        "name": "Free Disabled Veteran License",
+        "eligibility": [
+          "100% service-connected disabled veterans",
+          "Former prisoners of war",
+          "Deemed unemployable by US Department of Veterans Affairs"
+        ],
+        "cost": "Free (complimentary)",
+        "validity": "Lifetime",
+        "documentation_required": "Letter of disability or certification from Veterans Administration",
+        "availability": "DNR Service Centers only"
+      }
+    },
+    "nonresident_licenses": {
+      "nonresident_regular": {
+        "name": "Nonresident Hunting License",
+        "cost": 160,
+        "validity": "Issued through July 31 of next year",
+        "includes": "Basic hunting privileges statewide"
+      },
+      "nonresident_senior": {
+        "name": "Nonresident Senior Hunting License",
+        "cost": 65,
+        "validity": "Issued through July 31 of next year"
+      }
+    },
+    "apprentice_licenses": {
+      "apprentice_resident": {
+        "name": "Apprentice Hunting License (Resident)",
+        "age_minimum": 17,
+        "cost": 15,
+        "purchase_limit": "One time only - must be first-time hunter",
+        "requirements": [
+          "Complete online Apprentice Hunter Safety Course",
+          "Can be accompanied by mentor or hunt unaccompanied if safety course completed"
+        ]
+      },
+      "apprentice_nonresident": {
+        "name": "Apprentice Hunting License (Nonresident)",
+        "age_minimum": 17,
+        "cost": 40,
+        "purchase_limit": "One time only - must be first-time hunter",
+        "requirements": [
+          "Complete online Apprentice Hunter Safety Course",
+          "Can be accompanied by mentor or hunt unaccompanied if safety course completed"
+        ]
+      },
+      "apprentice_supervision": {
+        "mentored": {
+          "requirement": "Accompanied and directly supervised by Maryland resident 18+ with valid hunting license",
+          "proximity": "Must hunt in close proximity for mentor to take immediate control"
+        },
+        "unaccompanied": {
+          "requirement": "Completed full hunter safety course with Certificate of Competency",
+          "validity": "Can hunt alone without mentor after certification"
+        }
+      }
+    },
+    "stamps": {
+      "archery_stamp": {
+        "name": "Archery Stamp",
+        "cost": 6,
+        "required_for": "Bow/crossbow hunting for any species",
+        "validity": "Annual"
+      },
+      "muzzleloader_stamp": {
+        "name": "Muzzleloader Stamp",
+        "cost": 6,
+        "required_for": "Muzzleloader hunting",
+        "validity": "Annual"
+      },
+      "sika_deer_stamp": {
+        "name": "Sika Deer Stamp",
+        "cost": 10,
+        "required_for": "Sika deer hunting (Eastern Shore)",
+        "validity": "Annual"
+      },
+      "bonus_antlered_buck_stamp": {
+        "name": "Bonus Antlered Buck Stamp",
+        "cost": 10,
+        "description": "Allows harvest of additional antlered buck",
+        "validity": "Annual"
+      },
+      "migratory_game_bird_stamp": {
+        "name": "Maryland Migratory Game Bird Stamp",
+        "cost": 9,
+        "required_for": "Waterfowl and migratory game bird hunting",
+        "includes": "HIP registration",
+        "validity": "Annual"
+      },
+      "federal_duck_stamp": {
+        "name": "Federal Duck Stamp",
+        "cost": 25,
+        "required_for": "Waterfowl hunting",
+        "issuing_authority": "U.S. Fish and Wildlife Service",
+        "validity": "Annual"
+      }
+    },
+    "purchase_methods": {
+      "online": "compass.dnr.maryland.gov",
+      "mobile_app": "MD Outdoors mobile app",
+      "in_person": "DNR Service Centers and Sport License Agents"
+    },
+    "hip_registration": {
+      "name": "Harvest Information Program (HIP) Registration",
+      "cost": "Included with Maryland Migratory Game Bird Stamp",
+      "requirement": "Must possess printed receipt showing stamp purchase",
+      "used_for": "Hunting migratory game birds"
+    }
+  }
+}

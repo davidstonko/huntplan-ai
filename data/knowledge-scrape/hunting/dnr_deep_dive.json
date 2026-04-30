@@ -1,0 +1,699 @@
+{
+  "metadata": {
+    "title": "Maryland DNR Deep Research - Hunting Intelligence",
+    "lastUpdated": "2026-04-11",
+    "scope": "Granular, hunting-specific data from Maryland DNR official sources",
+    "regions": ["Central Maryland", "Eastern Maryland", "Southern Maryland", "Western Maryland"]
+  },
+  "wma_parking_and_access": {
+    "description": "Public parking locations, GPS coordinates, hours, and seasonal restrictions",
+    "mckee_beshers": {
+      "name": "McKee-Beshers Wildlife Management Area",
+      "location": "River Road near Poolesville, Montgomery County",
+      "acreage": 1971,
+      "parking": "Multiple parking areas (specific GPS coordinates not publicly listed)",
+      "hours": "Year-round, 24 hours daily",
+      "contact": {
+        "office": "Gwynnbrook Wildlife Office",
+        "phone": "410-356-9272"
+      },
+      "seasonal_restrictions": [
+        "Dogs must be leashed April 15 - August 15 (except in designated dog training areas)",
+        "Dove hunting September only, Monday-Saturday, 12:00pm-5:00pm",
+        "Field trials permitted August 15 through early muzzleloader season and March 1 through April 15"
+      ],
+      "hunting_allowed": "Monday through Saturday, year-round. No Sunday hunting.",
+      "dog_training": {
+        "status": "Designated dog training area, dog training pond, and field trial area available",
+        "hours": "Year-round",
+        "permit": "Retriever Dog Training Permit required if releasing live birds (annual fee $5.00)"
+      },
+      "source": "https://dnr.maryland.gov/wildlife/pages/publiclands/central/mckeebeshers.aspx"
+    },
+    "myrtle_grove": {
+      "name": "Myrtle Grove Wildlife Management Area",
+      "location": "5625 Myrtle Grove Road, La Plata, Maryland 20646 (Charles County, 5 miles west of La Plata on MD 225)",
+      "directions": "Take U.S. Route 301 south to MD 225",
+      "acreage": "Not specified",
+      "parking_areas": [
+        "Myrtle Grove Lake",
+        "Myrtle Grove Wildlife Office",
+        "Myrtle Grove Shooting Range",
+        "7 Ponds Lot on Hawthorne Road",
+        "Chapman Residual on Route 210",
+        "Myrtle Grove Road #1 & #2",
+        "Pomfret Tract at 7434 Bumpy Oak Road",
+        "7030 & 6042 Hawthorne Road",
+        "Livingston Road",
+        "Route 227 Lots #1 & #2"
+      ],
+      "parking_total": 13,
+      "hours": "24 hours daily, year-round",
+      "contact": {
+        "phone": "301-743-5161",
+        "email": "publichuntingpermit.dnr@maryland.gov"
+      },
+      "habitat": "Mature uplands and bottomland forests (oaks, hickories, maples, sycamores, poplars, beech). Includes ~31 acres food plots and 2 greentree reservoirs for waterfowl.",
+      "hunting_allowed": "Monday through Saturday, year-round. No Sunday hunting.",
+      "special_rules": [
+        "No overnight camping",
+        "Dogs must be leashed April 15 - August 15",
+        "No trash facilities provided",
+        "Trails are unmanicured dirt/gravel"
+      ],
+      "source": "https://dnr.maryland.gov/wildlife/pages/publiclands/southern/myrtlegrove.aspx"
+    },
+    "browns_branch": {
+      "name": "Browns Branch Wildlife Management Area",
+      "location": "Eastern Region",
+      "parking": {
+        "area_1": {
+          "location": "South side of Sudlersville Road (MD Route 300), just south of intersection with Emily's Lane",
+          "gps": "39.168906, -75.926347",
+          "description": "Narrow turn-around at gated end of lane"
+        }
+      },
+      "contact": "Regional Wildlife Office",
+      "source": "https://dnr.maryland.gov/wildlife/pages/publiclands/eastern/brownsbranch.aspx"
+    },
+    "gate_and_access_information": {
+      "operating_hours": {
+        "myrtle_grove": "24 hours, year-round",
+        "parkers_creek": "24 hours, year-round",
+        "general_note": "Most WMAs open 24 hours daily"
+      },
+      "seasonal_restrictions": {
+        "sunday_only_access": "Some areas restrict non-hunting access to Sundays only September-January and during spring turkey season (Strider WMA, Hugg-Thomas WMA)",
+        "locked_gates": "Some parking areas have locked gates. Gate codes provided with parking pass. Lock gates behind you.",
+        "seasonal_closure": "Some tracts may have locked gates during off-season (e.g., James Run Tract gate locked except during deer firearms seasons)"
+      },
+      "cwma_note": "Cooperative Wildlife Management Areas may have restricted access times. Contact appropriate DNR office.",
+      "source": "https://dnr.maryland.gov/wildlife/documents/080302_wma-2016.pdf"
+    }
+  },
+  "shooting_ranges": {
+    "description": "Maryland DNR shooting ranges with hours, fees, and allowed shooting types",
+    "state_forest_ranges": [
+      {
+        "name": "Elk Neck State Forest Shooting Range",
+        "location": "Elk Neck State Forest (Cecil County)",
+        "status": "Rifle and shotgun ranges closed for safety repairs. Pistol and archery ranges remain open.",
+        "permit": "Permits available at Maintenance Complex near Main Entrance. Must obtain permit before using range.",
+        "contact": "Obtain permit at Maintenance Complex",
+        "source": "https://dnr.maryland.gov/forests/pages/publiclands/elkneck/shooting-range.aspx"
+      },
+      {
+        "name": "Savage River State Forest Shooting Range",
+        "location": "Savage River State Forest (Garrett County)",
+        "daily_fee": "$5.00 per person per day",
+        "yearly_permit": "$25.00 (individual) or family permit available",
+        "source": "https://dnr.maryland.gov/forests/documents/savage%20river/savagerivershootingrange.pdf"
+      },
+      {
+        "name": "Green Ridge State Forest Shooting Range",
+        "location": "Green Ridge State Forest (Allegany County)",
+        "hours": "8am to sunset",
+        "permit": "Daily fee/permit required from office",
+        "source": "https://dnr.maryland.gov/forests/Documents/greenridge/GRSFShootingRangeRules.pdf"
+      }
+    ],
+    "shooting_types_supported": [
+      "Rifle",
+      "Shotgun",
+      "Pistol/Handgun",
+      "Muzzleloader",
+      "Archery"
+    ],
+    "general_note": "Complete list of all Maryland shooting ranges available in official DNR PDF document",
+    "resources": [
+      {
+        "title": "Shooting Ranges in Maryland",
+        "type": "PDF Guide",
+        "url": "https://dnr.maryland.gov/wildlife/Documents/ShootingRangesMD.pdf",
+        "content": "Comprehensive list of all public and private shooting ranges throughout Maryland"
+      },
+      {
+        "title": "Shooting Ranges in Maryland",
+        "type": "Web Page",
+        "url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/shooting_ranges.aspx",
+        "content": "Main DNR page for locating shooting ranges"
+      }
+    ]
+  },
+  "managed_hunts": {
+    "description": "Controlled/managed hunts with lottery systems, permit requirements, and applications",
+    "anne_arundel_county": {
+      "hunt_type": "Managed Deer Hunt",
+      "locations": ["Patapsco Valley State Park and Morgan Run NEA"],
+      "hunter_limit": 140,
+      "selection_method": "Lottery",
+      "requirements": [
+        "Valid Maryland Hunting License",
+        "Shooter Qualification Card",
+        "Hunter Education and Safety Requirement verification",
+        "Background check",
+        "Participant interview"
+      ],
+      "permit_type": "Free Public Hunting Permit",
+      "application_deadline": "October 17, 2025 @ 11:30am",
+      "drawing_date": "October 20, 2025 @ 12:00pm",
+      "application_rule": "Only one application per individual",
+      "source": "https://dnr.maryland.gov/publiclands/pages/central/patapscovalley/hunting.aspx"
+    },
+    "seneca_creek_state_park": {
+      "name": "Seneca Creek State Park Managed Hunt",
+      "location": "Montgomery County",
+      "address": "11950 Clopper Road, Gaithersburg, MD",
+      "hunter_limit": 30,
+      "selection_method": "Lottery",
+      "seasons": {
+        "archery": {
+          "dates": "Oct 19 - Nov 28, 2025; Dec 15-19, 2025; Jan 4-8, 2026; Jan 12-31, 2026",
+          "method": "Bow hunting only for deer"
+        },
+        "muzzleloader": {
+          "dates": "Dec 20, 2025 - Jan 3, 2026",
+          "method": "Muzzleloader hunting for deer"
+        },
+        "firearms": {
+          "dates": "Nov 29 - Dec 13, 2025; Jan 9-11, 2026",
+          "method": "Shotgun hunting for deer"
+        },
+        "primitive": {
+          "dates": "Feb 2-4, 2026",
+          "method": "Archery + Muzzleloader"
+        }
+      },
+      "lottery_timeline": {
+        "opens": "September 3, 2025",
+        "closes": "December 5, 2025"
+      },
+      "permit_type": "Managed Hunt Permit (required)",
+      "source": "https://dnr.maryland.gov/publiclands/pages/central/seneca.aspx"
+    },
+    "wye_island_nrma": {
+      "name": "Wye Island Natural Resources Management Area",
+      "location": "Queen Anne's County",
+      "contact_email": "nrma.wyeisland@maryland.gov",
+      "hunting_by_permit_only": true,
+      "hunts": [
+        {
+          "type": "Archery Deer Hunt",
+          "requirements": "Sign in and out at Hunter Check In bulletin board on first-come, first-served basis",
+          "documents": "https://dnr.maryland.gov/publiclands/Documents/Wye-Island/WyeIslandNRMAArcheryRegsMap-2024-2025.pdf"
+        },
+        {
+          "type": "Firearms Deer Hunt",
+          "selection": "Lottery",
+          "application": "https://dnr.maryland.gov/publiclands/Documents/Wye-Island/FirearmsHuntApplication-2024.pdf"
+        },
+        {
+          "type": "Muzzleloader Deer Hunt",
+          "selection": "Lottery",
+          "application": "https://dnr.maryland.gov/publiclands/Documents/Wye-Island/MuzzleloaderHuntApplication-2024.pdf"
+        },
+        {
+          "type": "Rabbit Chase Hunt",
+          "selection": "Lottery",
+          "application": "https://dnr.maryland.gov/publiclands/Documents/Wye-Island/Rabbit-Chase-Application-2025-26-WINRMA.pdf"
+        },
+        {
+          "type": "Canada Goose Hunt",
+          "notes": "Managed hunts available"
+        }
+      ],
+      "source": "https://dnr.maryland.gov/publiclands/Pages/eastern/WyeIsland/Hunting.aspx"
+    },
+    "shooter_qualification": {
+      "requirement": "Proficiency test required for certain managed deer hunts",
+      "2025_sessions": "More than 20 sessions at 10 locations across the state",
+      "period": "June through December 2025",
+      "calendar": "https://dnr.maryland.gov/huntersguide/documents/shoot_qual_cal.pdf",
+      "source": "https://dnr.maryland.gov/huntersguide/Documents/Hunting_Seasons_Calendar.pdf"
+    }
+  },
+  "harvest_reporting": {
+    "description": "Deer harvest reporting requirements, methods, and current systems",
+    "current_system": {
+      "reporting_requirement": "All harvested deer must be reported to Maryland DNR",
+      "timeline": "Report within 24 hours of taking deer into possession",
+      "prerequisite": "Must report BEFORE head or hide is removed",
+      "methods": [
+        "Toll-free phone number (designated number)",
+        "Online registration via Maryland DNR website",
+        "Other methods as designated by Department"
+      ],
+      "confirmation": "Confirmation number provided after reporting. Record in ink on big game harvest record or keep as electronic record."
+    },
+    "historical_note": "Maryland previously used physical check station system through 2004 deer hunting season. Current system is internet and phone-based.",
+    "e_reporting": {
+      "system": "E-Reporting with FACTS",
+      "url": "https://dnr.maryland.gov/fisheries/pages/e-reporting/check-stations.aspx"
+    },
+    "source": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/deer-hunting-in-maryland.aspx"
+  },
+  "dog_training_areas": {
+    "description": "Designated WMA dog training areas with permits and seasonal restrictions",
+    "mckee_beshers_wma": {
+      "location": "Montgomery County (near Poolesville)",
+      "facilities": [
+        "Designated dog training area",
+        "Designated dog training pond",
+        "Field trial area"
+      ],
+      "availability": "Year-round with no reservations required",
+      "permit": "Retriever Dog Training Permit required if releasing live birds (annual fee $5.00)",
+      "source": "https://dnr.maryland.gov/wildlife/pages/publiclands/central/mckeebeshers.aspx"
+    },
+    "indian_springs_wma": {
+      "location": "Washington County near Clear Spring",
+      "acreage": 6400,
+      "facilities": [
+        "Designated dog training area",
+        "Field trial area"
+      ],
+      "availability": "Year-round",
+      "source": "https://dnr.maryland.gov/wildlife/pages/publiclands/western/indiansprings.aspx"
+    },
+    "retriever_dog_training_permit": {
+      "annual_fee": "$5.00",
+      "requirement": "Required when releasing live birds at designated dog training areas",
+      "purpose": "Allows training of retriever dogs on state property",
+      "source": "https://dnr.maryland.gov/wildlife/pages/licenses/retriever_permit.aspx"
+    },
+    "general_rules": {
+      "non_designated_areas": "Must obtain permission from land manager before training dogs on state-owned or controlled properties"
+    }
+  },
+  "accessible_hunting": {
+    "description": "ADA accessible hunting blinds, permits, and facilities for hunters with mobility impairments",
+    "permits_required": [
+      {
+        "name": "Universal Disability Pass",
+        "formerly_known_as": "Hunt From a Vehicle Permit",
+        "requirement": "Physician certification required",
+        "cost": "Free",
+        "application": "Available through Wildlife & Heritage Service Offices or online"
+      },
+      {
+        "name": "Access Permit",
+        "required_after": "Obtaining Universal Disability Pass",
+        "cost": "Free",
+        "purpose": "Required to utilize accessible hunting accommodations"
+      }
+    ],
+    "accessible_locations": {
+      "lecompte_wma": {
+        "location": "Eastern Region",
+        "feature": "Accessible waterfowl blinds on 35-acre impoundment",
+        "availability": "One day per week by reservation",
+        "permit_requirement": "HFV and Access Permits required",
+        "source": "https://dnr.maryland.gov/wildlife/Pages/publiclands/eastern/lecompte.aspx"
+      },
+      "cunningham_swamp_wma": {
+        "feature": "Wheelchair-accessible boardwalk and covered hunting platform"
+      },
+      "mt_nebo_wma": {
+        "feature": "One mile of special access with accessible covered hunting structure"
+      },
+      "warrior_mountain_wma": {
+        "feature": "Accessible hunting infrastructure"
+      }
+    },
+    "vehicle_hunting_rules": {
+      "requirement": "Vehicle must be at a complete stop with motor turned off while shooting, aiming, or firing weapon",
+      "safety_rules": [
+        "Weapons must remain unloaded while vehicle is in motion",
+        "Loaded weapons cannot be in vehicles on public roadways"
+      ]
+    },
+    "additional_info": "For comprehensive accessible hunting locations and amenities, consult Public Hunting Lands or Access for All website",
+    "source": "https://dnr.maryland.gov/publiclands/Pages/accessibleactivities.aspx?activity=accessiblehunting"
+  },
+  "hunter_education": {
+    "description": "Hunter education courses, online options, field day workshops, and apprentice licensing",
+    "course_options": [
+      {
+        "type": "Full In-Person (Traditional)",
+        "age_requirement": "Required for persons under 13",
+        "duration": "Multi-day classroom training",
+        "description": "Fully in-person traditional classroom course"
+      },
+      {
+        "type": "Hybrid (Classroom + Field Day)",
+        "duration": "Includes online portion + single day field workshop",
+        "field_day_duration": "4-6 hours typically, sometimes longer",
+        "testing": "Test required during both online and field day portions",
+        "requirements": [
+          "Demonstrate safe firearm handling",
+          "Behave in mature and safe manner",
+          "Make legal, safe, and ethical hunting decisions",
+          "Participate in live-fire range event"
+        ]
+      }
+    ],
+    "apprentice_license": {
+      "name": "Apprentice License",
+      "hunter_education_exempt": true,
+      "online_requirement": "Short online hunter safety course required prior to purchase",
+      "hunting_requirement": "Must hunt with resident 18+ years old with valid non-apprentice hunting license",
+      "source": "https://dnr.maryland.gov/nrp/Pages/hunter_education.aspx"
+    },
+    "contact": {
+      "program": "Hunter Education Program",
+      "url": "https://dnr.maryland.gov/nrp/Pages/hunter_education.aspx"
+    }
+  },
+  "mentored_hunting": {
+    "description": "Mentored hunt programs pairing experienced hunters with beginners and lapsed hunters",
+    "program_name": "Maryland DNR Mentored Hunt Program",
+    "partner": "International Hunter Education Association",
+    "platform": "learnhunting.org",
+    "eligibility": [
+      "Youth (junior) hunters",
+      "Apprentice hunters",
+      "First-time full season license buyers",
+      "Lapsed hunters"
+    ],
+    "program_flow": {
+      "step_1": "Mentee selected and paired with experienced mentor",
+      "step_2": "Mentor and mentee can communicate via in-person meetings, text, call, or email",
+      "step_3": "Pair participates in technical lectures on firearm safety, hunting tips, techniques, and strategies",
+      "step_4": "Participants receive range time to begin hunting journey"
+    },
+    "special_hunts": "Special mentored pheasant hunts available on various Wildlife Management Areas throughout the state",
+    "youth_programs": {
+      "junior_hunter_program": "Junior Hunter Certificate Program available",
+      "field_days": "Jr. Hunter Field Days offered",
+      "source": "https://dnr.maryland.gov/huntersguide/pages/jrhunter_certprogram.aspx"
+    },
+    "source": "https://dnr.maryland.gov/wildlife/Pages/hunt_trap/Mentored-Hunt-Program.aspx"
+  },
+  "free_public_hunting_permit": {
+    "description": "Requirements and application process for Free Public Hunting Permit program",
+    "cost": "Free",
+    "requirement": "Required for all designated public hunting sites on state lands",
+    "prerequisite": "Must have valid Hunting License (can obtain permit simultaneously)",
+    "obtaining_permit": [
+      {
+        "method": "Online",
+        "platform": "MD Outdoors",
+        "timeline": "Permit will print as product on hunting license"
+      },
+      {
+        "method": "In-Person",
+        "locations": [
+          {
+            "office": "Gwynnbrook Wildlife Office",
+            "phone": "410-356-9272"
+          },
+          {
+            "office": "Myrtle Grove Wildlife Office",
+            "phone": "301-743-5161"
+          }
+        ]
+      }
+    ],
+    "permit_delivery": {
+      "timeline": "Within one business day of online application",
+      "contents": "Email with regulation packets and parking pass",
+      "next_steps": "Print and fill out parking pass. DNR ID becomes permit."
+    },
+    "rules_and_regulations": [
+      "No permanent tree stands or blinds allowed",
+      "All portable tree stands/blinds must be removed at end of day",
+      "No placing or hunting over bait",
+      "Must display parking permit on vehicle dash",
+      "No overnight camping",
+      "Gates must be locked behind you (code provided with permit)"
+    ],
+    "application_window_2025": {
+      "opens": "TBD (typically early fall)",
+      "closes": "October 17, 2025 @ 11:30am",
+      "drawing": "October 20, 2025 @ 12:00pm"
+    },
+    "documents": [
+      {
+        "title": "Free Public Hunting Permit Program 2025-2026",
+        "url": "https://dnr.maryland.gov/wildlife/Documents/Free-Public-Hunting-Permit-Program.pdf"
+      },
+      {
+        "title": "How to Obtain Free Public Hunting Permit Online",
+        "url": "https://dnr.maryland.gov/wildlife/documents/how-to-obtain-the-free-public-hunting-permit-online.pdf"
+      }
+    ],
+    "source": "https://dnr.maryland.gov/wildlife/pages/licenses/PublicHuntingPermit.aspx"
+  },
+  "nuisance_wildlife_permits": {
+    "description": "Permits for dealing with deer damage, depredation, and other wildlife conflicts",
+    "deer_management_permit": {
+      "purpose": "Helps landowners/farmers resolve damage to agricultural crops, orchards, nurseries, managed forests",
+      "eligible_applicants": [
+        "Landowner",
+        "Agricultural lessee",
+        "Designated employee"
+      ],
+      "eligibility_criteria": [
+        "Must have sustained severe deer damage",
+        "Must have economic loss to commercial agricultural property",
+        "Property types: row crops, truck crops, pasture, orchard, nursery, Christmas trees"
+      ],
+      "documents": [
+        {
+          "title": "Deer Management Permit Guidelines",
+          "url": "https://dnr.maryland.gov/wildlife/documents/dmp_general-conditions.pdf"
+        },
+        {
+          "title": "Deer Management Permit Procedures",
+          "url": "https://dnr.maryland.gov/wildlife/Documents/08030402%20DMP.formated%20-%20Nancy%20Doran%20-DNR-.pdf"
+        }
+      ]
+    },
+    "wildlife_damage_control_permit": {
+      "requirement": "Required for any wildlife species (except exempt species)",
+      "purpose": "Allows landowner to address wildlife problems"
+    },
+    "depredation_permits": {
+      "types": ["Bear depredation", "Coyote depredation", "Bird depredation"],
+      "notes": "Available for various wildlife species causing damage"
+    },
+    "application": {
+      "method": "Contact Wildlife and Heritage Service",
+      "phone": "410-260-8540",
+      "process": "Schedule wildlife permit appointment by phone or email"
+    },
+    "source": "https://dnr.maryland.gov/wildlife/pages/licenses/ddpermit.aspx"
+  },
+  "hunting_seasons": {
+    "description": "Key Maryland hunting season dates and regulations",
+    "deer_seasons_2025_2026": {
+      "archery": {
+        "dates": "September through October + December through January (specific dates vary by region)",
+        "weapon": "Bow only"
+      },
+      "muzzleloader": {
+        "dates": "December",
+        "weapon": "Muzzleloader only"
+      },
+      "firearms": {
+        "dates": "November through January",
+        "weapon": "Shotgun with rifled slugs"
+      }
+    },
+    "spring_turkey": {
+      "junior_hunt": {
+        "dates": "April 12, 2025 (all counties); April 13, 2025 (select counties)",
+        "day": "Saturday and Sunday"
+      },
+      "general_season": {
+        "phase_1": {
+          "dates": "April 18 - May 9, 2026",
+          "shooting_hours": "1/2 hour before sunrise to noon"
+        },
+        "phase_2": {
+          "dates": "May 10 - May 23, 2026",
+          "shooting_hours": "1/2 hour before sunrise to sunset"
+        }
+      }
+    },
+    "small_game": {
+      "species": [
+        "Eastern cottontail rabbit",
+        "Gray squirrel",
+        "Eastern fox squirrel",
+        "Red squirrel",
+        "Quail",
+        "Dove",
+        "Pheasant"
+      ],
+      "sunday_hunting": "All Sundays during open seasons with certain restrictions",
+      "bag_limits_vary": "See official season calendar for species-specific limits"
+    },
+    "waterfowl": {
+      "duck_daily_limit": 6,
+      "duck_limit_breakdown": [
+        "Max 4 sea ducks",
+        "Max 4 mallards (no more than 2 hen mallards)",
+        "Max 3 wood ducks",
+        "Max 2 scaup",
+        "Max 3 pintails",
+        "Max 2 redheads",
+        "Max 2 canvasbacks",
+        "Max 2 black ducks",
+        "Max 1 fulvous tree duck",
+        "Max 1 mottled duck"
+      ],
+      "possession_limit": "3 times the daily bag limit",
+      "stamp_requirement": "Federal Migratory Bird Hunting and Conservation Stamp (Duck Stamp) required for hunters 16+"
+    },
+    "documents": [
+      {
+        "title": "Hunting Seasons Calendar 2025-2026",
+        "url": "https://dnr.maryland.gov/huntersguide/Documents/Hunting_Seasons_Calendar.pdf"
+      },
+      {
+        "title": "Game Birds and Small Game Seasons",
+        "url": "https://dnr.maryland.gov/wildlife/Documents/Maryland-Game-Birds-and-Small-Game24-25.pdf"
+      },
+      {
+        "title": "Public Hunting Waterfowl Regulation Packet 2025-2026",
+        "url": "https://dnr.maryland.gov/wildlife/Documents/Public-Hunting-Waterfowl-Regulation-Packet.pdf"
+      },
+      {
+        "title": "Sunday Deer Hunting Calendar",
+        "url": "https://dnr.maryland.gov/huntersguide/documents/sundaydeerhuntingcalendar.pdf"
+      }
+    ]
+  },
+  "law_enforcement": {
+    "description": "Maryland Natural Resources Police and wildlife officer enforcement",
+    "agency": "Maryland Natural Resources Police (NRP)",
+    "role": "Law enforcement arm of Maryland DNR",
+    "responsibilities": [
+      "Enforce conservation and boating laws",
+      "Protect fish and wildlife",
+      "Lead search and rescue efforts",
+      "Enforce Maryland Criminal Law and Transportation Articles"
+    ],
+    "game_wardens": {
+      "jurisdiction": "Enforce all fishing, hunting, trapping, harvesting laws in assigned areas",
+      "duties": [
+        "Record keeping",
+        "Habitat damage assessment and remediation",
+        "Conservation law enforcement"
+      ]
+    },
+    "seasonal_enforcement_example": {
+      "period": "December 2025 - February 2026",
+      "violations_encountered": [
+        "Spotlighting",
+        "Hunting out of season",
+        "Weapons charges",
+        "Oyster harvest violations",
+        "Crimes on public lands"
+      ]
+    },
+    "reporting_violations": {
+      "method": "Call or text Maryland Wildlife Crime Stoppers",
+      "phone": "1-443-433-4112",
+      "app": "Report violations via Maryland DNR App"
+    },
+    "source": "https://dnr.maryland.gov/nrp/Pages/default.aspx"
+  },
+  "regional_contacts": {
+    "central_region": {
+      "office": "Gwynnbrook Wildlife Office",
+      "phone": "410-356-9272",
+      "services": "Trapping permits, field trial applications, general inquiries"
+    },
+    "southern_region": {
+      "office": "Myrtle Grove Wildlife Office",
+      "phone": "301-743-5161",
+      "email": "publichuntingpermit.dnr@maryland.gov",
+      "address": "5625 Myrtle Grove Road, La Plata, MD 20646"
+    },
+    "wildlife_heritage_service": {
+      "phone": "410-260-8540",
+      "service": "Wildlife damage control permits, nuisance wildlife appointments"
+    }
+  },
+  "wma_regional_structure": {
+    "description": "Four regional divisions of Maryland WMAs",
+    "central_maryland": {
+      "description": "Near Baltimore and Washington. Tranquil and serene places within urban proximity",
+      "url": "https://dnr.maryland.gov/wildlife/pages/publiclands/wmacentral.aspx",
+      "key_areas": ["McKee-Beshers", "Patapsco Valley", "Seneca Creek"]
+    },
+    "eastern_maryland": {
+      "description": "East of Chesapeake Bay. Diverse wildlife supporting kayaking, canoeing, hiking, bird-watching",
+      "url": "https://dnr.maryland.gov/wildlife/pages/publiclands/wmaeastern.aspx",
+      "key_areas": ["Browns Branch", "Wye Island", "LeCompte"]
+    },
+    "southern_maryland": {
+      "description": "Largely unchanged since English colonial settlement 1600s. Appeals to hikers, hunters, photographers, anglers",
+      "url": "https://dnr.maryland.gov/wildlife/pages/publiclands/wmasouthern.aspx",
+      "key_areas": ["Myrtle Grove", "Parkers Creek", "Hugg-Thomas"]
+    },
+    "western_maryland": {
+      "description": "Largest area with 120,000+ acres. Forested peaks/valleys of Blue Ridge and Allegheny Mountains. Canoeing, whitewater, hunting, fishing year-round",
+      "url": "https://dnr.maryland.gov/wildlife/pages/publiclands/wmawestern.aspx",
+      "key_areas": ["Indian Springs", "Mt. Nebo", "Warrior Mountain"]
+    },
+    "total_coverage": {
+      "number_of_wmas": 64,
+      "total_acreage": "Under 128,000 acres",
+      "counties": 19
+    },
+    "source": "https://dnr.maryland.gov/wildlife/pages/publiclands/allbyregion.aspx"
+  },
+  "additional_resources": {
+    "main_pages": [
+      {
+        "title": "Hunting in Maryland",
+        "url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/home.aspx",
+        "description": "Primary DNR hunting information hub"
+      },
+      {
+        "title": "Deer Hunting in Maryland",
+        "url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/deer-hunting-in-maryland.aspx",
+        "description": "Comprehensive deer hunting information and regulations"
+      },
+      {
+        "title": "Wild Turkey Hunting",
+        "url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/wildturkeyhunting.aspx",
+        "description": "Turkey hunting regulations and permits"
+      },
+      {
+        "title": "Waterfowl Hunting",
+        "url": "https://dnr.maryland.gov/wildlife/pages/hunt_trap/waterfowl.aspx",
+        "description": "Waterfowl hunting guide and resources"
+      }
+    ],
+    "2025_2026_guides": [
+      {
+        "title": "Complete 2025-2026 Hunting and Trapping Information",
+        "url": "https://dnr.maryland.gov/huntersguide/pages/allspecies.aspx"
+      }
+    ]
+  },
+  "research_notes": {
+    "methodology": "Systematic web search of official Maryland DNR websites combined with targeted document fetching",
+    "primary_sources": "dnr.maryland.gov, eregulations.com, official DNR PDF documents",
+    "coverage_areas": [
+      "WMA locations and parking",
+      "Shooting range details",
+      "Managed hunt systems",
+      "Harvest reporting",
+      "Dog training areas",
+      "Accessible hunting",
+      "Hunter education",
+      "Mentored hunting programs",
+      "Permit systems",
+      "Season dates and regulations",
+      "Law enforcement",
+      "Regional organization"
+    ],
+    "data_freshness": "2025-2026 season information with some 2024-2025 references",
+    "gaps": "Some granular GPS parking coordinates not publicly detailed; specific hours may vary by location"
+  }
+}

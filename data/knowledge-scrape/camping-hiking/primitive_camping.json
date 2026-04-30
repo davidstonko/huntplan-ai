@@ -1,0 +1,139 @@
+{
+  "source_urls": [
+    "https://dnr.maryland.gov/forests/pages/publiclands/greenridge/recreation-camping.aspx",
+    "https://www.nps.gov/articles/000/camping-at-green-ridge-state-forest.htm",
+    "https://marylandroadtrips.com/keep-camping-simple-go-primitive-at-green-ridge-state-forest/",
+    "https://thedyrt.com/camping/maryland/green-ridge-state-forest"
+  ],
+  "date_accessed": "2026-04-11",
+  "data": {
+    "green_ridge_state_forest": {
+      "total_acres": 49000,
+      "description": "Time-worn mountain ridges and valleys with creeks, trails, rock outcrops, and extensive forest lands",
+      "location": "Western Maryland near Flintstone, MD"
+    },
+    "primitive_campsites": {
+      "total_sites": 100,
+      "distribution": "Dispersed throughout forest",
+      "availability": "Year-round",
+      "permit_required": true,
+      "reservation_system": "First-come, first-serve",
+      "check_in": "24/7 check-in kiosk at Green Ridge Headquarters",
+      "nightly_permit_fee": "$10",
+      "amenities_per_site": [
+        "Fire pit",
+        "Picnic table",
+        "Space for 2+ tents"
+      ],
+      "no_amenities": [
+        "Water spigots",
+        "Flush toilets",
+        "Plumbing"
+      ],
+      "required_practices": [
+        "Bring your own water",
+        "Pack out all waste",
+        "Leave No Trace principles"
+      ]
+    },
+    "group_camping": {
+      "available": true,
+      "group_size": "20 or more",
+      "sites": 6,
+      "reservation_required": true,
+      "advance_booking": "Available"
+    },
+    "backcountry_camping": {
+      "allowed": true,
+      "shelters": "Few shelters on trails"
+    },
+    "appalachian_trail_maryland": {
+      "length_miles": 40,
+      "difficulty": "Fairly easy by AT standards",
+      "elevation_change_feet": 1650,
+      "lowest_point": {
+        "location": "Potomac River",
+        "elevation_feet": 250
+      },
+      "highest_point": {
+        "location": "High Rock",
+        "elevation_feet": 1900
+      },
+      "shelters": [
+        {
+          "name": "Pine Knob Shelter",
+          "capacity": 5,
+          "built": 1939,
+          "water_source": "Spring next to shelter",
+          "amenity": "Privy nearby"
+        },
+        {
+          "name": "Raven Rock Shelter",
+          "type": "Designated shelter with camping"
+        },
+        {
+          "name": "Ed Garvey Shelter",
+          "type": "Designated shelter with camping"
+        },
+        {
+          "name": "Crampton Gap Shelter",
+          "type": "Designated shelter with camping",
+          "water_note": "Can be dry in dry conditions"
+        },
+        {
+          "name": "Ensign Cowall Shelter",
+          "type": "Designated shelter",
+          "water_note": "Little or standing water only in dry conditions"
+        },
+        {
+          "name": "Rocky Run Shelter",
+          "type": "Designated shelter with camping"
+        }
+      ],
+      "campsites": [
+        {
+          "name": "Pogo Memorial Campsite",
+          "location": "3.7 miles pass by east of trail",
+          "water_source": "One of most robust springs in Maryland",
+          "type": "Memorial campground"
+        },
+        {
+          "name": "Dahlgren Campground",
+          "location": "About 1 mile south of Old South Mountain Inn in Boonsboro",
+          "amenities": ["Shower facility"]
+        },
+        {
+          "name": "Annapolis Rock",
+          "type": "Primitive campsites with privies"
+        }
+      ],
+      "frost_free_spigots": [
+        "Washington Monument",
+        "Dahlgren Backpacker Campground",
+        "Crampton Gap"
+      ],
+      "camping_regulations": "Camping restricted to designated shelters and campsites in Maryland",
+      "seasonal_closures": "Showers and restrooms shut down October to April"
+    },
+    "water_sources": {
+      "summer_reliability": "Generally reliable",
+      "dry_season_concerns": [
+        {
+          "location": "Ensign Cowall Shelter",
+          "dry_season_note": "Little or standing water only"
+        },
+        {
+          "location": "Pine Knob Shelter",
+          "dry_season_note": "Slow trickle or dry"
+        },
+        {
+          "location": "Crampton Gap Shelter",
+          "dry_season_note": "Dry"
+        }
+      ],
+      "reliable_springs": [
+        "Pogo Campsite (most robust)"
+      ]
+    }
+  }
+}

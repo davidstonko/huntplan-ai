@@ -1,7 +1,10 @@
 # MDHuntFishOutdoors — Hunting Module Build Plan
 
-**Last updated:** 2026-04-02
-**Status:** HUNTING MODULE COMPLETE. All sprints (A–H) done. Ready for Phase 4 (Fishing).
+> **CANONICAL REPO LOCK:** This plan applies to `~/Documents/huntmaryland-build/` ONLY. If you see this file in any other folder (e.g. `huntplan-ai/mobile/`), that copy is **stale** — flag it to David and stop. (Lock added 2026-04-26 after a parallel V2.3 fork consolidation.)
+
+
+**Last updated:** 2026-04-03
+**Status:** HUNTING MODULE DEPLOYED. All sprints (A–H) done. V3 Build 5 uploaded to App Store Connect. Backend live on Render. Ready for Phase 4 (Fishing).
 
 ---
 
@@ -146,6 +149,16 @@ A full audit of every screen, service, context, and backend module from the pers
 - UUID validation on all deercamp endpoints
 - Authentication added to 4 unprotected photo endpoints
 
+### Deployment (COMPLETE — 2026-04-03)
+- .gitignore created (was missing — node_modules had been committed to repo)
+- node_modules removed from git tracking via `git rm -r --cached`
+- All code pushed to GitHub (davidstonko/huntplan-ai, main branch)
+- Backend auto-deployed to Render (huntplan-api.onrender.com) — commit ee41a99
+- DerivedData cleaned + fresh pod install (76 deps, 83 pods, including RNBackgroundGeolocation)
+- Xcode archive succeeded — Version 2.0.0, Build 5, arm64
+- Uploaded to App Store Connect at 8:01 PM — awaiting Apple processing
+- dSYM warnings for Mapbox/hermes (non-blocking, only affects crash symbolication)
+
 ---
 
 ## Backend Endpoint Coverage
@@ -174,21 +187,23 @@ A full audit of every screen, service, context, and backend module from the pers
 - **V1** (shipped 2026-03-30): Hunting MVP ✅
 - **V2** (live, App Store): Scout + Deer Camp + branding ✅
 - **Sprints A–H** (complete 2026-04-02): All hunting features, intelligence, QC ✅
-- **Phase 3 remaining**: Deploy latest backend to Render, Alembic stamp head, S3 photo storage live
-- **Phase 4** (Weeks 23-30): Fishing module — MD fishing regulations, stocking reports, boat ramps, tidal charts
-- **Phase 5** (Weeks 31+): Crabbing + Boating + Hiking modules
+- **V3 Deployment** (2026-04-03): Backend on Render, Build 5 uploaded to App Store Connect ✅
+- **Phase 3 remaining**: Alembic stamp head (needs paid Render plan for shell), S3/R2 photo storage live, install @nozbe/watermelondb npm package for babel plugin
+- **Phase 4** (target: May 2026): Fishing module — MD fishing regulations, stocking reports, boat ramps, tidal charts
+- **Phase 5** (target: June 2026+): Crabbing + Boating + Hiking modules
 - **Phase 6** (Post-launch): Monetization, multi-state expansion (VA, PA)
 
 ---
 
-## What's Left Before Hunting Module is Production-Complete
+## What's Left (Minor Items — Not Blocking)
 
-### Deployment Tasks (require credentials / Mac access)
-1. `npm install react-native-background-geolocation && cd ios && pod install` — enables F4 background GPS
-2. Deploy updated backend to Render (includes GIS endpoint, admin RBAC, Alembic, thumbnails)
-3. `alembic stamp head` on production database to baseline existing schema
-4. Configure Cloudflare R2 credentials for live photo storage
-5. Submit V3 to App Store (includes all Sprint E–H features)
+### Pre-Next-Build (do before next Xcode archive)
+1. `npm install @nozbe/watermelondb` — fixes babel-plugin error in JS bundle step (build succeeded using cached bundle, but needs this for clean builds)
+
+### Infrastructure (when upgrading Render plan)
+1. `alembic stamp head` on production database — needs Render Shell (paid plan) or one-time startup command
+2. Configure Cloudflare R2 credentials for live photo storage
+3. S3/R2 bucket setup for user-uploaded photos
 
 ### Nice-to-Have (not blocking)
 - Replace harvest heatmap mock data with real aggregated data from backend
@@ -210,7 +225,7 @@ A full audit of every screen, service, context, and backend module from the pers
 
 ---
 
-## Codebase Stats (as of 2026-04-02)
+## Codebase Stats (as of 2026-04-03)
 
 - **19 screens** (17 fully implemented, 1 placeholder for future modes)
 - **14+ services** (all functional)
@@ -219,3 +234,22 @@ A full audit of every screen, service, context, and backend module from the pers
 - **~99 TypeScript files** in src/
 - **~68 Python files** in backend/
 - **0 TypeScript errors** (strict mode enforced)
+
+## App Store Build History
+
+| Date | Version | Build | Status |
+|------|---------|-------|--------|
+| 2026-03-29 | 1.0.0 | 1 | Uploaded to Apple |
+| 2026-03-30 | 2.0.0 | 2 | Uploaded to Apple (V2 submission) |
+| 2026-04-02 | 2.0.0 | 4 | Uploaded to Apple |
+| 2026-04-03 | 2.0.0 | 5 | Uploaded to Apple (hunting module complete) |
+
+## Deployment Infrastructure
+
+| Service | URL | Status |
+|---------|-----|--------|
+| Backend API | https://huntplan-api.onrender.com | Live (Free tier, auto-deploy from main) |
+| GitHub Repo | https://github.com/davidstonko/huntplan-ai | Active |
+| Website | https://davidstonko.github.io/huntmaryland-site/ | Live |
+| Privacy Policy | https://davidstonko.github.io/huntmaryland-site/privacy.html | Live |
+| App Store | Apple ID 6761347484 | Live (MDHuntFishOutdoors) |
