@@ -24,7 +24,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
-  Alert,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import { useLocation } from '../hooks/useLocation';
