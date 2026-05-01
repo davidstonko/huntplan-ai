@@ -192,10 +192,18 @@ export default function FishCampScreen() {
   };
 
   // ── Share Invite ──
+  // 2026-05-01 (V2.4 audit, fourth pass): switched URL from
+  // `?code=CODE` query string to `/CODE` path style. Same fix that
+  // landed for GroupCamp (commit 6518a2b1) and DeerCamp (Apr 28).
+  // AASA at website/.well-known/apple-app-site-association declares
+  // `/huntmaryland-site/join/*` (path-only matching) and
+  // deepLinkRouter regex matches the path segment, so a query-string
+  // URL silently fails to deep-link. Path style works for all 3
+  // camp types via the shared receiver-side route.
   const handleShareInvite = async (camp: FishCamp) => {
     try {
       await Share.share({
-        message: `Join my Fish Camp "${camp.name}" on MDHuntFishOutdoors! Code: ${camp.inviteCode}\nhttps://davidstonko.github.io/huntmaryland-site/join?code=${camp.inviteCode}`,
+        message: `Join my Fish Camp "${camp.name}" on MDHuntFishOutdoors! Code: ${camp.inviteCode}\nhttps://davidstonko.github.io/huntmaryland-site/join/${camp.inviteCode}`,
       });
     } catch {
       // User cancelled

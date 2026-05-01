@@ -740,4 +740,58 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       expect(/<OnboardingTourGate\b/.test(src)).toBe(false);
     });
   });
+
+  // ════════════════════════════════════════════════════════════════════
+  // Camp-invite URL format (V2.4 audit — 2026-05-01, fourth pass)
+  //
+  // History: this exact bug pattern has been caught THREE times now —
+  //   - DeerCamp (pre-April 2026) — fixed
+  //   - GroupCamp (today, second-pass audit) — fixed in 6518a2b1
+  //   - FishCamp (today, iteration-2 audit) — fixed in this commit
+  //
+  // The bug: a screen builds the share-link URL with a query string
+  // (`?code=ABCDEF` or `?camp=ABCDEF`) instead of a path segment
+  // (`/ABCDEF`). The AASA pattern is `/huntmaryland-site/join/*`
+  // (path-only) and deepLinkRouter regex matches the path. Query
+  // strings are stripped before matching, so the share link silently
+  // fails to deep-link into the app.
+  //
+  // This contract sweeps every screen that builds a join URL and
+  // asserts it uses path format. Any future query-string regression
+  // fails this test instead of shipping.
+  // ════════════════════════════════════════════════════════════════════
+  describe('Camp-invite URL format (no query strings)', () => {
+    const screens = [
+      'src/screens/DeerCampScreen.tsx',
+      'src/screens/FishCampScreen.tsx',
+      'src/screens/GroupCampScreen.tsx',
+      'src/screens/HoneyHoleScreen.tsx',
+      'src/screens/CampTripPlannerScreen.tsx',
+    ];
+
+    for (const file of screens) {
+      it(`${file} builds invite URL with path style, not query string`, () => {
+        const src = read(file);
+        // Look for `huntmaryland-site/(join|trip)?...` — that's a
+        // query-string url and is broken.
+        const hasQueryStringJoin =
+          /huntmaryland-site\/join\?/.test(src) ||
+          /huntmaryland-site\/trip\?/.test(src);
+        expect(hasQueryStringJoin).toBe(false);
+      });
+    }
+
+    it('GroupCampContext builds path-style URL, not ?camp= query string', () => {
+      const src = read('src/context/GroupCampContext.tsx');
+      // Strip line comments so the historical-context comments that
+      // mention the old buggy form don't trip the regex. We're only
+      // looking for live code that constructs a query-string URL.
+      const stripped = src
+        .split('\n')
+        .filter((line) => !line.trimStart().startsWith('//'))
+        .join('\n');
+      expect(/huntmaryland-site\/join\?/.test(stripped)).toBe(false);
+      expect(/\?camp=\$\{/.test(stripped)).toBe(false);
+    });
+  });
 });
