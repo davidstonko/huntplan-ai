@@ -12,7 +12,7 @@
  * - Organized for quick reference
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import {
 import Colors from '../theme/colors';
 import ActivityDisclaimer from '../components/common/ActivityDisclaimer';
 import ContactFab from '../components/common/ContactFab';
+import OnboardingTourGate from '../components/OnboardingTourGate';
 
 interface FishResourceLink {
   id: string;
@@ -444,6 +445,13 @@ const FISH_RESOURCES: FishResourceCategory[] = [
 ];
 
 export default function FishResourcesScreen() {
+  // Phase A.26 — controlled re-show of the fish onboarding tour.
+  // 2026-05-01 (V2.4 audit): added to match Hunt/Camp/Hike parity.
+  // Adversarial audit caught Fish was the only mode missing this
+  // affordance — users on the Fish Info tab had no way to replay
+  // the mode walkthrough.
+  const [tourOpen, setTourOpen] = useState(false);
+
   const handleLinkPress = (url: string, title: string) => {
     Linking.openURL(url).catch(() => {
       Alert.alert('Error', `Could not open ${title}`);
@@ -453,6 +461,32 @@ export default function FishResourcesScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* ── "Take the tour again" — Phase A.26 onboarding replay entry ──
+            Mirrors the same row on Hunt/Camp/Hike Resources screens. */}
+        <TouchableOpacity
+          style={styles.tourReplayRow}
+          onPress={() => setTourOpen(true)}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Replay the Fish mode onboarding tour"
+        >
+          <View style={styles.tourReplayChip}>
+            <Text style={styles.tourReplayChipText}>TR</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.tourReplayTitle}>Take the tour again</Text>
+            <Text style={styles.tourReplaySubtitle}>
+              Replay the Fish mode walkthrough
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <OnboardingTourGate
+          mode="fish"
+          open={tourOpen}
+          onClose={() => setTourOpen(false)}
+        />
+
         {FISH_RESOURCES.map((category) => (
           <View key={category.name} style={styles.categorySection}>
             <View style={styles.categoryHeader}>
@@ -496,6 +530,47 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  // ── Tour-replay row (Phase A.26 affordance, V2.4 cross-mode parity) ──
+  // Same visual treatment as Hunt/Camp/Hike Resources screens: small chip
+  // ("TR") + title + subtitle, neutral surface bg, mud border. Tapping
+  // the row sets tourOpen, which OnboardingTourGate consumes to remount
+  // the tour overlay.
+  tourReplayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 18,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+  },
+  tourReplayChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: Colors.moss,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  tourReplayChipText: {
+    color: Colors.textOnAccent,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  tourReplayTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  tourReplaySubtitle: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 1,
   },
   categorySection: {
     marginBottom: 24,

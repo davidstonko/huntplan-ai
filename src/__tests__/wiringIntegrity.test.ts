@@ -682,4 +682,37 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       expect(src).not.toContain('dstonko1@gmail.com');
     });
   });
+
+  // ════════════════════════════════════════════════════════════════════
+  // OnboardingTourGate cross-mode parity (V2.4 audit — 2026-05-01)
+  //
+  // Phase A.26 added a "Take the tour again" replay row to Hunt's
+  // ResourcesHubScreen so users could re-trigger the onboarding tour
+  // from the Info tab. Camp + Hike Resources screens followed the same
+  // pattern. The 2026-05-01 adversarial audit caught FishResourcesScreen
+  // had been forgotten — Fish users had no way to replay the tour.
+  //
+  // This contract locks the parity so any future Resources-screen edit
+  // that drops the affordance fails this test instead of shipping.
+  // ════════════════════════════════════════════════════════════════════
+  describe('OnboardingTourGate cross-mode parity', () => {
+    const screens = [
+      { mode: 'hunt', file: 'src/screens/ResourcesHubScreen.tsx' },
+      { mode: 'fish', file: 'src/screens/FishResourcesScreen.tsx' },
+      { mode: 'camp', file: 'src/screens/CampResourcesScreen.tsx' },
+      { mode: 'hike', file: 'src/screens/HikeResourcesScreen.tsx' },
+    ];
+
+    for (const { mode, file } of screens) {
+      it(`${mode}: ${file} imports OnboardingTourGate`, () => {
+        const src = read(file);
+        expect(/from\s*['"][^'"]*\/OnboardingTourGate['"]/.test(src)).toBe(true);
+      });
+
+      it(`${mode}: ${file} renders <OnboardingTourGate`, () => {
+        const src = read(file);
+        expect(/<OnboardingTourGate\b/.test(src)).toBe(true);
+      });
+    }
+  });
 });
