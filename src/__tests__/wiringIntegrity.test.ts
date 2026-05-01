@@ -837,4 +837,44 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       });
     }
   });
+
+  // ════════════════════════════════════════════════════════════════════
+  // API_BASE_URL single source of truth (V2.4 audit — 2026-05-01, iter 7)
+  //
+  // src/config.ts is the canonical source for API_BASE_URL: it reads
+  // EXPO_PUBLIC_API_BASE_URL from env, falls back to the Render URL,
+  // and is the same in dev + prod. This is intentional — the
+  // `__DEV__ ? localhost : render` pattern silently broke API calls
+  // on every fresh dev machine that had no local FastAPI.
+  //
+  // Iter-7 audit caught 3 files redeclaring the buggy pattern:
+  //   - src/services/api.ts (now re-exports from config.ts)
+  //   - src/screens/ForumScreen.tsx (now imports from config.ts)
+  //   - src/screens/ChatScreen.tsx (now imports from config.ts)
+  //
+  // This contract sweeps all .ts/.tsx files for redeclarations and
+  // fails if any consumer hardcodes a localhost fallback URL.
+  // ════════════════════════════════════════════════════════════════════
+  describe('API_BASE_URL single source of truth', () => {
+    const filesToCheck = [
+      'src/services/api.ts',
+      'src/screens/ForumScreen.tsx',
+      'src/screens/ChatScreen.tsx',
+    ];
+
+    for (const file of filesToCheck) {
+      it(`${file} does NOT redeclare API_BASE_URL with localhost fallback`, () => {
+        const src = read(file);
+        // Strip line comments — only check live code, not historical
+        // context comments that mention the old buggy form.
+        const stripped = src
+          .split('\n')
+          .filter((line) => !line.trimStart().startsWith('//'))
+          .join('\n');
+        // Look for local declarations with localhost in the value
+        const localDecl = /(const|let|var)\s+API_BASE_URL\s*=[^;]*localhost/;
+        expect(localDecl.test(stripped)).toBe(false);
+      });
+    }
+  });
 });

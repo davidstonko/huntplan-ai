@@ -14,10 +14,13 @@ import axios, { AxiosInstance } from 'axios';
  * All responses are automatically parsed and typed.
  */
 
-// For iOS Simulator: localhost works. For real device: use your Mac's LAN IP
-export const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+// 2026-05-01 (V2.4 audit, iter 7): import + re-export from src/config.ts
+// so every consumer sees the same Render URL by default. The previous
+// `__DEV__ ? localhost : render` pattern silently broke every API
+// call on a fresh dev machine. Override locally with
+// EXPO_PUBLIC_API_BASE_URL=http://localhost:8000 in your shell.
+import { API_BASE_URL as _API_BASE_URL } from '../config';
+export const API_BASE_URL = _API_BASE_URL;
 
 // ── Type definitions matching backend models ──
 

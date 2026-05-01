@@ -18,6 +18,10 @@ import { getCampingSmartResponse } from '../data/campingChatKnowledge';
 import { getHikingSmartResponse } from '../data/hikingChatKnowledge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useActivityMode, ActivityMode } from '../context/ActivityModeContext';
+// 2026-05-01 (V2.4 audit, iter 7): pull API_BASE_URL from src/config.ts
+// instead of redeclaring `__DEV__ ? localhost : render` (which silently
+// broke chat on every fresh dev machine without a local FastAPI).
+import { API_BASE_URL } from '../config';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Per-mode chat configuration
@@ -111,10 +115,6 @@ const CHAT_MODE_CONFIG: Record<ActivityMode, ChatModeConfig> = {
     },
   },
 };
-
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
 
 interface ChatMessage {
   id: string;

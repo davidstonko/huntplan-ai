@@ -32,10 +32,11 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
 import { useModalFocus } from '../hooks/useModalFocus';
-
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000'
-  : 'https://huntplan-api.onrender.com';
+// 2026-05-01 (V2.4 audit, iter 7): pull API_BASE_URL from src/config.ts
+// instead of redeclaring the `__DEV__ ? localhost : render` pattern that
+// silently broke API calls on fresh dev machines. Same Render default
+// in dev + prod; override via EXPO_PUBLIC_API_BASE_URL.
+import { API_BASE_URL } from '../config';
 
 // ── Types ──────────────────────────────────────────────────────
 
