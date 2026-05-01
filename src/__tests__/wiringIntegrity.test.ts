@@ -657,9 +657,11 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
   // doesn't error on unused JSX names — only React's runtime would).
   // ════════════════════════════════════════════════════════════════════
   describe('ContactFab cross-mode parity', () => {
+    // Hunt + Fish share ResourcesHubScreen via mode-aware render — one
+    // ContactFab mount at the parent covers both. Camp + Hike use
+    // dedicated Resources screens so they each mount their own.
     const screens = [
-      { mode: 'hunt', file: 'src/screens/ResourcesHubScreen.tsx' },
-      { mode: 'fish', file: 'src/screens/FishResourcesScreen.tsx' },
+      { mode: 'hunt+fish', file: 'src/screens/ResourcesHubScreen.tsx' },
       { mode: 'camp', file: 'src/screens/CampResourcesScreen.tsx' },
       { mode: 'hike', file: 'src/screens/HikeResourcesScreen.tsx' },
     ];
@@ -676,6 +678,14 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       });
     }
 
+    it('FishResourcesScreen does NOT mount its own ContactFab', () => {
+      // Negative assertion: the parent ResourcesHubScreen handles the
+      // ContactFab for Fish via activeMode-based render. A second mount
+      // here would stack two FABs in the bottom-right corner.
+      const src = read('src/screens/FishResourcesScreen.tsx');
+      expect(/<ContactFab\b/.test(src)).toBe(false);
+    });
+
     it('ContactFab uses the shared feedback inbox, not personal email', () => {
       const src = read('src/components/common/ContactFab.tsx');
       expect(src).toContain('feedback.mdhuntfishoutdoors@gmail.com');
@@ -686,19 +696,26 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
   // ════════════════════════════════════════════════════════════════════
   // OnboardingTourGate cross-mode parity (V2.4 audit — 2026-05-01)
   //
-  // Phase A.26 added a "Take the tour again" replay row to Hunt's
-  // ResourcesHubScreen so users could re-trigger the onboarding tour
-  // from the Info tab. Camp + Hike Resources screens followed the same
-  // pattern. The 2026-05-01 adversarial audit caught FishResourcesScreen
-  // had been forgotten — Fish users had no way to replay the tour.
+  // Phase A.26 added a "Take the tour again" replay row so users could
+  // re-trigger the onboarding tour from the Info tab.
   //
-  // This contract locks the parity so any future Resources-screen edit
-  // that drops the affordance fails this test instead of shipping.
+  // Architecture quirk: ResourcesHubScreen serves BOTH Hunt and Fish
+  // modes (via activeMode-based conditional render of FishRegulations
+  // / FishResources). So the tour gate at the parent level covers Hunt
+  // AND Fish in a single mount. Camp + Hike use dedicated screens
+  // (CampResourcesScreen / HikeResourcesScreen) and need their own
+  // gate mount.
+  //
+  // A previous audit pass briefly added a duplicate tour gate to
+  // FishResourcesScreen — that's wrong because the parent already
+  // handles it. The contract below reflects the correct architecture:
+  // Hunt/Fish covered by ResourcesHubScreen; Camp/Hike each covered
+  // by their own screen.
   // ════════════════════════════════════════════════════════════════════
   describe('OnboardingTourGate cross-mode parity', () => {
     const screens = [
-      { mode: 'hunt', file: 'src/screens/ResourcesHubScreen.tsx' },
-      { mode: 'fish', file: 'src/screens/FishResourcesScreen.tsx' },
+      // Hunt + Fish share ResourcesHubScreen via mode-aware render.
+      { mode: 'hunt+fish', file: 'src/screens/ResourcesHubScreen.tsx' },
       { mode: 'camp', file: 'src/screens/CampResourcesScreen.tsx' },
       { mode: 'hike', file: 'src/screens/HikeResourcesScreen.tsx' },
     ];
@@ -714,5 +731,13 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
         expect(/<OnboardingTourGate\b/.test(src)).toBe(true);
       });
     }
+
+    it('FishResourcesScreen does NOT mount its own OnboardingTourGate', () => {
+      // Negative assertion: the parent ResourcesHubScreen handles the
+      // tour gate for Fish via activeMode-based render. A second mount
+      // here would create a visible duplicate "Take the tour again" row.
+      const src = read('src/screens/FishResourcesScreen.tsx');
+      expect(/<OnboardingTourGate\b/.test(src)).toBe(false);
+    });
   });
 });
