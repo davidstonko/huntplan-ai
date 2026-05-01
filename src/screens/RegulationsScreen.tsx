@@ -136,11 +136,14 @@ export default function RegulationsScreen() {
       `Section: ${activeTab}\n` +
       `Date: ${new Date().toISOString()}\n\n` +
       `${feedbackText}\n`;
-    const url = `mailto:dstonko1@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // 2026-04-30 (V2.4 audit): switched from David's personal email to the
+    // app's shared feedback inbox so private email isn't exposed in user-
+    // visible mailto: handlers. Same fix as ResourcesHubScreen ContactFab.
+    const url = `mailto:feedback.mdhuntfishoutdoors@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     Linking.openURL(url).catch(() => {
       Alert.alert(
         'Email not available',
-        'Please email dstonko1@gmail.com with your feedback.',
+        'Please email feedback.mdhuntfishoutdoors@gmail.com with your feedback.',
       );
     });
     setFeedbackSubmitted(true);
