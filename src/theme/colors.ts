@@ -49,10 +49,29 @@ const Colors = {
   // ── Text Colors ──
   /** Primary text - warm off-white */
   textPrimary: '#E8DFD0',
-  /** Secondary text - muted sand */
-  textSecondary: '#A89B8C',
-  /** Disabled/hint text */
-  textMuted: '#6B6358',
+  /**
+   * Secondary text - warm light sand. Used for body / description copy
+   * under headings (mode picker subtitles, card descriptions, helper
+   * text, footnotes).
+   *
+   * 2026-04-30: brightened from `#A89B8C` to `#D6CFC0` per user
+   * directive "the coloring on the small words makes them hard to
+   * see. can we make them closer to white". The previous tone was a
+   * muted sand at ~RGB(168,155,140) — fine on bright backgrounds,
+   * fails comfortable readability on the woodland-dark `#1A1E16`
+   * surface (contrast ratio ~5.4:1, technically WCAG AA-passing for
+   * normal text, but visually feels low). The new value lifts to
+   * ~RGB(214,207,192) ≈ contrast ratio 9.8:1 — keeps the warm
+   * palette identity but reads clearly on small text.
+   */
+  textSecondary: '#D6CFC0',
+  /**
+   * Disabled / hint text - mid-warm grey.
+   * 2026-04-30: brightened from `#6B6358` to `#9B9486` so the disabled
+   * state is still visibly less prominent than secondary but no
+   * longer disappears against the dark surface.
+   */
+  textMuted: '#9B9486',
   /** Text on accent backgrounds */
   textOnAccent: '#FFFFFF',
 

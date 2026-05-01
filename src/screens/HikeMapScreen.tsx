@@ -26,6 +26,7 @@ import MapboxGL from '@rnmapbox/maps';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../hooks/useLocation';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
+import FilterPicker from '../components/common/FilterPicker';
 import UserWaypointLayer from '../components/map/UserWaypointLayer';
 import UserMarkupLayer from '../components/map/UserMarkupLayer';
 import TrailNavChip from '../components/map/TrailNavChip';
@@ -100,10 +101,27 @@ export default function HikeMapScreen() {
   // lng/lat, not zoom) so +/- snapped to DEFAULT_ZOOM±1.
   const [currentZoom, setCurrentZoom] = useState<number>(DEFAULT_ZOOM);
 
-  // Center on user location on mount, but only when the user is actually in
-  // Maryland. iOS Simulator defaults to Cupertino and would otherwise fly the
-  // camera off-state on first open.
+  // 2026-04-30 (V2.4 audit fix): the previous version of this effect had
+  // `[location]` as the dependency, which meant every GPS update (every
+  // few seconds) re-snapped the camera back to the user's coordinates —
+  // making the map appear "un-draggable" because every pan was instantly
+  // reset by the next location tick. The user reported "the hike screen
+  // wont let me drag around to look. it only lets me zoom in and out".
+  // The pinch-zoom worked because only `centerCoordinate` got reset, not
+  // `zoomLevel` (although zoomLevel was also reset — but the user usually
+  // pinches faster than the GPS interval, so it survived).
+  //
+  // Fix: use a ref guard so the centering logic runs exactly once when
+  // location first becomes available. After that, the user is in full
+  // control of pan/zoom; the "Recenter" crosshair button still lets them
+  // jump back to their position on demand (see centerOnLocation handler).
+  //
+  // Center on user location on mount, but only when the user is actually
+  // in Maryland. iOS Simulator defaults to Cupertino and would otherwise
+  // fly the camera off-state on first open.
+  const initialCenterApplied = useRef(false);
   useEffect(() => {
+    if (initialCenterApplied.current) return;
     if (cameraRef.current && location) {
       const { longitude, latitude } = location;
       const inMaryland =
@@ -116,6 +134,10 @@ export default function HikeMapScreen() {
           animationDuration: 1000,
         });
       }
+      // Mark applied even if we skipped the in-Maryland branch — we don't
+      // want to keep retrying every location update if the user happens to
+      // be testing from Cupertino.
+      initialCenterApplied.current = true;
     }
   }, [location]);
 
@@ -624,46 +646,73 @@ export default function HikeMapScreen() {
         </Text>
       </View>
 
+      {/*
+        2026-04-30 (V2.4 audit): the previous horizontal ScrollView held
+        4 difficulty chips (All Trails / Easy / Moderate / Strenuous) +
+        a Pros toggle = 5 chips that overflow on smaller screens.
+        Replaced with a single FilterPicker. Difficulty stays
+        single-select inside the modal (a 4-row group that emulates
+        radio behavior — only one row's switch can be on at a time);
+        Pros is independent.
+      */}
       {!selected ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterBar}
-          contentContainerStyle={styles.filterBarContent}
-        >
-          {(['all', 'easy', 'moderate', 'strenuous'] as const).map((diff) => (
-            <TouchableOpacity
-              key={diff}
-              style={[styles.filterChip, difficultyFilter === diff && styles.filterChipActive]}
-              onPress={() => setDifficultyFilter(diff)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel={`Filter to ${diff === 'all' ? 'all trails' : diff + ' trails'}`}
-              accessibilityState={{ checked: difficultyFilter === diff }}
-            >
-              <Text
-                style={[styles.filterLabel, difficultyFilter === diff && styles.filterLabelActive]}
-              >
-                {diff === 'all' ? 'All Trails' : diff.charAt(0).toUpperCase() + diff.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-          {/* 2026-04-27: Pros toggle — REI / Charm City Run / Bike Doctor / etc. */}
-          <TouchableOpacity
-            style={[styles.filterChip, showHikePros && styles.filterChipActive]}
-            onPress={() => setShowHikePros((s) => !s)}
-            activeOpacity={0.7}
-            accessibilityRole="switch"
-            accessibilityLabel="Toggle local hiking and biking pros overlay"
-            accessibilityState={{ checked: showHikePros }}
-          >
-            <Text
-              style={[styles.filterLabel, showHikePros && styles.filterLabelActive]}
-            >
-              Pros
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
+        <View style={styles.filterPickerWrap} pointerEvents="box-none">
+          <FilterPicker
+            triggerLabel={
+              difficultyFilter === 'all' ? 'Filters' : `Difficulty: ${difficultyFilter[0].toUpperCase() + difficultyFilter.slice(1)}`
+            }
+            title="Hike Map Filters"
+            options={[
+              {
+                key: 'all',
+                label: 'All Trails',
+                hint: 'No difficulty filter',
+                active: difficultyFilter === 'all',
+              },
+              {
+                key: 'easy',
+                label: 'Easy',
+                hint: 'Family-friendly, gentle grades',
+                active: difficultyFilter === 'easy',
+              },
+              {
+                key: 'moderate',
+                label: 'Moderate',
+                hint: 'Some elevation, longer distances',
+                active: difficultyFilter === 'moderate',
+              },
+              {
+                key: 'strenuous',
+                label: 'Strenuous',
+                hint: 'Steep grades, technical, all-day',
+                active: difficultyFilter === 'strenuous',
+              },
+              {
+                key: 'pros',
+                label: 'Local Pros',
+                hint: 'REI, Charm City Run, Bike Doctor, etc.',
+                active: showHikePros,
+              },
+            ]}
+            onChange={(key, next) => {
+              if (key === 'pros') {
+                setShowHikePros(next);
+                return;
+              }
+              // Difficulty is single-select. Toggling on a row sets that
+              // difficulty; toggling off any non-'all' row reverts to 'all'.
+              if (next) {
+                setDifficultyFilter(key as any);
+              } else if (difficultyFilter === key) {
+                setDifficultyFilter('all');
+              }
+            }}
+            onClearAll={() => {
+              setDifficultyFilter('all');
+              setShowHikePros(false);
+            }}
+          />
+        </View>
       ) : null}
 
       <View style={styles.controlsColumn}>
@@ -972,6 +1021,14 @@ const styles = StyleSheet.create({
   statsSubtext: { fontSize: 10, color: Colors.textMuted, marginTop: 2 },
   filterBar: { position: 'absolute', top: 58, left: 0, right: 0, zIndex: 10, maxHeight: 44 },
   filterBarContent: { paddingHorizontal: 12, gap: 8 },
+  // 2026-04-30 (V2.4): filter chips replaced by FilterPicker. Wrapper
+  // anchors the trigger pill at the same slot the row used.
+  filterPickerWrap: {
+    position: 'absolute',
+    top: 58,
+    left: 12,
+    zIndex: 10,
+  },
   filterChip: {
     backgroundColor: Colors.overlay,
     borderRadius: 20,

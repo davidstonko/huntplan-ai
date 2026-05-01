@@ -31,6 +31,7 @@ import MapboxGL from '@rnmapbox/maps';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../hooks/useLocation';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
+import FilterPicker from '../components/common/FilterPicker';
 import UserWaypointLayer from '../components/map/UserWaypointLayer';
 import UserMarkupLayer from '../components/map/UserMarkupLayer';
 import OnboardingTourGate from '../components/OnboardingTourGate';
@@ -170,11 +171,22 @@ export default function FishMapScreen() {
   // can apply a correct delta from wherever the user currently is.
   const [currentZoom, setCurrentZoom] = useState<number>(DEFAULT_ZOOM);
 
+  // 2026-04-30 (V2.4 audit fix): same bug as HikeMapScreen — the
+  // previous version of this effect listed `[location]` as the
+  // dependency, so every GPS tick re-applied `setCamera` and reset any
+  // user pan. Result: the map appeared to be locked, only zoom worked.
+  // Fix mirrors HikeMapScreen — guard with a one-shot ref so initial
+  // centering happens once on first available location, and
+  // subsequent updates do nothing. The recenter button at the bottom
+  // remains the canonical "go back to my location" affordance.
+  //
+  // Only auto-recenter on the user's GPS when they're physically inside
+  // Maryland. On iOS Simulator the default device location is Cupertino,
+  // which would otherwise fly the map to the Bay Area and make the app
+  // look broken on first open.
+  const initialCenterApplied = useRef(false);
   useEffect(() => {
-    // Only auto-recenter on the user's GPS when they're physically inside
-    // Maryland. On iOS Simulator the default device location is Cupertino,
-    // which would otherwise fly the map to the Bay Area and make the app
-    // look broken on first open.
+    if (initialCenterApplied.current) return;
     if (cameraRef.current && location) {
       const { longitude, latitude } = location;
       const inMaryland =
@@ -187,6 +199,7 @@ export default function FishMapScreen() {
           animationDuration: 1000,
         });
       }
+      initialCenterApplied.current = true;
     }
   }, [location]);
 
@@ -628,106 +641,83 @@ export default function FishMapScreen() {
         <Text style={styles.statsSubtext}>MD DNR Public Angler Access</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterBar}
-        contentContainerStyle={styles.filterBarContent}
-      >
-        {CATEGORIES.map((cat) => {
-          const active = activeFilters.has(cat.key);
-          return (
-            <TouchableOpacity
-              key={cat.key}
-              style={[
-                styles.filterChip,
-                active && { backgroundColor: cat.color + '33', borderColor: cat.color },
-              ]}
-              onPress={() => toggleFilter(cat.key)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.filterChipCode, { backgroundColor: cat.color }]}>
-                <Text style={styles.filterChipCodeText}>{cat.code}</Text>
-              </View>
-              <Text style={[styles.filterLabel, active && { color: cat.color }]}>
-                {cat.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-        {/* Rivers toggle — display major Maryland rivers (currently empty
-            until Overpass or USGS NHD becomes available) */}
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            showRivers && {
-              backgroundColor: '#1976D2' + '33',
-              borderColor: '#1976D2',
+      {/*
+        2026-04-30 (V2.4 audit): the previous horizontal ScrollView
+        held 8 filter chips (5 access categories from CATEGORIES + Rivers
+        + Tidal + Hotspots) which clipped on every screen size at
+        once-or-the-next iPhone size up. Replaced with a single
+        FilterPicker that opens a bottom sheet listing every filter as a
+        Switch row. The colored code badges (RMP/SFT/SHR/TRT/P&T/RIV/
+        TIDE/HOT) are condensed into the row hint text. Trigger label
+        shows the active count so users know if filters are restricting
+        what they see.
+      */}
+      <View style={styles.filterPickerWrap} pointerEvents="box-none">
+        <FilterPicker
+          triggerLabel="Filters"
+          title="Fish Map Filters"
+          options={[
+            ...CATEGORIES.map((cat) => ({
+              key: cat.key,
+              label: cat.label,
+              hint: `${cat.code} — ${
+                cat.key === 'ramp'
+                  ? 'Boat ramps with hard surface'
+                  : cat.key === 'soft'
+                  ? 'Soft-launch / kayak / canoe'
+                  : cat.key === 'shore'
+                  ? 'Shore / pier / wading'
+                  : cat.key === 'trout'
+                  ? 'Trout-stocked waters'
+                  : 'Put-and-take stocked ponds'
+              }`,
+              active: activeFilters.has(cat.key),
+              accent: cat.color,
+            })),
+            {
+              key: 'rivers',
+              label: 'Rivers',
+              hint: 'RIV — Major Maryland rivers polyline',
+              active: showRivers,
+              accent: '#1976D2',
+            },
+            {
+              key: 'tidal',
+              label: 'Tidal Boundary',
+              hint: 'TIDE — Tidal vs. non-tidal regulation line',
+              active: showTidalBoundary,
+              accent: Colors.amber,
+            },
+            {
+              key: 'hotspots',
+              label: 'Hotspots',
+              hint: 'HOT — 309 curated in-water spots',
+              active: showHotspots,
+              accent: '#26A69A',
             },
           ]}
-          onPress={() => setShowRivers((s) => !s)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.filterChipCode, { backgroundColor: '#1976D2' }]}>
-            <Text style={styles.filterChipCodeText}>RIV</Text>
-          </View>
-          <Text
-            style={[
-              styles.filterLabel,
-              showRivers && { color: '#1976D2' },
-            ]}
-          >
-            Rivers
-          </Text>
-        </TouchableOpacity>
-
-        {/* Tidal boundary toggle — regulation-critical overlay */}
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            showTidalBoundary && {
-              backgroundColor: Colors.amber + '33',
-              borderColor: Colors.amber,
-            },
-          ]}
-          onPress={() => setShowTidalBoundary((s) => !s)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.filterChipCode, { backgroundColor: Colors.amber }]}>
-            <Text style={styles.filterChipCodeText}>TIDE</Text>
-          </View>
-          <Text
-            style={[
-              styles.filterLabel,
-              showTidalBoundary && { color: Colors.amber },
-            ]}
-          >
-            Tidal Boundary
-          </Text>
-        </TouchableOpacity>
-
-        {/* Hotspots toggle — 48 curated named in-water spots */}
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            showHotspots && {
-              backgroundColor: '#26A69A' + '33',
-              borderColor: '#26A69A',
-            },
-          ]}
-          onPress={() => setShowHotspots((s) => !s)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.filterChipCode, { backgroundColor: '#26A69A' }]}>
-            <Text style={styles.filterChipCodeText}>HOT</Text>
-          </View>
-          <Text
-            style={[styles.filterLabel, showHotspots && { color: '#26A69A' }]}
-          >
-            Hotspots
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+          onChange={(key, next) => {
+            if (key === 'rivers') setShowRivers(next);
+            else if (key === 'tidal') setShowTidalBoundary(next);
+            else if (key === 'hotspots') setShowHotspots(next);
+            else {
+              // CATEGORIES key — toggle in the activeFilters Set.
+              setActiveFilters((prev) => {
+                const out = new Set(prev);
+                if (next) out.add(key as any);
+                else out.delete(key as any);
+                return out;
+              });
+            }
+          }}
+          onClearAll={() => {
+            setShowRivers(false);
+            setShowTidalBoundary(false);
+            setShowHotspots(false);
+            setActiveFilters(new Set());
+          }}
+        />
+      </View>
 
       <View style={styles.controlsColumn}>
         <TouchableOpacity
@@ -1098,6 +1088,16 @@ const styles = StyleSheet.create({
   statsSubtext: { fontSize: 10, color: Colors.textMuted, marginTop: 2 },
   filterBar: { position: 'absolute', top: 58, left: 0, right: 0, zIndex: 10, maxHeight: 44 },
   filterBarContent: { paddingHorizontal: 12, gap: 8 },
+  // ── Filter picker wrapper (replaces the old chip-row ScrollView) ──
+  // 2026-04-30 (V2.4 audit): trigger pill anchors at the same slot the
+  // chip row used (top: 58) so other overlays (stats badge at top: 12,
+  // controls at top: 200) don't need to move.
+  filterPickerWrap: {
+    position: 'absolute',
+    top: 58,
+    left: 12,
+    zIndex: 10,
+  },
   filterChip: {
     // 2026-04-26 (second pass): tighter padding + smaller right margin so
     // 5 chips fit on iPhone 17 Pro width without the rightmost chip clipping.

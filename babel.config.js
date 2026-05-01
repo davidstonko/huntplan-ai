@@ -1,7 +1,6 @@
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    ['@nozbe/watermelondb/babel-plugin'],
     // react-native-dotenv loads `.env` at build time and exposes named
     // imports under `@env`. We use it for secrets that must not be
     // committed (Mapbox token, future API keys). The `.env` file is

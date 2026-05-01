@@ -58,7 +58,13 @@ const MODE_CARDS: ModeCard[] = [
   {
     mode: 'fish',
     title: 'Fish',
-    sublabel: 'Angler access, stocking, tides, marine conditions',
+    // 2026-04-30: surfaced "boating" and "crabbing" in the sublabel
+    // because Fish mode is the umbrella for all in-water activities
+    // (crab + boat content was folded into Fish per the activity-mode
+    // architecture; the standalone Crab/Boat modes were retired in
+    // V2.2). Without these words the home screen made it look like the
+    // app didn't cover them.
+    sublabel: 'Angler access, stocking, tides, boating, crabbing',
     accent: '#0277BD',
     route: 'FishTabs',
   },

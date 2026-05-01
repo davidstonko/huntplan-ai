@@ -31,6 +31,7 @@ import { useLocation } from '../hooks/useLocation';
 import { useScoutData } from '../context/ScoutDataContext';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import MapFilterPanel, { FilterState } from '../components/map/MapFilterPanel';
+import ZoomIcon from '../components/map/ZoomIcon';
 import PlanSidebar from '../components/scout/PlanSidebar';
 import PlanCreationFlow from '../components/scout/PlanCreationFlow';
 import AnnotationLayer from '../components/scout/AnnotationLayer';
@@ -90,7 +91,7 @@ type MapTapMode = 'none' | 'parking' | 'waypoint' | 'measure';
  */
 export default function ScoutScreen() {
   const { location } = useLocation();
-  const { plans, addWaypoint, updatePlan, getPlan } = useScoutData();
+  const { plans, addWaypoint, updatePlan, getPlan, createPlan } = useScoutData();
 
   const [showTopo, setShowTopo] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
@@ -123,6 +124,21 @@ export default function ScoutScreen() {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const defaultCenter: [number, number] = [-76.6413, 39.0458];
   const centerCoords = location ? [location.longitude, location.latitude] : defaultCenter;
+
+  // 2026-04-30: zoom buttons added (+/− pair, bottom-right). Mirrors the
+  // pattern from MapScreen / FishMapScreen / HikeMapScreen. Scout was the
+  // only map missing them, surfaced during the V2.4 UI audit.
+  const [currentZoom, setCurrentZoom] = useState<number>(location ? 10 : 7);
+  const handleZoomIn = useCallback(() => {
+    const newZoom = Math.min(currentZoom + 1, 18);
+    setCurrentZoom(newZoom);
+    cameraRef.current?.setCamera({ zoomLevel: newZoom, animationDuration: 300 });
+  }, [currentZoom]);
+  const handleZoomOut = useCallback(() => {
+    const newZoom = Math.max(currentZoom - 1, 3);
+    setCurrentZoom(newZoom);
+    cameraRef.current?.setCamera({ zoomLevel: newZoom, animationDuration: 300 });
+  }, [currentZoom]);
 
   // ── Filter logic ──
   const hasActiveSpeciesFilter = Object.values(activeFilters.species).some(Boolean);
@@ -434,9 +450,18 @@ export default function ScoutScreen() {
         <TouchableOpacity
           style={[styles.toolButton, mapTapMode === 'waypoint' && styles.toolButtonActive]}
           onPress={() => {
+            // 2026-04-30 (V2.4 audit): the previous gate showed an
+            // "Create a Plan First" Alert when no plans existed. Per
+            // user directive \u2014 "they should do whatever they want" \u2014
+            // we now silently auto-create a default "Quick Notes" plan
+            // so the user can drop a pin immediately without ceremony.
+            // The Plan concept stays in the data model (it's how
+            // waypoints/tracks/areas are grouped for sharing,
+            // visibility toggles, and Deer Camp publish), but it's no
+            // longer a friction gate. Users who want named plans can
+            // still create them via the Plans sidebar.
             if (plans.length === 0) {
-              Alert.alert('Create a Plan First', 'Create a hunt plan before adding waypoints.');
-              return;
+              createPlan('Quick Notes');
             }
             setMapTapMode(mapTapMode === 'waypoint' ? 'none' : 'waypoint');
           }}
@@ -502,6 +527,33 @@ export default function ScoutScreen() {
           accessibilityLabel="Recenter map on my location"
         >
           <Text style={styles.crosshairIcon}>{'\u2316'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 2026-04-30: zoom +/\u2212 pair anchored bottom-right, mirroring the
+          other map screens. Scout previously had Plans/Pin/Sat/Track/
+          Measure/crosshair on the right rail but was missing zoom \u2014 a
+          regression noticed during the V2.4 UI audit. The pair sits at
+          bottom: 130 to clear the TrackMeBar / MeasureTool / disclaimer
+          banner that may pin to the bottom. */}
+      <View style={styles.zoomControls}>
+        <TouchableOpacity
+          style={styles.zoomButton}
+          onPress={handleZoomIn}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Zoom in"
+        >
+          <ZoomIcon variant="plus" color={Colors.textPrimary} size={20} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.zoomButton}
+          onPress={handleZoomOut}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Zoom out"
+        >
+          <ZoomIcon variant="minus" color={Colors.textPrimary} size={20} />
         </TouchableOpacity>
       </View>
 
@@ -593,6 +645,32 @@ const styles = StyleSheet.create({
   toolEmoji: { fontSize: 20 },
   toolLabel: { fontSize: 8, color: Colors.textPrimary, fontWeight: '700', marginTop: 1 },
   crosshairIcon: { fontSize: 28, color: Colors.textPrimary, fontWeight: '300' },
+
+  // ── Zoom controls (added 2026-04-30) ─────────────────────────────
+  // Bottom-right vertical pair, + on top of − to match MapScreen and
+  // every other map in the app. Same 40×40 round button geometry.
+  zoomControls: {
+    position: 'absolute',
+    right: 12,
+    bottom: 130,
+    zIndex: 10,
+    gap: 6,
+  },
+  zoomButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.clay,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
 
   // ── Tool hint ──
   toolHint: {

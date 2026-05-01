@@ -65,36 +65,20 @@ export default function ResourcesHubScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 2026-04-26: Contact David button. Surfaced above the quick-access
-          bar so businesses + partners can reach out about adding their
-          information to the app. Tap → mailto: with subject pre-filled. */}
-      <TouchableOpacity
-        style={contactStyles.row}
-        onPress={() => {
-          const subject = encodeURIComponent('MDHuntFishOutdoors — partnership / listing inquiry');
-          const body = encodeURIComponent(
-            'Hi David,\n\n' +
-            'I would like to talk about [adding my business / partnership / a feature request / other]:\n\n\n' +
-            '— Sent from MDHuntFishOutdoors',
-          );
-          Linking.openURL(`mailto:dstonko1@gmail.com?subject=${subject}&body=${body}`).catch(() => {});
-        }}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel="Contact David"
-      >
-        <View style={contactStyles.pill}>
-          <Text style={contactStyles.pillEmoji}>{'✉'}</Text>
-          <Text style={contactStyles.pillText}>Contact</Text>
-        </View>
-        <View style={contactStyles.textWrap}>
-          <Text style={contactStyles.title}>Reach out to David at:</Text>
-          <Text style={contactStyles.email}>dstonko1@gmail.com</Text>
-          <Text style={contactStyles.subtitle}>
-            Add your business, partner with us, or report something. Bug reports also welcome via the support tab.
-          </Text>
-        </View>
-      </TouchableOpacity>
+      {/*
+        Contact button moved out of the top banner area on 2026-04-30 per
+        user directive. The big banner that lived here was visually
+        dominant on the Info screen and used David's personal email
+        (`dstonko1@gmail.com`); both got fixed:
+          - Email is now `feedback.mdhuntfishoutdoors@gmail.com`
+            (the dedicated app inbox).
+          - The button is now a small floating bubble rendered as
+            `<ContactFab/>` near the bottom-right, pairing with the
+            existing "Report" FAB inside the regulations sub-screen.
+            See bottom of this component.
+        Keeps the same partnership / listing-inquiry mailto subject so
+        outreach quality stays consistent.
+      */}
 
       {/* ── Quick-Access Toolbar ── */}
       {/* Icon style matches TabIcon geometry (View-shape, not emoji) for a
@@ -190,7 +174,60 @@ export default function ResourcesHubScreen() {
         open={tourOpen}
         onClose={() => setTourOpen(false)}
       />
+
+      {/*
+        Contact bubble — small FAB anchored just ABOVE the Report FAB
+        that lives inside the regulations sub-screen. Together they form
+        a vertical pair in the bottom-right corner. Tap → mailto: with
+        partnership-inquiry subject pre-filled.
+
+        2026-04-30: replaced the top-banner version per user directive.
+        Email moved off David's personal account onto the dedicated
+        feedback inbox so partner outreach lands in the right place.
+      */}
+      <ContactFab />
     </View>
+  );
+}
+
+/**
+ * Small floating contact button anchored at bottom-right, vertically
+ * stacked just above the existing Report FAB (which is rendered by
+ * RegulationsScreen / FishRegulationsScreen). The vertical offset
+ * (`bottom: 96`) is tuned so the two buttons sit ~8px apart — Report
+ * sits at `bottom: 24`, has height ~64 (label + chip), so 24+64+8 = 96.
+ *
+ * Why a separate component instead of one shared FAB stack: the Report
+ * FAB has segment-specific behavior (regulation-issue form on
+ * regulations segment, links-suggestion form on resources segment),
+ * whereas Contact is segment-agnostic. Keeping them as siblings means
+ * they each own their own state and accessibility tree.
+ */
+function ContactFab() {
+  const onPress = React.useCallback(() => {
+    const subject = encodeURIComponent('MDHuntFishOutdoors — partnership / listing inquiry');
+    const body = encodeURIComponent(
+      'Hi,\n\n' +
+        'I would like to talk about [adding my business / partnership / a feature request / other]:\n\n\n' +
+        '— Sent from MDHuntFishOutdoors',
+    );
+    Linking.openURL(
+      `mailto:feedback.mdhuntfishoutdoors@gmail.com?subject=${subject}&body=${body}`,
+    ).catch(() => {});
+  }, []);
+
+  return (
+    <TouchableOpacity
+      style={contactFabStyles.fab}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel="Contact MDHuntFishOutdoors"
+      accessibilityHint="Opens an email to feedback.mdhuntfishoutdoors@gmail.com about adding a business, partnership, or feedback"
+    >
+      <Text style={contactFabStyles.icon}>{'✉'}</Text>
+      <Text style={contactFabStyles.label}>Contact</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -336,6 +373,38 @@ const contactStyles = StyleSheet.create({
     opacity: 0.85,
     lineHeight: 14,
   },
+});
+
+/**
+ * Contact bubble styles. Tuned to mirror the Report FAB shape (round-rect
+ * pill with icon + label, ~40-44px tall) so the two buttons read as a
+ * paired vertical stack in the bottom-right corner. Sitting on top of
+ * the Report FAB with an 8px gap.
+ *
+ * `bottom: 96` math: Report FAB is at bottom: 24 with height ≈ 64
+ * (chip + label + paddings) → 24 + 64 + 8 gap = 96.
+ */
+const contactFabStyles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 96,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.moss,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 22,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 50,
+  },
+  icon: { fontSize: 14, color: '#FFFFFF' },
+  label: { color: '#FFFFFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.3 },
 });
 
 const styles = StyleSheet.create({

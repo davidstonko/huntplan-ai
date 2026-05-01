@@ -34,6 +34,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../hooks/useLocation';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import MapFilterPanel, { FilterState } from '../components/map/MapFilterPanel';
+import FilterPicker, { FilterOption } from '../components/common/FilterPicker';
 import WeatherOverlay from '../components/map/WeatherOverlay';
 import ZoomIcon from '../components/map/ZoomIcon';
 import UserWaypointLayer from '../components/map/UserWaypointLayer';
@@ -1320,88 +1321,91 @@ export default function MapScreen() {
             old circular 44×44 chips caused. ScrollView keeps everything on
             screen on smaller devices.
           */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.chipRow}
-            contentContainerStyle={styles.chipRowContent}
-            pointerEvents="box-none"
-          >
-            <TouchableOpacity
-              style={[styles.chip, showBlinds && styles.chipActive]}
-              onPress={() => setShowBlinds(!showBlinds)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle landowner blinds overlay"
-              accessibilityState={{ checked: showBlinds }}
-            >
-              <Text style={[styles.chipLabel, showBlinds && styles.chipLabelActive]}>
-                Blinds
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.chip, showOffshoreBlinds && styles.chipActive]}
-              onPress={() => setShowOffshoreBlinds(!showOffshoreBlinds)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle offshore-blind / waterfowl overlay"
-              accessibilityState={{ checked: showOffshoreBlinds }}
-            >
-              <Text style={[styles.chipLabel, showOffshoreBlinds && styles.chipLabelActive]}>
-                Water
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.chip, showGooseZones && styles.chipActive]}
-              onPress={() => setShowGooseZones(!showGooseZones)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle goose hunting zones overlay"
-              accessibilityState={{ checked: showGooseZones }}
-            >
-              <Text style={[styles.chipLabel, showGooseZones && styles.chipLabelActive]}>
-                Geese
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.chip, showHuntClosures && styles.chipActive]}
-              onPress={() => setShowHuntClosures(!showHuntClosures)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle hunt-closure overlay"
-              accessibilityState={{ checked: showHuntClosures }}
-            >
-              <Text style={[styles.chipLabel, showHuntClosures && styles.chipLabelActive]}>
-                Closed
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.chip, showLotteryTracts && styles.chipActive]}
-              onPress={() => setShowLotteryTracts(!showLotteryTracts)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle lottery hunt tract overlay"
-              accessibilityState={{ checked: showLotteryTracts }}
-            >
-              <Text style={[styles.chipLabel, showLotteryTracts && styles.chipLabelActive]}>
-                Lotto
-              </Text>
-            </TouchableOpacity>
-            {/* 2026-04-26: Pros toggle — Guntry, Bass Pro, archery shops,
-                taxidermists, outfitters, processors. */}
-            <TouchableOpacity
-              style={[styles.chip, showLocalPros && styles.chipActive]}
-              onPress={() => setShowLocalPros(!showLocalPros)}
-              activeOpacity={0.7}
-              accessibilityRole="switch"
-              accessibilityLabel="Toggle local hunting pros overlay (Guntry, Bass Pro, archery shops)"
-              accessibilityState={{ checked: showLocalPros }}
-            >
-              <Text style={[styles.chipLabel, showLocalPros && styles.chipLabelActive]}>
-                Pros
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+          {/*
+            2026-04-30 (V2.4 audit): the previous horizontal ScrollView
+            of 6 toggle chips (Blinds / Water / Geese / Closed / Lotto /
+            Pros) clipped on iPhone 17 Pro Max — only 4-5 chips were
+            visible at a time and the rightmost truncated mid-word. Per
+            user directive, replaced with a single FilterPicker that
+            opens a bottom sheet listing every overlay as a Switch row.
+            Active count appears in the trigger label so the user knows
+            at a glance how many overlays are on. Same options, cleaner
+            chrome, scales identically across screen sizes.
+          */}
+          <View style={styles.overlayPickerWrap} pointerEvents="box-none">
+            <FilterPicker
+              triggerLabel="Overlays"
+              title="Map Overlays"
+              options={[
+                {
+                  key: 'blinds',
+                  label: 'Landowner Blinds',
+                  hint: 'Licensed waterfowl blinds (2,000+)',
+                  active: showBlinds,
+                },
+                {
+                  key: 'water',
+                  label: 'Waterfowl Closures',
+                  hint: 'Offshore blinds + sanctuary boundaries',
+                  active: showOffshoreBlinds,
+                },
+                {
+                  key: 'geese',
+                  label: 'Goose Zones',
+                  hint: 'Atlantic Population area boundaries',
+                  active: showGooseZones,
+                },
+                {
+                  key: 'closed',
+                  label: 'Hunt Closures',
+                  hint: 'Active no-hunt areas',
+                  active: showHuntClosures,
+                },
+                {
+                  key: 'lotto',
+                  label: 'Lottery Tracts',
+                  hint: 'Permit-required hunts',
+                  active: showLotteryTracts,
+                },
+                {
+                  key: 'pros',
+                  label: 'Local Pros',
+                  hint: 'Guntry, archery shops, processors, taxidermists',
+                  active: showLocalPros,
+                },
+              ]}
+              onChange={(key, next) => {
+                switch (key) {
+                  case 'blinds':
+                    setShowBlinds(next);
+                    break;
+                  case 'water':
+                    setShowOffshoreBlinds(next);
+                    break;
+                  case 'geese':
+                    setShowGooseZones(next);
+                    break;
+                  case 'closed':
+                    setShowHuntClosures(next);
+                    break;
+                  case 'lotto':
+                    setShowLotteryTracts(next);
+                    break;
+                  case 'pros':
+                    setShowLocalPros(next);
+                    break;
+                }
+              }}
+              onClearAll={() => {
+                setShowBlinds(false);
+                setShowOffshoreBlinds(false);
+                setShowGooseZones(false);
+                setShowHuntClosures(false);
+                setShowLotteryTracts(false);
+                setShowLocalPros(false);
+              }}
+            />
+          </View>
 
           {/* ── Map Controls (Bottom Right) ── */}
           <View style={styles.mapControls}>
@@ -2255,49 +2259,22 @@ const styles = StyleSheet.create({
   countText: { fontSize: 11, color: Colors.sage, fontWeight: '600' },
   countSubtext: { fontSize: 9, color: Colors.textSecondary },
 
-  // ── Overlay toggle chip row (Horizontal, Below Filters) ──
-  //   Pill-shaped chips with enough width for 5–6 char labels. Prevents the
-  //   mid-word text wrap ("Blind\ns", "Close\nd") we saw with the old 44×44
-  //   circular chips. Horizontal ScrollView keeps everything on screen.
-  //   Positioned below the Filters popover (top:70 + ~50px button).
-  chipRow: {
-    position: 'absolute', top: 130, left: 0, right: 0,
+  // ── Overlay picker wrapper (replaces the old chip-row ScrollView) ──
+  //
+  // 2026-04-30 (V2.4 audit): the chip ScrollView at this slot used to
+  // hold 6 toggles (Blinds / Water / Geese / Closed / Lotto / Pros)
+  // that overflowed the right edge on iPhone 17 Pro Max. Replaced with
+  // a single FilterPicker trigger (the "Overlays" pill); the modal it
+  // opens hosts every option as a Switch row. Wrapper just positions
+  // the trigger below the filters / lands count badges at the top of
+  // the map. The orphan chipRow / chip / chipLabel styles below were
+  // retired — kept the slot id (top: 130) so the picker lines up where
+  // the row used to.
+  overlayPickerWrap: {
+    position: 'absolute',
+    top: 130,
+    left: 12,
     zIndex: 8,
-    maxHeight: 40,
-  },
-  chipRowContent: {
-    paddingHorizontal: 12,
-    gap: 8,
-    alignItems: 'center',
-  },
-  chip: {
-    minWidth: 70,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.overlay,
-    borderWidth: 1,
-    borderColor: Colors.clay,
-    paddingHorizontal: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  chipActive: {
-    backgroundColor: Colors.moss,
-    borderColor: Colors.lichen,
-  },
-  chipLabel: {
-    fontSize: 12,
-    color: Colors.textPrimary,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  chipLabelActive: {
-    color: Colors.textOnAccent,
   },
 
   // ── Map Controls (Right side, Stacked Vertically) ──

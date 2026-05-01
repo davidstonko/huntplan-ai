@@ -74,205 +74,160 @@ export default function ModeLogo({ mode, size = 'md', accent }: ModeLogoProps) {
 const WHITE = '#FFFFFF';
 
 /**
- * Hunt glyph — proper mature-buck whitetail antler silhouette.
+ * Hunt glyph — whitetail antler silhouette.
  *
- * 2026-04-26 (third pass): the previous version had tines pointing forward
- * (rotated 26-58°) which read as "spider legs" or "asterisk" rather than
- * antlers. This rewrite moves all tines to point UP-AND-SLIGHTLY-OUT — the
- * way real deer antlers grow — and shapes the main beam as a clean C-curve
- * (low-out, up-vertical, top-inward) so the silhouette reads at 22px and
- * still looks like real antlers at 56px.
+ * 2026-04-30 (fourth pass): user shared a clean reference image of
+ * deer antlers and said "we want our Hunt symbol to look like that".
+ * The previous version (six rotated rectangles per side trying to
+ * mimic main beam + 3 tines) read as spider legs at 22px. This pass
+ * goes simpler — fewer pieces, cleaner shapes, more recognizable at
+ * small sizes:
  *
- * Pattern per antler (mirror across the vertical center):
- *   • Main beam = three rotated rectangles forming a smooth C
- *     - base segment: -55° from vertical, base of the rack
- *     - mid segment: -15° from vertical, the "main beam stretch"
- *     - tip segment: +20° from vertical, curving back inward like a real beam
- *   • Tines = three vertical-ish rectangles standing UP off the mid/tip:
- *     - brow tine (G1): short, near the base
- *     - G2 (longest): middle of the beam
- *     - G3: between G2 and tip
- *   • Beam tip itself counts as the 4th point, so total = 8 points.
+ *   • ONE long curved beam per side (a single rotated rounded
+ *     rectangle, ~55° outward from vertical), forming the C-shape
+ *     spread of the rack
+ *   • THREE short straight tines per side, all pointing UP off the
+ *     beam at a slight outward lean (the way real antlers grow)
+ *   • All white on the moss-green chip
  *
- * No SVG, no emoji — pure View primitives, scales identically across
- * 22 / 32 / 56px without any pixel drift.
+ * Total per side: 4 pieces (1 beam + 3 tines), down from 6. Reads
+ * cleanly at 22px, still looks intentional at 56px. Pure View
+ * primitives — no SVG dep, no asset files.
  */
 function HuntGlyph({ size }: { size: number }) {
-  const beamW = Math.max(2, Math.round(size * 0.085));
-  const tineW = Math.max(2, Math.round(size * 0.07));
+  // Stroke widths scale with the chip size. Min 2px so we never
+  // disappear at the small (sm: 14px) glyph size.
+  const beamW = Math.max(2, Math.round(size * 0.10));
+  const tineW = Math.max(2, Math.round(size * 0.075));
 
-  // Main beam — three segments per antler.
-  const segLow  = Math.round(size * 0.32);  // base outward
-  const segMid  = Math.round(size * 0.32);  // upward stretch
-  const segTip  = Math.round(size * 0.26);  // curving inward
+  // Beam: a single long rounded rectangle, rotated ~55° from vertical
+  // so it sweeps from low-center upward-and-outward like a buck's
+  // main beam. Length is most of the glyph height.
+  const beamH = Math.round(size * 0.62);
 
-  // Tines — all point up-and-slightly-out (5° to 15° from vertical).
-  const browH = Math.round(size * 0.18);
-  const g2H   = Math.round(size * 0.30);
-  const g3H   = Math.round(size * 0.22);
+  // Tines all start from the beam and point upward. Three per side
+  // gives the silhouette "real antler" weight without crowding.
+  // Heights tuned so the middle tine is tallest (G2 is always the
+  // longest tine on a real rack).
+  const browH = Math.round(size * 0.20);
+  const g2H = Math.round(size * 0.30);
+  const g3H = Math.round(size * 0.22);
 
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+    <View
+      style={{
+        width: size,
+        height: size,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       {/* ─── LEFT antler ─────────────────────────────────────── */}
 
-      {/* Beam segment 1 — base, angles outward from center-bottom */}
+      {/* Main beam — single long stroke arcing up and out. */}
       <View
         style={{
           position: 'absolute',
-          bottom: size * 0.10,
-          left: size * 0.39,
+          bottom: size * 0.08,
+          left: size * 0.36,
           width: beamW,
-          height: segLow,
+          height: beamH,
           backgroundColor: WHITE,
           borderRadius: beamW,
-          transform: [{ rotate: '-55deg' }],
-        }}
-      />
-      {/* Beam segment 2 — mid, mostly vertical */}
-      <View
-        style={{
-          position: 'absolute',
-          top: size * 0.26,
-          left: size * 0.16,
-          width: beamW,
-          height: segMid,
-          backgroundColor: WHITE,
-          borderRadius: beamW,
-          transform: [{ rotate: '-15deg' }],
-        }}
-      />
-      {/* Beam segment 3 — tip, curves back inward */}
-      <View
-        style={{
-          position: 'absolute',
-          top: size * 0.04,
-          left: size * 0.22,
-          width: beamW,
-          height: segTip,
-          backgroundColor: WHITE,
-          borderRadius: beamW,
-          transform: [{ rotate: '20deg' }],
+          transform: [{ rotate: '-30deg' }],
         }}
       />
 
-      {/* G1 brow tine — short, sticks up near the base */}
+      {/* G1 brow tine — short, points up near the base of the beam. */}
       <View
         style={{
           position: 'absolute',
-          bottom: size * 0.22,
-          left: size * 0.30,
+          bottom: size * 0.36,
+          left: size * 0.28,
           width: tineW,
           height: browH,
           backgroundColor: WHITE,
           borderRadius: tineW,
-          transform: [{ rotate: '-15deg' }],
+          transform: [{ rotate: '-12deg' }],
         }}
       />
-      {/* G2 — longest tine, mid-beam, points up-and-slightly-out */}
+      {/* G2 — longest tine, mid-beam, points straight up with a small
+          outward lean. */}
       <View
         style={{
           position: 'absolute',
-          top: size * 0.20,
-          left: size * 0.13,
+          bottom: size * 0.42,
+          left: size * 0.18,
           width: tineW,
           height: g2H,
           backgroundColor: WHITE,
           borderRadius: tineW,
-          transform: [{ rotate: '-10deg' }],
+          transform: [{ rotate: '-6deg' }],
         }}
       />
-      {/* G3 — between G2 and tip */}
+      {/* G3 — near the tip of the beam, slightly inward to give the
+          rack its closed-top whitetail shape. */}
       <View
         style={{
           position: 'absolute',
-          top: size * 0.06,
-          left: size * 0.20,
+          bottom: size * 0.50,
+          left: size * 0.12,
           width: tineW,
           height: g3H,
           backgroundColor: WHITE,
           borderRadius: tineW,
-          transform: [{ rotate: '-5deg' }],
+          transform: [{ rotate: '0deg' }],
         }}
       />
 
       {/* ─── RIGHT antler (mirror) ───────────────────────────── */}
 
-      {/* Beam segment 1 */}
       <View
         style={{
           position: 'absolute',
-          bottom: size * 0.10,
-          right: size * 0.39,
+          bottom: size * 0.08,
+          right: size * 0.36,
           width: beamW,
-          height: segLow,
+          height: beamH,
           backgroundColor: WHITE,
           borderRadius: beamW,
-          transform: [{ rotate: '55deg' }],
+          transform: [{ rotate: '30deg' }],
         }}
       />
-      {/* Beam segment 2 */}
       <View
         style={{
           position: 'absolute',
-          top: size * 0.26,
-          right: size * 0.16,
-          width: beamW,
-          height: segMid,
-          backgroundColor: WHITE,
-          borderRadius: beamW,
-          transform: [{ rotate: '15deg' }],
-        }}
-      />
-      {/* Beam segment 3 */}
-      <View
-        style={{
-          position: 'absolute',
-          top: size * 0.04,
-          right: size * 0.22,
-          width: beamW,
-          height: segTip,
-          backgroundColor: WHITE,
-          borderRadius: beamW,
-          transform: [{ rotate: '-20deg' }],
-        }}
-      />
-      {/* G1 brow */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.22,
-          right: size * 0.30,
+          bottom: size * 0.36,
+          right: size * 0.28,
           width: tineW,
           height: browH,
           backgroundColor: WHITE,
           borderRadius: tineW,
-          transform: [{ rotate: '15deg' }],
+          transform: [{ rotate: '12deg' }],
         }}
       />
-      {/* G2 */}
       <View
         style={{
           position: 'absolute',
-          top: size * 0.20,
-          right: size * 0.13,
+          bottom: size * 0.42,
+          right: size * 0.18,
           width: tineW,
           height: g2H,
           backgroundColor: WHITE,
           borderRadius: tineW,
-          transform: [{ rotate: '10deg' }],
+          transform: [{ rotate: '6deg' }],
         }}
       />
-      {/* G3 */}
       <View
         style={{
           position: 'absolute',
-          top: size * 0.06,
-          right: size * 0.20,
+          bottom: size * 0.50,
+          right: size * 0.12,
           width: tineW,
           height: g3H,
           backgroundColor: WHITE,
           borderRadius: tineW,
-          transform: [{ rotate: '5deg' }],
+          transform: [{ rotate: '0deg' }],
         }}
       />
     </View>
