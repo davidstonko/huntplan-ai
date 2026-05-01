@@ -794,4 +794,47 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       expect(/\?camp=\$\{/.test(stripped)).toBe(false);
     });
   });
+
+  // ════════════════════════════════════════════════════════════════════
+  // Context-provider mount integrity (V2.4 audit — 2026-05-01, iter 4)
+  //
+  // Every Context exported from src/context/ that has a `*Provider` is
+  // expected to be mounted in App.tsx's provider tree. If a provider
+  // exists but isn't mounted, any screen that calls `useX()` crashes
+  // with "must be used within Provider". This test enumerates the
+  // expected providers and asserts each is both imported and rendered
+  // in App.tsx.
+  //
+  // Why a wiring test: tsc allows `useGroupCamp()` to compile even if
+  // GroupCampProvider isn't mounted — the runtime crash only fires on
+  // first consumer. Caught GroupCampProvider missing on iter-4 audit.
+  // ════════════════════════════════════════════════════════════════════
+  describe('Context provider mount integrity', () => {
+    const requiredProviders = [
+      'ActivityModeProvider',
+      'ScoutDataProvider',
+      'DeerCampProvider',
+      'GroupCampProvider',
+      'SettingsProvider',
+      'UserWaypointProvider',
+      'UserMarkupProvider',
+      'TrackRecorderProvider',
+      'JournalEntryProvider',
+      'GearChecklistProvider',
+      'FavoritesProvider',
+    ];
+
+    const app = read('src/App.tsx');
+
+    for (const provider of requiredProviders) {
+      it(`${provider} is imported into App.tsx`, () => {
+        expect(new RegExp(`import\\s*\\{[^}]*${provider}[^}]*\\}`).test(app)).toBe(true);
+      });
+
+      it(`${provider} wraps the tree in App.tsx`, () => {
+        expect(new RegExp(`<${provider}>`).test(app)).toBe(true);
+        expect(new RegExp(`</${provider}>`).test(app)).toBe(true);
+      });
+    }
+  });
 });

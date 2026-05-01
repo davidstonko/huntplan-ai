@@ -29,6 +29,7 @@ import AnimatedSplash from './components/splash/AnimatedSplash';
 import { ActivityModeProvider } from './context/ActivityModeContext';
 import { ScoutDataProvider } from './context/ScoutDataContext';
 import { DeerCampProvider } from './context/DeerCampContext';
+import { GroupCampProvider } from './context/GroupCampContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { UserWaypointProvider } from './context/UserWaypointContext';
 import { UserMarkupProvider } from './context/UserMarkupContext';
@@ -119,6 +120,7 @@ export default function App() {
     <ActivityModeProvider>
     <ScoutDataProvider>
     <DeerCampProvider>
+    <GroupCampProvider>
     <SettingsProvider>
     <UserWaypointProvider>
     <UserMarkupProvider>
@@ -165,6 +167,7 @@ export default function App() {
     </UserMarkupProvider>
     </UserWaypointProvider>
     </SettingsProvider>
+    </GroupCampProvider>
     </DeerCampProvider>
     </ScoutDataProvider>
     </ActivityModeProvider>
