@@ -24,6 +24,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../hooks/useLocation';
 import Colors from '../theme/colors';
+import FilterPicker from '../components/common/FilterPicker';
 import { MARYLAND_STATE_PARK_TRAILS } from '../data/marylandStateParkTrails';
 import type { Trail, TrailDifficulty } from '../types/hike';
 
@@ -173,86 +174,63 @@ export default function HikeTrailBrowserScreen() {
         />
       </View>
 
-      <ScrollView style={styles.filtersContainer} horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Difficulty:</Text>
-          {(['easy', 'moderate', 'strenuous'] as const).map((diff) => (
-            <TouchableOpacity
-              key={diff}
-              style={[
-                styles.filterChip,
-                difficultyFilter.has(diff) && styles.filterChipActive,
-              ]}
-              onPress={() => toggleDifficulty(diff)}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  difficultyFilter.has(diff) && styles.filterChipTextActive,
-                ]}
-              >
-                {diff.charAt(0).toUpperCase() + diff.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Length:</Text>
-          {(['all', 'short', 'medium', 'long'] as const).map((len) => (
-            <TouchableOpacity
-              key={len}
-              style={[styles.filterChip, lengthRange === len && styles.filterChipActive]}
-              onPress={() => setLengthRange(len)}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  lengthRange === len && styles.filterChipTextActive,
-                ]}
-              >
-                {len === 'all' ? 'All' : len === 'short' ? '≤2mi' : len === 'medium' ? '2-5mi' : '5+mi'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Elevation:</Text>
-          {(['all', 'low', 'medium', 'high'] as const).map((elev) => (
-            <TouchableOpacity
-              key={elev}
-              style={[styles.filterChip, elevationRange === elev && styles.filterChipActive]}
-              onPress={() => setElevationRange(elev)}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  elevationRange === elev && styles.filterChipTextActive,
-                ]}
-              >
-                {elev === 'all' ? 'All' : elev === 'low' ? '≤300ft' : elev === 'medium' ? '300-600ft' : '600+ft'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.filterGroup}>
-          <TouchableOpacity
-            style={[styles.filterChip, dogFriendlyOnly && styles.filterChipActive]}
-            onPress={() => setDogFriendlyOnly(!dogFriendlyOnly)}
-          >
-            <Text
-              style={[
-                styles.filterChipText,
-                dogFriendlyOnly && styles.filterChipTextActive,
-              ]}
-            >
-              Dog-Friendly
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      {/*
+        2026-04-30 (V2.4 audit cross-module sweep): the Trail Browser
+        filter row had FOUR separate groups (Difficulty multi-select +
+        Length single-select + Elevation single-select + Dog-Friendly
+        toggle) crammed into one horizontal ScrollView. Definitely
+        overflowed on every screen size. Replaced with a single
+        FilterPicker that nests all of them. Hint text identifies which
+        group each option belongs to so users can scan the list.
+      */}
+      <View style={styles.filterTriggerWrap}>
+        <FilterPicker
+          triggerLabel={(() => {
+            let n = difficultyFilter.size;
+            if (lengthRange !== 'all') n += 1;
+            if (elevationRange !== 'all') n += 1;
+            if (dogFriendlyOnly) n += 1;
+            return n === 0 ? 'Filters' : `Filters (${n})`;
+          })()}
+          title="Trail Filters"
+          options={[
+            // Difficulty — multi-select
+            { key: 'diff_easy', label: 'Easy', hint: 'Difficulty', active: difficultyFilter.has('easy') },
+            { key: 'diff_moderate', label: 'Moderate', hint: 'Difficulty', active: difficultyFilter.has('moderate') },
+            { key: 'diff_strenuous', label: 'Strenuous', hint: 'Difficulty', active: difficultyFilter.has('strenuous') },
+            // Length — single-select
+            { key: 'len_short', label: '≤2 miles', hint: 'Length', active: lengthRange === 'short' },
+            { key: 'len_medium', label: '2–5 miles', hint: 'Length', active: lengthRange === 'medium' },
+            { key: 'len_long', label: '5+ miles', hint: 'Length', active: lengthRange === 'long' },
+            // Elevation — single-select
+            { key: 'elev_low', label: '≤300 ft', hint: 'Elevation gain', active: elevationRange === 'low' },
+            { key: 'elev_medium', label: '300–600 ft', hint: 'Elevation gain', active: elevationRange === 'medium' },
+            { key: 'elev_high', label: '600+ ft', hint: 'Elevation gain', active: elevationRange === 'high' },
+            // Dog-friendly — single toggle
+            { key: 'dog', label: 'Dog-Friendly', hint: 'Other', active: dogFriendlyOnly },
+          ]}
+          onChange={(key, next) => {
+            if (key.startsWith('diff_')) {
+              const diff = key.replace('diff_', '') as 'easy' | 'moderate' | 'strenuous';
+              toggleDifficulty(diff);
+            } else if (key.startsWith('len_')) {
+              const len = key.replace('len_', '') as 'short' | 'medium' | 'long';
+              setLengthRange(next ? len : 'all');
+            } else if (key.startsWith('elev_')) {
+              const elev = key.replace('elev_', '') as 'low' | 'medium' | 'high';
+              setElevationRange(next ? elev : 'all');
+            } else if (key === 'dog') {
+              setDogFriendlyOnly(next);
+            }
+          }}
+          onClearAll={() => {
+            difficultyFilter.forEach((d) => toggleDifficulty(d));
+            setLengthRange('all');
+            setElevationRange('all');
+            setDogFriendlyOnly(false);
+          }}
+        />
+      </View>
 
       <View style={styles.sortBar}>
         <Text style={styles.sortLabel}>Sort:</Text>
@@ -412,32 +390,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textPrimary,
   },
-  filtersContainer: {
-    maxHeight: 100,
+  // 2026-04-30 (V2.4 audit): the multi-group filter row with chip
+  // children was retired. Single FilterPicker trigger anchors here
+  // with the same chrome.
+  filterTriggerWrap: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.mud,
   },
-  filterGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-    marginRight: 12,
-  },
-  filterLabel: { fontSize: 11, fontWeight: '600', color: Colors.textMuted },
-  filterChip: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-  },
-  filterChipActive: { backgroundColor: Colors.moss, borderColor: Colors.moss },
-  filterChipText: { fontSize: 10, fontWeight: '600', color: Colors.textSecondary },
-  filterChipTextActive: { color: Colors.textPrimary },
   sortBar: {
     flexDirection: 'row',
     alignItems: 'center',

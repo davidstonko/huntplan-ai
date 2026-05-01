@@ -30,6 +30,7 @@ import MapboxGL from '@rnmapbox/maps';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useLocation } from '../hooks/useLocation';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
+import FilterPicker from '../components/common/FilterPicker';
 import UserWaypointLayer from '../components/map/UserWaypointLayer';
 import UserMarkupLayer from '../components/map/UserMarkupLayer';
 import ZoomIcon from '../components/map/ZoomIcon';
@@ -334,49 +335,69 @@ export default function CampMapScreen() {
         <Text style={styles.statsSubtext}>Maryland Camping Map</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterBar}
-        contentContainerStyle={styles.filterBarContent}
-      >
-        {(['all', 'state_park', 'state_forest', 'private', 'backpacker'] as const).map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[styles.filterChip, typeFilter === type && styles.filterChipActive]}
-            onPress={() => setTypeFilter(type)}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[styles.filterLabel, typeFilter === type && styles.filterLabelActive]}
-            >
-              {type === 'all' ? 'All' : type === 'state_park' ? 'State Park' : type === 'state_forest' ? 'Forest' : type === 'private' ? 'Private' : 'Backpacker'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.amenityBar}
-        contentContainerStyle={styles.amenityBarContent}
-      >
-        {(['potableWater', 'flushToilets', 'shower', 'ada'] as const).map((amenity) => (
-          <TouchableOpacity
-            key={amenity}
-            style={[styles.amenityChip, amenityFilters[amenity] && styles.amenityChipActive]}
-            onPress={() => toggleAmenity(amenity)}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[styles.amenityLabel, amenityFilters[amenity] && styles.amenityLabelActive]}
-            >
-              {amenity === 'potableWater' ? 'Water' : amenity === 'flushToilets' ? 'Toilet' : amenity === 'shower' ? 'Shower' : 'ADA'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/*
+        2026-04-30 (V2.4 audit live): Camp Map had TWO horizontal chip
+        ScrollViews (campground type + amenities) that I missed during
+        the initial chip-row sweep. Replaced with two FilterPicker
+        triggers in a horizontal row. Type is single-select; amenities
+        are multi-select (any combination). Active selections appear
+        in the trigger labels.
+      */}
+      <View style={styles.filterTriggerRow} pointerEvents="box-none">
+        <FilterPicker
+          triggerLabel={
+            typeFilter === 'all'
+              ? 'Type'
+              : typeFilter === 'state_park'
+              ? 'Type: State Park'
+              : typeFilter === 'state_forest'
+              ? 'Type: Forest'
+              : typeFilter === 'private'
+              ? 'Type: Private'
+              : 'Type: Backpacker'
+          }
+          title="Campground Type"
+          compact
+          options={[
+            { key: 'all', label: 'All Types', hint: 'No type filter', active: typeFilter === 'all' },
+            { key: 'state_park', label: 'State Park', hint: 'Maryland State Park campgrounds', active: typeFilter === 'state_park' },
+            { key: 'state_forest', label: 'State Forest', hint: 'Maryland State Forest sites', active: typeFilter === 'state_forest' },
+            { key: 'private', label: 'Private', hint: 'Private campgrounds + KOA / glamping', active: typeFilter === 'private' },
+            { key: 'backpacker', label: 'Backpacker', hint: 'Hike-in / primitive', active: typeFilter === 'backpacker' },
+          ]}
+          onChange={(key, next) => {
+            if (next) setTypeFilter(key as any);
+            else if (typeFilter === key) setTypeFilter('all');
+          }}
+          onClearAll={() => setTypeFilter('all')}
+        />
+        <FilterPicker
+          triggerLabel={(() => {
+            const active = (['potableWater', 'flushToilets', 'shower', 'ada'] as const).filter(
+              (k) => amenityFilters[k],
+            );
+            return active.length === 0 ? 'Amenities' : `Amenities (${active.length})`;
+          })()}
+          title="Amenities"
+          compact
+          options={[
+            { key: 'potableWater', label: 'Potable Water', hint: 'Drinking water on site', active: amenityFilters.potableWater },
+            { key: 'flushToilets', label: 'Flush Toilets', hint: 'Real plumbed toilets', active: amenityFilters.flushToilets },
+            { key: 'shower', label: 'Shower', hint: 'Hot water available', active: amenityFilters.shower },
+            { key: 'ada', label: 'ADA Accessible', hint: 'Wheelchair-accessible sites', active: amenityFilters.ada },
+          ]}
+          onChange={(key, _next) => {
+            // amenityFilters is a multi-select boolean record; toggleAmenity
+            // flips just the one passed in.
+            toggleAmenity(key as any);
+          }}
+          onClearAll={() => {
+            (['potableWater', 'flushToilets', 'shower', 'ada'] as const).forEach((k) => {
+              if (amenityFilters[k]) toggleAmenity(k);
+            });
+          }}
+        />
+      </View>
 
       <View style={styles.controlsColumn}>
         <TouchableOpacity
@@ -577,38 +598,20 @@ const styles = StyleSheet.create({
   },
   statsText: { fontSize: 12, fontWeight: '700', color: Colors.lichen },
   statsSubtext: { fontSize: 10, color: Colors.textMuted, marginTop: 2 },
-  filterBar: { position: 'absolute', top: 58, left: 0, right: 0, zIndex: 10, maxHeight: 44 },
-  filterBarContent: { paddingHorizontal: 12, gap: 8 },
-  filterChip: {
-    backgroundColor: Colors.overlay,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: Colors.mud,
+  // 2026-04-30 (V2.4 audit live): Camp Map's two horizontal chip
+  // ScrollViews (filterBar at top:58 + amenityBar at top:110) replaced
+  // with a single row of two FilterPicker triggers anchored at top:96
+  // (clearing the relocated stats badge at top:46). Old chip styles
+  // retired.
+  filterTriggerRow: {
+    position: 'absolute',
+    top: 96,
+    left: 12,
+    right: 12,
+    zIndex: 10,
+    flexDirection: 'row',
+    gap: 8,
   },
-  filterChipActive: {
-    backgroundColor: Colors.moss,
-    borderColor: Colors.moss,
-  },
-  filterLabel: { fontSize: 11, fontWeight: '600', color: Colors.textSecondary },
-  filterLabelActive: { color: Colors.textPrimary },
-  amenityBar: { position: 'absolute', top: 110, left: 0, right: 0, zIndex: 10, maxHeight: 44 },
-  amenityBarContent: { paddingHorizontal: 12, gap: 8 },
-  amenityChip: {
-    backgroundColor: Colors.overlay,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-  },
-  amenityChipActive: {
-    backgroundColor: Colors.oak,
-    borderColor: Colors.oak,
-  },
-  amenityLabel: { fontSize: 10, fontWeight: '600', color: Colors.textSecondary },
-  amenityLabelActive: { color: Colors.textPrimary },
   // 2026-04-26 (zoom relocation): SAT/ME/⌖ moved to top: 200; zoom split
   // into zoomControls anchored just above the bottom detail panel.
   controlsColumn: {

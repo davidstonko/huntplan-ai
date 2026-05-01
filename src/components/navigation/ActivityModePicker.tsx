@@ -34,20 +34,26 @@ const MODE_CONFIG: Record<
   ActivityMode,
   { label: string; accent: string; sublabel: string }
 > = {
+  // 2026-04-30 (V2.4 audit live): sublabels in this dropdown drifted
+  // from the ones on ModePickerScreen — Fish here said "regulations"
+  // while the home screen said "boating, crabbing". Unified all four
+  // sublabels to match the home-screen text exactly so users see
+  // consistent copy whether they switch modes from the home picker
+  // or the in-app dropdown.
   hunt: {
     label: 'Hunt',
     accent: Colors.moss,
-    sublabel: 'Deer camp, public lands, scouting, regulations',
+    sublabel: 'Public lands, scouting, deer camp, blinds, regulations',
   },
   fish: {
     label: 'Fish',
     accent: '#0277BD',
-    sublabel: 'Angler access, stocking, tides, regulations',
+    sublabel: 'Angler access, stocking, tides, boating, crabbing',
   },
   camp: {
     label: 'Camp',
     accent: '#E67E22',
-    sublabel: 'Campgrounds, trip planner, gear, group camp',
+    sublabel: 'Campgrounds, trip planner, group camp, gear',
   },
   hike: {
     label: 'Hike',
