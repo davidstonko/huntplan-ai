@@ -55,6 +55,15 @@ export interface DeepLinkRoute {
 const DEER_CAMP_TAB = 'DeerCampTab';
 
 /**
+ * Tab name inside CampTabs that owns the Camp Trip Planner / saved
+ * trips list. 2026-04-30 (V2.4 step 1): added so trip-invite Universal
+ * Links land on the planner where the joinByInviteCode UI lives.
+ *
+ * Trip invite URL: /huntmaryland-site/trip/{code}.
+ */
+const CAMP_TRIP_PLANNER_TAB = 'CampTripPlannerTab';
+
+/**
  * Parse a deep link URL into a screen name and params.
  *
  * @param url - The URL to parse
@@ -113,6 +122,19 @@ export function parseLink(url: string): DeepLinkRoute | null {
       url.startsWith('https://davidstonko.github.io/huntmaryland-site/') ||
       url.startsWith('http://davidstonko.github.io/huntmaryland-site/')
     ) {
+      // 2026-04-30 (V2.4 step 1): Camp Trip invite URLs land here
+      // first, then fall through to the Deer Camp join URL pattern.
+      // Format: /huntmaryland-site/trip/{code}. Matched before the
+      // join branch because /trip/{code} is more specific.
+      const tripMatch = url.match(/\/huntmaryland-site\/trip\/([a-zA-Z0-9]+)/);
+      if (tripMatch && tripMatch[1]) {
+        return {
+          screen: CAMP_TRIP_PLANNER_TAB,
+          params: { inviteCode: tripMatch[1] },
+          mode: 'camp',
+          parent: 'CampTabs',
+        };
+      }
       const m = url.match(/\/huntmaryland-site\/join\/([a-zA-Z0-9]+)/);
       if (m && m[1]) {
         return {

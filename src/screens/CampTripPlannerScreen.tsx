@@ -68,14 +68,41 @@ export default function CampTripPlannerScreen() {
         const stored = await AsyncStorage.getItem('camp_trips_v1');
         if (stored) {
           let trips = JSON.parse(stored) as CampTrip[];
-          // Migration: ensure all trips have tripName; backfill from campgroundName if missing
-          trips = trips.map((trip) => ({
-            ...trip,
-            tripName: trip.tripName || trip.campgroundName,
-          }));
+          // Migration history (run idempotently every load):
+          //   v1 → v1.1 (V2.2): backfill `tripName` from `campgroundName`
+          //                     for trips created before tripName was added
+          //   v1.1 → v1.2 (V2.4 step 1, 2026-04-30): backfill `inviteCode`
+          //                     and `members` so legacy trips can use the
+          //                     new Share-Trip-Link flow without forcing
+          //                     the user to recreate them. Same eager-
+          //                     code pattern as DeerCamp invite fix.
+          let mutated = false;
+          trips = trips.map((trip) => {
+            const next = { ...trip };
+            if (!next.tripName) {
+              next.tripName = next.campgroundName;
+              mutated = true;
+            }
+            if (!next.inviteCode) {
+              next.inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+              mutated = true;
+            }
+            if (!next.members || next.members.length === 0) {
+              next.members = [
+                {
+                  userId: 'self',
+                  username: 'You',
+                  joinedAt: next.createdAt || new Date().toISOString(),
+                  role: 'owner',
+                  color: '#4A6741',
+                },
+              ];
+              mutated = true;
+            }
+            return next;
+          });
           setTrips(trips);
-          // Persist migrated data back to storage
-          if (trips.some((t) => !('tripName' in t))) {
+          if (mutated) {
             await AsyncStorage.setItem('camp_trips_v1', JSON.stringify(trips));
           }
         }
@@ -142,6 +169,15 @@ export default function CampTripPlannerScreen() {
 
     setSaving(true);
     try {
+      // 2026-04-30 (V2.4 step 1): every CampTrip now ships with an
+      // eagerly-generated 6-char alphanumeric inviteCode so the user
+      // can share the trip via Universal Link the same way Deer Camp
+      // and Honey Hole invites work. Eager generation pattern is
+      // locked by `live_audit_round_2_invite_code_bug_2026_04_28` —
+      // V2.3 had this bug for Deer Camps, fixed there, copying the
+      // pattern here. Includes the owner as the first member so the
+      // members[] field is non-empty from creation.
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const trip: CampTrip = {
         id: `trip-${Date.now()}`,
         campgroundId: selectedCampgroundId,
@@ -154,6 +190,16 @@ export default function CampTripPlannerScreen() {
         notes: notes.trim() || null,
         gearChecklistId: null,
         groupCampId: null,
+        inviteCode,
+        members: [
+          {
+            userId: 'self',
+            username: 'You',
+            joinedAt: new Date().toISOString(),
+            role: 'owner',
+            color: '#4A6741',
+          },
+        ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -255,6 +301,35 @@ export default function CampTripPlannerScreen() {
     [trips],
   );
 
+  /**
+   * Share a CampTrip via the iOS share sheet using a Universal Link
+   * encoded with the trip's inviteCode. Mirrors the DeerCamp /
+   * HoneyHole invite flow set up in the V2.3 audit (see
+   * `live_audit_round_2_invite_code_bug_2026_04_28.md`). The recipient
+   * taps the link, the deepLinkRouter recognizes the `/trip/{code}`
+   * path, and the app opens directly to the trip with the user joined.
+   *
+   * 2026-04-30 (V2.4 step 1): added so users can invite others to a
+   * trip the same way they invite to a Deer Camp.
+   */
+  const handleShareTripLink = useCallback(
+    async (trip: CampTrip) => {
+      try {
+        // Local import to avoid pulling Share into the top of the file
+        // for a single use; React Native's Share is already available
+        // via the runtime so requireing it inline keeps the import list
+        // tighter.
+        const { Share } = require('react-native');
+        const url = `https://davidstonko.github.io/huntmaryland-site/trip/${trip.inviteCode}`;
+        const message = `Join my Maryland camping trip "${trip.tripName}" at ${trip.campgroundName} (${trip.arrivalDate} → ${trip.departureDate}) on MDHuntFishOutdoors: ${url}`;
+        await Share.share({ message, url });
+      } catch (err) {
+        // User-cancelled is the most common path — silently no-op.
+      }
+    },
+    [],
+  );
+
   const renderTrip = ({ item }: { item: CampTrip }) => (
     <View style={styles.tripRow}>
       <View style={{ flex: 1 }}>
@@ -263,6 +338,13 @@ export default function CampTripPlannerScreen() {
           {item.arrivalDate} — {item.departureDate} • {item.partySize} people • {item.campgroundName}
         </Text>
       </View>
+      <TouchableOpacity
+        style={styles.tripShareBtn}
+        onPress={() => handleShareTripLink(item)}
+        accessibilityLabel={`Share invite link for ${item.tripName}`}
+      >
+        <Text style={styles.tripShareBtnText}>SHARE</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={styles.tripLogBtn}
         onPress={() => logTripJournal(item)}
@@ -605,6 +687,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
+  },
+  // 2026-04-30 (V2.4 step 1): SHARE button. Water-blue accent differs
+  // from moss=MAP, amber=LOG, and the tan DUP chip so the action row
+  // stays glanceable. Uses the same paddings/typography as the others.
+  tripShareBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: Colors.water,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  tripShareBtnText: {
+    color: Colors.textOnAccent,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   tripLogBtnText: {
     color: Colors.textOnAccent,

@@ -75,6 +75,25 @@ export interface Campground {
  * A user's multi-day camp trip. Saved locally via AsyncStorage (V2.2.0)
  * and synced via backend `/api/v1/camping/trips` when authenticated.
  */
+/**
+ * A member of a CampTrip — mirrors DeerCamp / GroupCamp member shape so
+ * the same invite-link routing + member-list UI helpers can drive both.
+ *
+ * Added 2026-04-30 (V2.4 step 1) for the Trip Planner → Group Camp
+ * merger. Existing CampTrip records persisted before this change have
+ * `members: undefined` and are upgraded lazily on first read.
+ */
+export interface CampTripMember {
+  userId: string;
+  username: string;
+  /** ISO timestamp the user accepted the invite. */
+  joinedAt: string;
+  /** Owner gets the trip-management UI (delete, change details). */
+  role: 'owner' | 'member';
+  /** Color assigned for activity-feed / map-pin differentiation. */
+  color: string;
+}
+
 export interface CampTrip {
   id: string;
   campgroundId: string;
@@ -90,6 +109,32 @@ export interface CampTrip {
   notes: string | null;
   gearChecklistId: string | null; // FK to CampGearChecklist
   groupCampId: string | null; // FK to GroupCamp if collaborative
+
+  /**
+   * Six-character alphanumeric invite code used for sharing this trip
+   * via Universal Link. Mirrors the eager-generation pattern locked
+   * in `live_audit_round_2_invite_code_bug_2026_04_28.md` for
+   * DeerCampContext (V2.3 audit found that lazy generation broke the
+   * Share-Link flow).
+   *
+   * Optional in the TYPE because legacy CampTrip records persisted
+   * before V2.4 don't have this field — the load path in
+   * CampTripPlannerScreen backfills missing codes on first read so
+   * everything in memory after that point has a code. New trips
+   * always populate this field at creation time.
+   *
+   * 2026-04-30 (V2.4 step 1): added so users can invite others to a
+   * Camp Trip the same way they invite to a Deer Camp.
+   */
+  inviteCode?: string;
+
+  /**
+   * Members on the trip. Owner-only when the trip is created; grows
+   * as people accept the invite link. `undefined` on legacy rows
+   * created before V2.4 — readers should default to `[]` and upgrade
+   * the record on next save.
+   */
+  members?: CampTripMember[];
 
   createdAt: string;
   updatedAt: string;
