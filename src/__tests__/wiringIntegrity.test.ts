@@ -642,4 +642,44 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       });
     }
   });
+
+  // ════════════════════════════════════════════════════════════════════
+  // ContactFab cross-mode parity (V2.4 audit — 2026-05-01)
+  // The user's contact pill landed on Hunt's Info tab in the V2.4 UI
+  // refactor. The cross-module audit caught that Fish/Camp/Hike Info
+  // tabs had no contact mechanism — partner outreach + bug reports
+  // could only be initiated from Hunt mode. ContactFab was extracted
+  // to a shared component; this test locks the invariant that all
+  // four Resources screens render it.
+  //
+  // It also catches a subtle related bug: someone could remove the
+  // import without removing the usage and tsc would still pass (tsc
+  // doesn't error on unused JSX names — only React's runtime would).
+  // ════════════════════════════════════════════════════════════════════
+  describe('ContactFab cross-mode parity', () => {
+    const screens = [
+      { mode: 'hunt', file: 'src/screens/ResourcesHubScreen.tsx' },
+      { mode: 'fish', file: 'src/screens/FishResourcesScreen.tsx' },
+      { mode: 'camp', file: 'src/screens/CampResourcesScreen.tsx' },
+      { mode: 'hike', file: 'src/screens/HikeResourcesScreen.tsx' },
+    ];
+
+    for (const { mode, file } of screens) {
+      it(`${mode}: ${file} imports ContactFab`, () => {
+        const src = read(file);
+        expect(/from\s*['"][^'"]*\/components\/common\/ContactFab['"]/.test(src)).toBe(true);
+      });
+
+      it(`${mode}: ${file} renders <ContactFab`, () => {
+        const src = read(file);
+        expect(/<ContactFab\b/.test(src)).toBe(true);
+      });
+    }
+
+    it('ContactFab uses the shared feedback inbox, not personal email', () => {
+      const src = read('src/components/common/ContactFab.tsx');
+      expect(src).toContain('feedback.mdhuntfishoutdoors@gmail.com');
+      expect(src).not.toContain('dstonko1@gmail.com');
+    });
+  });
 });
