@@ -245,7 +245,9 @@ export default function HuntingVideosScreen() {
       <View style={styles.topicTriggerWrap}>
         <FilterPicker
           triggerLabel={
-            selectedTopic === 'all' ? 'Topic' : `Topic: ${TOPIC_LABEL[selectedTopic as any]}`
+            selectedTopic === 'all'
+              ? 'Topic'
+              : `Topic: ${TOPIC_LABEL[selectedTopic as Exclude<typeof selectedTopic, 'all'>]}`
           }
           title="Video Topic"
           compact
