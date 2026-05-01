@@ -169,6 +169,13 @@ export function GroupCampProvider({ children }: { children: ReactNode }) {
         members: [adminMember],
         annotations: [],
         activityFeed: [creationFeedItem],
+        // 2026-05-01 (V2.4 audit, second pass): generate inviteCode
+        // eagerly at create time. Same fix that landed for DeerCamp on
+        // 2026-04-28 — without this, the Share Link via Messages flow
+        // alerts "No Share Code Yet" because the receiver-side router
+        // expects a 6-char alphanumeric code in the path. Adversarial
+        // audit caught GroupCamp had not received the same fix.
+        inviteCode: generateInviteCode(),
       };
 
       const updated = [...camps, newCamp];
@@ -290,7 +297,19 @@ export function GroupCampProvider({ children }: { children: ReactNode }) {
         persistCamps(updated);
       }
 
-      const url = `${INVITE_BASE_URL}?camp=${inviteCode}`;
+      // 2026-05-01 (V2.4 audit, second pass): switched from
+      // `?camp=CODE` query string to `/CODE` path because:
+      //   (1) AASA at website/.well-known/apple-app-site-association
+      //       declares `/huntmaryland-site/join/*` — query strings are
+      //       not part of the matching path component, so `?camp=CODE`
+      //       would match the AASA pattern with NO code visible to iOS.
+      //   (2) deepLinkRouter.parseLink only matches the path regex
+      //       `/huntmaryland-site/join/([a-zA-Z0-9]+)`. Query string
+      //       was silently ignored — the Share Link would deep-link
+      //       into the app but parse no inviteCode.
+      // Same path shape DeerCamp uses, so the receiver-side router
+      // works for both without a separate branch.
+      const url = `${INVITE_BASE_URL}/${inviteCode}`;
 
       try {
         await Share.share({
