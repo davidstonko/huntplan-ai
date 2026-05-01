@@ -31,6 +31,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Colors from '../theme/colors';
+import FilterPicker from '../components/common/FilterPicker';
 import { MARYLAND_CAMPGROUNDS } from '../data/marylandCampgrounds';
 import type { CampTrip } from '../types/camp';
 import { seedFromCampTrip } from '../services/journalSeedService';
@@ -449,24 +450,32 @@ export default function CampTripPlannerScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: 8 }}>
             <Text style={styles.detailLabel}>Trip Type</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {(['car_camp', 'family', 'solo', 'group', 'backcountry'] as const).map((tt) => (
-                <TouchableOpacity
-                  key={tt}
-                  style={[styles.typeChip, tripType === tt && styles.typeChipActive]}
-                  onPress={() => setTripType(tt)}
-                >
-                  <Text
-                    style={[
-                      styles.typeChipText,
-                      tripType === tt && styles.typeChipTextActive,
-                    ]}
-                  >
-                    {tt === 'car_camp' ? 'Car' : tt.charAt(0).toUpperCase() + tt.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {/*
+              2026-04-30 (V2.4 audit): horizontal chip row for trip
+              type replaced with FilterPicker. 5 chips (Car / Family /
+              Solo / Group / Backcountry) clipped on smaller screens
+              and inside this nested column they had even less
+              horizontal room. Single-select via toggle handler.
+            */}
+            <FilterPicker
+              triggerLabel={
+                tripType === 'car_camp'
+                  ? 'Car Camping'
+                  : tripType.charAt(0).toUpperCase() + tripType.slice(1)
+              }
+              title="Trip Type"
+              compact
+              options={[
+                { key: 'car_camp', label: 'Car Camping', hint: 'Drive-in established sites', active: tripType === 'car_camp' },
+                { key: 'family', label: 'Family', hint: 'Multi-generation, kids welcome', active: tripType === 'family' },
+                { key: 'solo', label: 'Solo', hint: 'Going alone', active: tripType === 'solo' },
+                { key: 'group', label: 'Group', hint: 'Friends or club outing', active: tripType === 'group' },
+                { key: 'backcountry', label: 'Backcountry', hint: 'Hike-in / primitive', active: tripType === 'backcountry' },
+              ]}
+              onChange={(key, next) => {
+                if (next) setTripType(key as any);
+              }}
+            />
           </View>
         </View>
       </View>

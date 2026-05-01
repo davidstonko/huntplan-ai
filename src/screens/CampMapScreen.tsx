@@ -562,9 +562,12 @@ export default function CampMapScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   map: { flex: 1 },
+  // 2026-04-30 (V2.4 audit): pushed from top:12 to top:46 because the
+  // Mapbox scale ruler renders at top-left by default and was
+  // overlapping the badge text. Same fix as Hunt + Fish + Hike maps.
   statsBadge: {
     position: 'absolute',
-    top: 12,
+    top: 46,
     left: 12,
     backgroundColor: Colors.overlay,
     borderRadius: 8,
