@@ -2250,8 +2250,13 @@ const styles = StyleSheet.create({
   legendLabel: { fontSize: 10, color: Colors.textPrimary, fontWeight: '600' },
 
   // ── Land Count Badge (Top Left) ──
+  // 2026-04-30 (V2.4 audit): pushed from top:12 to top:46 because the
+  // Mapbox scale ruler renders at top-left by default (~28pt tall) and
+  // was overlapping the badge text. The user reported it as a visual
+  // bug. The scale ruler can't be cleanly positioned in @rnmapbox/maps
+  // without forking, so we just clear it with vertical offset.
   countBadge: {
-    position: 'absolute', top: 12, left: 12,
+    position: 'absolute', top: 46, left: 12,
     backgroundColor: Colors.overlay, borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
     zIndex: 10,

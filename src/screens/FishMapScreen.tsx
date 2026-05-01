@@ -1074,9 +1074,12 @@ export default function FishMapScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   map: { flex: 1 },
+  // 2026-04-30 (V2.4 audit): pushed from top:12 to top:46 because the
+  // Mapbox scale ruler renders at top-left by default (~28pt tall) and
+  // was overlapping the badge text. Same fix as Hunt MapScreen.
   statsBadge: {
     position: 'absolute',
-    top: 12,
+    top: 46,
     left: 12,
     backgroundColor: Colors.overlay,
     borderRadius: 8,
@@ -1089,12 +1092,12 @@ const styles = StyleSheet.create({
   filterBar: { position: 'absolute', top: 58, left: 0, right: 0, zIndex: 10, maxHeight: 44 },
   filterBarContent: { paddingHorizontal: 12, gap: 8 },
   // ── Filter picker wrapper (replaces the old chip-row ScrollView) ──
-  // 2026-04-30 (V2.4 audit): trigger pill anchors at the same slot the
-  // chip row used (top: 58) so other overlays (stats badge at top: 12,
-  // controls at top: 200) don't need to move.
+  // 2026-04-30 (V2.4 audit): pushed down to top: 96 — clears the
+  // stats badge (now at top: 46, with ~36pt height) plus a few pt of
+  // breathing room.
   filterPickerWrap: {
     position: 'absolute',
-    top: 58,
+    top: 96,
     left: 12,
     zIndex: 10,
   },
