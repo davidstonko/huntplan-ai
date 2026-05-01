@@ -52,7 +52,7 @@ MAX_PER_RUN = int(os.environ.get("MAX_PER_RUN", "6"))
 USGS_TRAILS_URL = "https://carto.nationalmap.gov/arcgis/rest/services/transportation/MapServer/37/query"
 USGS_NATIONAL_TRAILS_URL = "https://carto.nationalmap.gov/arcgis/rest/services/transportation/MapServer/11/query"
 OVERPASS_URL = "https://z.overpass-api.de/api/interpreter"
-UA = "mdhuntfish-trail-ingest/2.0 (contact: dstonko1@gmail.com)"
+UA = "mdhuntfish-trail-ingest/2.0 (contact: feedback.mdhuntfishoutdoors@gmail.com)"
 
 # Trail specs: id, name, park, lat, lon, halfwidth (deg), published_mi, name_keywords (for Overpass name-match)
 # name_keywords: core tokens that distinguish this trail. Used for both the

@@ -217,7 +217,7 @@ async def get_moon(
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-_NWS_USER_AGENT = "MDHuntFishOutdoors/2.2 (dstonko1@gmail.com)"
+_NWS_USER_AGENT = "MDHuntFishOutdoors/2.3 (feedback.mdhuntfishoutdoors@gmail.com)"
 
 
 @router.get("/alerts")

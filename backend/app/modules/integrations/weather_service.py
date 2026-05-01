@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Weather.gov requires a User-Agent identifying the application
 HEADERS = {
-    "User-Agent": "(MDHuntFishOutdoors, dstonko1@gmail.com)",
+    "User-Agent": "(MDHuntFishOutdoors, feedback.mdhuntfishoutdoors@gmail.com)",
     "Accept": "application/geo+json",
 }
 

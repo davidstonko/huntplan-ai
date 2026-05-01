@@ -40,7 +40,7 @@ OVERPASS_MIRRORS = [
     "https://z.overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
-UA = "mdhuntfish-trail-ingest-tier2/1.1 (contact: dstonko1@gmail.com)"
+UA = "mdhuntfish-trail-ingest-tier2/1.1 (contact: feedback.mdhuntfishoutdoors@gmail.com)"
 
 # The 8 Tier-1 gaps — pulled from the current ingested_trails.json state.
 # (id, trailhead lat, trailhead lon, widened half-deg, published_mi)
