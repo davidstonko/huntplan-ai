@@ -23,6 +23,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Colors from '../theme/colors';
+import FilterPicker from '../components/common/FilterPicker';
 
 type Region = 'chesapeake' | 'western' | 'eastern-shore' | 'central' | 'southern' | 'ocean';
 type Service = 'deer' | 'waterfowl' | 'turkey' | 'upland' | 'freshwater' | 'trout' | 'striper' | 'offshore' | 'fly';
@@ -247,22 +248,29 @@ export default function GuideDirectoryScreen() {
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.regionScroll}>
-        <View style={styles.regionBar}>
-          {REGIONS.map((r) => (
-            <TouchableOpacity
-              key={r}
-              style={[styles.chip, region === r && styles.chipActive]}
-              onPress={() => setRegion(r)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.chipText, region === r && styles.chipTextActive]}>
-                {r === 'all' ? 'All Regions' : REGION_LABEL[r]}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      {/*
+        2026-04-30 (V2.4 audit): horizontal region chip ScrollView
+        replaced with a single FilterPicker. Single-select via toggle
+        handlers — turning one ON sets the value; turning OFF the
+        active one reverts to 'all'.
+      */}
+      <View style={styles.regionTriggerWrap}>
+        <FilterPicker
+          triggerLabel={region === 'all' ? 'Region' : REGION_LABEL[region as Region]}
+          title="Region"
+          compact
+          options={REGIONS.map((r) => ({
+            key: r,
+            label: r === 'all' ? 'All Regions' : REGION_LABEL[r as Region],
+            active: region === r,
+          }))}
+          onChange={(key, next) => {
+            if (next) setRegion(key as any);
+            else if (region === key) setRegion('all');
+          }}
+          onClearAll={() => setRegion('all')}
+        />
+      </View>
 
       <FlatList
         data={filtered}
@@ -303,28 +311,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.mud,
   },
-  regionScroll: {
-    maxHeight: 50,
+  // 2026-04-30 (V2.4): region chip ScrollView retired in favor of
+  // FilterPicker. Wrapper provides the same dark-bar chrome below the
+  // search bar.
+  regionTriggerWrap: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.mud,
   },
-  regionBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-    marginRight: 8,
-  },
-  chipActive: { backgroundColor: Colors.moss, borderColor: Colors.moss },
-  chipText: { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
-  chipTextActive: { color: Colors.textPrimary },
   list: { padding: 12, paddingBottom: 32 },
   disclaimer: {
     fontSize: 12,

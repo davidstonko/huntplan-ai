@@ -22,6 +22,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Colors from '../theme/colors';
+import FilterPicker from '../components/common/FilterPicker';
 import { useActivityMode } from '../context/ActivityModeContext';
 import {
   CURATED_FISHING_GEAR,
@@ -1107,37 +1108,32 @@ function CategoryPicker({
   active: string;
   onChange: (id: string) => void;
 }) {
+  // 2026-04-30 (V2.4 audit): replaced the horizontal ScrollView of
+  // chips with a single FilterPicker. Hunt mode has 9 categories
+  // (Whitetail / Turkey / Sika / Bear / Optics / Stands / Calls /
+  // Clothing / Accessories) which always overflowed the right edge;
+  // Fish has 4, Hike has 4. The picker handles all sizes uniformly.
+  // Single-select is emulated by toggle handlers — turning one ON
+  // sets that category; toggling OFF the active one is a no-op (we
+  // always keep something selected, since the gear list filters off
+  // the active category).
+  const activeCat = categories.find((c) => c.id === active);
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.fishCategoryScroll}
-      contentContainerStyle={styles.fishCategoryBar}
-    >
-      {categories.map((cat) => {
-        const isActive = cat.id === active;
-        return (
-          <TouchableOpacity
-            key={cat.id}
-            onPress={() => onChange(cat.id)}
-            style={[
-              styles.fishCategoryChip,
-              isActive && styles.fishCategoryChipActive,
-            ]}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                styles.fishCategoryText,
-                isActive && styles.fishCategoryTextActive,
-              ]}
-            >
-              {cat.short}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+    <View style={styles.categoryPickerWrap}>
+      <FilterPicker
+        triggerLabel={activeCat ? `Category: ${activeCat.short}` : 'Category'}
+        title="Gear Category"
+        options={categories.map((cat) => ({
+          key: cat.id,
+          label: cat.short,
+          active: cat.id === active,
+        }))}
+        onChange={(key, next) => {
+          if (next) onChange(key);
+          // No revert behavior — we always keep one category selected.
+        }}
+      />
+    </View>
   );
 }
 
@@ -1211,27 +1207,52 @@ export default function StarterGearScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tierScroll}>
-        <View style={styles.tierBar}>
-          {(['all', 'budget', 'mid', 'premium'] as const).map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.tierFilter, selectedTier === t && styles.tierFilterActive]}
-              onPress={() => setSelectedTier(t)}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[
-                  styles.tierFilterText,
-                  selectedTier === t && styles.tierFilterTextActive,
-                ]}
-              >
-                {t === 'all' ? 'All Tiers' : TIER_LABELS[t]}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      {/*
+        2026-04-30 (V2.4): tier filter chip row replaced with a
+        FilterPicker. 4 chips (All / Budget / Mid / Premium) fit fine on
+        most phones, but consistency with the rest of the V2.4 audit
+        makes this cleaner. Single-select via toggle handlers.
+      */}
+      <View style={styles.tierTriggerWrap}>
+        <FilterPicker
+          triggerLabel={
+            selectedTier === 'all' ? 'Tier' : `Tier: ${TIER_LABELS[selectedTier as Tier]}`
+          }
+          title="Price Tier"
+          compact
+          options={[
+            {
+              key: 'all',
+              label: 'All Tiers',
+              hint: 'No tier filter',
+              active: selectedTier === 'all',
+            },
+            {
+              key: 'budget',
+              label: TIER_LABELS.budget,
+              hint: 'Most affordable picks',
+              active: selectedTier === 'budget',
+            },
+            {
+              key: 'mid',
+              label: TIER_LABELS.mid,
+              hint: 'Balanced quality + price',
+              active: selectedTier === 'mid',
+            },
+            {
+              key: 'premium',
+              label: TIER_LABELS.premium,
+              hint: 'Best-in-class picks',
+              active: selectedTier === 'premium',
+            },
+          ]}
+          onChange={(key, next) => {
+            if (next) setSelectedTier(key as any);
+            else if (selectedTier === key) setSelectedTier('all');
+          }}
+          onClearAll={() => setSelectedTier('all')}
+        />
+      </View>
 
       <FlatList
         data={filtered}
@@ -1285,17 +1306,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  tierScroll: {
-    maxHeight: 56,
+  // 2026-04-30 (V2.4): tier chip ScrollView retired in favor of a
+  // FilterPicker. Wrapper provides padding + dark surface bar matching
+  // the previous chrome.
+  tierTriggerWrap: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.mud,
   },
-  tierBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
+  // Category picker wrapper — used by CategoryPicker component.
+  categoryPickerWrap: {
+    paddingHorizontal: 4,
+    marginBottom: 12,
   },
   // 2026-04-26: optional sub-style filter row (Euro / Conventional / etc.)
   // Renders below the main category picker when the category supports

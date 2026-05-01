@@ -24,6 +24,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Colors from '../theme/colors';
+import FilterPicker from '../components/common/FilterPicker';
 import {
   MARYLAND_ANGLER_ACCESS_SITES,
   type AnglerAccessSite,
@@ -116,52 +117,84 @@ export default function FishSpotsScreen() {
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
-        <View style={styles.filterBar}>
-          {(['all', 'ramp', 'soft', 'shore'] as const).map((a) => (
-            <TouchableOpacity
-              key={a}
-              style={[styles.chip, access === a && styles.chipActive]}
-              onPress={() => setAccess(a)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.chipText, access === a && styles.chipTextActive]}>
-                {a === 'all'
-                  ? 'All Access'
-                  : a === 'ramp'
-                  ? 'Boat Ramp'
-                  : a === 'soft'
-                  ? 'Soft Launch'
-                  : 'Shore Only'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.countyScroll}>
-        <View style={styles.filterBar}>
-          <TouchableOpacity
-            style={[styles.chip, county === 'all' && styles.chipActive]}
-            onPress={() => setCounty('all')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.chipText, county === 'all' && styles.chipTextActive]}>
-              All Counties
-            </Text>
-          </TouchableOpacity>
-          {ALL_COUNTIES.map((c) => (
-            <TouchableOpacity
-              key={c}
-              style={[styles.chip, county === c && styles.chipActive]}
-              onPress={() => setCounty(c)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.chipText, county === c && styles.chipTextActive]}>{c}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      {/*
+        2026-04-30 (V2.4 audit): the two horizontal-scrolling chip rows
+        (access + county) clipped on every screen size. Replaced with
+        two FilterPicker triggers in a horizontal row. Each opens its
+        own modal listing every option as a Switch row. Single-select
+        is emulated via toggle handlers — turning one ON sets the value;
+        turning OFF the active one reverts to 'all'. Active selection
+        appears in the trigger label so users know what's filtered.
+      */}
+      <View style={styles.filterTriggerRow}>
+        <FilterPicker
+          triggerLabel={
+            access === 'all'
+              ? 'Access'
+              : access === 'ramp'
+              ? 'Boat Ramp'
+              : access === 'soft'
+              ? 'Soft Launch'
+              : 'Shore Only'
+          }
+          title="Access Type"
+          compact
+          options={[
+            {
+              key: 'all',
+              label: 'All Access',
+              hint: 'No access-type filter',
+              active: access === 'all',
+            },
+            {
+              key: 'ramp',
+              label: 'Boat Ramp',
+              hint: 'Hard-surface launch ramps',
+              active: access === 'ramp',
+            },
+            {
+              key: 'soft',
+              label: 'Soft Launch',
+              hint: 'Kayak / canoe / hand-carry',
+              active: access === 'soft',
+            },
+            {
+              key: 'shore',
+              label: 'Shore Only',
+              hint: 'Pier / wading / shore casting',
+              active: access === 'shore',
+            },
+          ]}
+          onChange={(key, next) => {
+            if (next) setAccess(key as any);
+            else if (access === key) setAccess('all');
+          }}
+          onClearAll={() => setAccess('all')}
+        />
+        <FilterPicker
+          triggerLabel={county === 'all' ? 'County' : county}
+          title="County"
+          compact
+          options={[
+            {
+              key: 'all',
+              label: 'All Counties',
+              hint: 'Statewide',
+              active: county === 'all',
+            },
+            ...ALL_COUNTIES.map((c) => ({
+              key: c,
+              label: c,
+              active: county === c,
+            })),
+          ]}
+          onChange={(key, next) => {
+            if (next) setCounty(key as any);
+            else if (county === key) setCounty('all');
+          }}
+          onClearAll={() => setCounty('all')}
+        />
+      </View>
 
       <View style={styles.countBar}>
         <Text style={styles.countText}>
@@ -259,34 +292,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.mud,
   },
-  filterScroll: {
-    maxHeight: 46,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.mud,
-  },
-  countyScroll: {
-    maxHeight: 46,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.mud,
-  },
-  filterBar: {
+  // 2026-04-30 (V2.4): chip rows replaced with FilterPicker pair. Old
+  // styles (filterScroll / countyScroll / filterBar / chip / chipActive
+  // / chipText / chipTextActive) retired — kept only the trigger row.
+  filterTriggerRow: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  chip: {
+    gap: 8,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-    marginRight: 6,
+    paddingVertical: 8,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.mud,
   },
-  chipActive: { backgroundColor: Colors.moss, borderColor: Colors.moss },
-  chipText: { fontSize: 11, fontWeight: '600', color: Colors.textMuted },
-  chipTextActive: { color: Colors.textPrimary },
   countBar: {
     paddingHorizontal: 12,
     paddingVertical: 6,

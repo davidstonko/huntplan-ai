@@ -22,6 +22,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Colors from '../theme/colors';
+import FilterPicker from '../components/common/FilterPicker';
 
 type Topic =
   | 'deer-biology'
@@ -236,29 +237,38 @@ export default function HuntingVideosScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
-        <View style={styles.filterBar}>
-          <TouchableOpacity
-            style={[styles.chip, selectedTopic === 'all' && styles.chipActive]}
-            onPress={() => setSelectedTopic('all')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.chipText, selectedTopic === 'all' && styles.chipTextActive]}>All</Text>
-          </TouchableOpacity>
-          {topics.map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.chip, selectedTopic === t && styles.chipActive]}
-              onPress={() => setSelectedTopic(t)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.chipText, selectedTopic === t && styles.chipTextActive]}>
-                {TOPIC_LABEL[t]}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      {/*
+        2026-04-30 (V2.4): topic chip row replaced with FilterPicker.
+        Single-select via toggle handlers — turning one ON sets the
+        topic; turning OFF the active one reverts to 'all'.
+      */}
+      <View style={styles.topicTriggerWrap}>
+        <FilterPicker
+          triggerLabel={
+            selectedTopic === 'all' ? 'Topic' : `Topic: ${TOPIC_LABEL[selectedTopic as any]}`
+          }
+          title="Video Topic"
+          compact
+          options={[
+            {
+              key: 'all',
+              label: 'All Topics',
+              hint: 'No topic filter',
+              active: selectedTopic === 'all',
+            },
+            ...topics.map((t) => ({
+              key: t,
+              label: TOPIC_LABEL[t],
+              active: selectedTopic === t,
+            })),
+          ]}
+          onChange={(key, next) => {
+            if (next) setSelectedTopic(key as any);
+            else if (selectedTopic === key) setSelectedTopic('all');
+          }}
+          onClearAll={() => setSelectedTopic('all')}
+        />
+      </View>
 
       <FlatList
         data={filtered}
@@ -283,31 +293,15 @@ export default function HuntingVideosScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  filterScroll: {
-    maxHeight: 54,
+  // 2026-04-30 (V2.4): topic chip ScrollView retired in favor of
+  // FilterPicker. Wrapper provides the same dark-bar chrome.
+  topicTriggerWrap: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.mud,
   },
-  filterBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-    marginRight: 8,
-  },
-  chipActive: {
-    backgroundColor: Colors.moss,
-    borderColor: Colors.moss,
-  },
-  chipText: { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
-  chipTextActive: { color: Colors.textPrimary },
   list: { padding: 12, paddingBottom: 32 },
   note: {
     fontSize: 12,
