@@ -120,8 +120,18 @@ export function GroupCampProvider({ children }: { children: ReactNode }) {
         const campsJson = await AsyncStorage.getItem(STORAGE_KEY);
         if (campsJson) {
           const loadedCamps: GroupCamp[] = JSON.parse(campsJson);
-          setCamps(loadedCamps);
-          if (__DEV__) console.log('[GroupCampContext] Loaded', loadedCamps.length, 'camps from AsyncStorage');
+          // 2026-05-01 (V2.4 audit, iter 3): backfill inviteCode for
+          // legacy records that pre-date the eager-generation fix
+          // (commit 6518a2b1). Without this, old groups relied on the
+          // lazy regeneration in shareGroupCampInvite — clean now so
+          // every persisted GroupCamp has an inviteCode invariant.
+          const migratedCamps = loadedCamps.map((c) =>
+            typeof c?.inviteCode === 'string' && c.inviteCode.length > 0
+              ? c
+              : { ...c, inviteCode: generateInviteCode() },
+          );
+          setCamps(migratedCamps);
+          if (__DEV__) console.log('[GroupCampContext] Loaded', migratedCamps.length, 'camps from AsyncStorage');
         }
       } catch (e) {
         if (__DEV__) console.warn('[GroupCampContext] Failed to load from storage:', e);

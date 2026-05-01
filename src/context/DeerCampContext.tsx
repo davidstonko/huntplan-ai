@@ -261,6 +261,17 @@ function migrateCamps(raw: unknown): DeerCamp[] {
       offlineTileStatus: (c?.offlineTileStatus ?? 'none') as OfflineTileStatus,
       description: typeof c?.description === 'string' ? c.description : '',
       documents: Array.isArray(c?.documents) ? c.documents : [],
+      // 2026-05-01 (V2.4 audit, iter 3): backfill inviteCode for
+      // legacy V2.3 records that pre-date the eager-generation fix
+      // (live_audit_round_2_invite_code_bug_2026_04_28.md). Without
+      // this, old camps relied on the lazy ensureCampInviteCode
+      // fallback; the data shape was inconsistent on disk. Backfilling
+      // at migration time gives a clean invariant: every persisted
+      // camp has an inviteCode regardless of when it was created.
+      inviteCode:
+        typeof c?.inviteCode === 'string' && c.inviteCode.length > 0
+          ? c.inviteCode
+          : generateInviteCode(),
     } as DeerCamp;
   });
 }
