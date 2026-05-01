@@ -40,15 +40,12 @@ describe('ActivityModeContext', () => {
       expect(mode).toBe('hike');
     });
 
-    it('should support crab mode', () => {
-      const mode: ActivityMode = 'crab';
-      expect(mode).toBe('crab');
-    });
-
-    it('should support boat mode', () => {
-      const mode: ActivityMode = 'boat';
-      expect(mode).toBe('boat');
-    });
+    // 2026-05-01 (V2.4 audit, iter 6): removed 'crab' and 'boat'
+    // assertions. CLAUDE.md and ActivityModeContext both lock the
+    // active modes to ['hunt', 'fish', 'camp', 'hike']. Crab + Boat
+    // were folded into Fish in V2.2.0 — they are NOT separate modes.
+    // The previous test cast string literals to ActivityMode without
+    // tsc enforcement so they passed but encoded a false promise.
   });
 
   describe('ActivityModeProvider behavior', () => {
@@ -79,29 +76,31 @@ describe('ActivityModeContext', () => {
   });
 
   describe('Mode validation', () => {
+    // 2026-05-01 (V2.4 audit, iter 6): the modes arrays previously
+    // listed ['hunt', 'fish', 'camp', 'hike', 'crab', 'boat'] which
+    // disagreed with the type definition (only 4 active modes).
+    // Crab + Boat were folded into Fish in V2.2.0. Tests now match
+    // the 4 modes the type actually permits.
+    const ACTIVE_MODES: ActivityMode[] = ['hunt', 'fish', 'camp', 'hike'];
+
     it('should recognize hunt as valid mode', () => {
-      const modes = ['hunt', 'fish', 'camp', 'hike', 'crab', 'boat'];
-      expect(modes).toContain('hunt');
+      expect(ACTIVE_MODES).toContain('hunt');
     });
 
     it('should recognize fish as valid mode', () => {
-      const modes = ['hunt', 'fish', 'camp', 'hike', 'crab', 'boat'];
-      expect(modes).toContain('fish');
+      expect(ACTIVE_MODES).toContain('fish');
     });
 
     it('should recognize camp as valid mode', () => {
-      const modes = ['hunt', 'fish', 'camp', 'hike', 'crab', 'boat'];
-      expect(modes).toContain('camp');
+      expect(ACTIVE_MODES).toContain('camp');
     });
 
     it('should recognize hike as valid mode', () => {
-      const modes = ['hunt', 'fish', 'camp', 'hike', 'crab', 'boat'];
-      expect(modes).toContain('hike');
+      expect(ACTIVE_MODES).toContain('hike');
     });
 
     it('should have all expected modes', () => {
-      const modes = ['hunt', 'fish', 'camp', 'hike', 'crab', 'boat'];
-      expect(modes).toHaveLength(6);
+      expect(ACTIVE_MODES).toHaveLength(4);
     });
   });
 
