@@ -125,11 +125,21 @@ export default function CampMapScreen() {
   // lng/lat, not zoom) so +/- snapped to DEFAULT_ZOOM±1.
   const [currentZoom, setCurrentZoom] = useState<number>(DEFAULT_ZOOM);
 
+  // 2026-04-30 (V2.4 audit): same drag-killing bug as Hike + Fish. The
+  // previous version had `[location, focusCampgroundId]` as the dep
+  // and called setCamera every time location ticked — making the map
+  // appear locked to the user's current position. Fix mirrors the
+  // other maps: one-shot ref guard so initial centering runs exactly
+  // once when location first becomes available. Recenter button
+  // remains the canonical "go back to me" affordance.
+  //
   // Center on user location on mount (only when no focus param is pending —
   // focus takes priority so the camera doesn't jump away from the handoff target).
   // We also gate on the Maryland bbox so the iOS Simulator's Cupertino default
   // doesn't fly the camera to California on first open.
+  const initialCenterApplied = useRef(false);
   useEffect(() => {
+    if (initialCenterApplied.current) return;
     if (focusCampgroundId) return;
     if (cameraRef.current && location) {
       const { longitude, latitude } = location;
@@ -143,6 +153,7 @@ export default function CampMapScreen() {
           animationDuration: 1000,
         });
       }
+      initialCenterApplied.current = true;
     }
   }, [location, focusCampgroundId]);
 
