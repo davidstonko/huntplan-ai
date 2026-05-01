@@ -35,6 +35,7 @@ import FishRegulationsScreen from './FishRegulationsScreen';
 import FishResourcesScreen from './FishResourcesScreen';
 import ResourcesScreen from './ResourcesScreen';
 import OnboardingTourGate from '../components/OnboardingTourGate';
+import ContactFab from '../components/common/ContactFab';
 import { useActivityMode } from '../context/ActivityModeContext';
 
 type Segment = 'regulations' | 'links';
@@ -185,49 +186,15 @@ export default function ResourcesHubScreen() {
         Email moved off David's personal account onto the dedicated
         feedback inbox so partner outreach lands in the right place.
       */}
-      <ContactFab />
+      {/*
+        ContactFab stacked above the existing Report FAB.
+        Report sits at bottom: 24 with ~64pt height, so bottom: 96
+        gives ~8pt gap between them.
+        2026-05-01: extracted to src/components/common/ContactFab.tsx
+        so Fish/Camp/Hike Resources screens can use the same affordance.
+      */}
+      <ContactFab bottom={96} />
     </View>
-  );
-}
-
-/**
- * Small floating contact button anchored at bottom-right, vertically
- * stacked just above the existing Report FAB (which is rendered by
- * RegulationsScreen / FishRegulationsScreen). The vertical offset
- * (`bottom: 96`) is tuned so the two buttons sit ~8px apart — Report
- * sits at `bottom: 24`, has height ~64 (label + chip), so 24+64+8 = 96.
- *
- * Why a separate component instead of one shared FAB stack: the Report
- * FAB has segment-specific behavior (regulation-issue form on
- * regulations segment, links-suggestion form on resources segment),
- * whereas Contact is segment-agnostic. Keeping them as siblings means
- * they each own their own state and accessibility tree.
- */
-function ContactFab() {
-  const onPress = React.useCallback(() => {
-    const subject = encodeURIComponent('MDHuntFishOutdoors — partnership / listing inquiry');
-    const body = encodeURIComponent(
-      'Hi,\n\n' +
-        'I would like to talk about [adding my business / partnership / a feature request / other]:\n\n\n' +
-        '— Sent from MDHuntFishOutdoors',
-    );
-    Linking.openURL(
-      `mailto:feedback.mdhuntfishoutdoors@gmail.com?subject=${subject}&body=${body}`,
-    ).catch(() => {});
-  }, []);
-
-  return (
-    <TouchableOpacity
-      style={contactFabStyles.fab}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityRole="button"
-      accessibilityLabel="Contact MDHuntFishOutdoors"
-      accessibilityHint="Opens an email to feedback.mdhuntfishoutdoors@gmail.com about adding a business, partnership, or feedback"
-    >
-      <Text style={contactFabStyles.icon}>{'✉'}</Text>
-      <Text style={contactFabStyles.label}>Contact</Text>
-    </TouchableOpacity>
   );
 }
 
@@ -375,37 +342,10 @@ const contactStyles = StyleSheet.create({
   },
 });
 
-/**
- * Contact bubble styles. Tuned to mirror the Report FAB shape (round-rect
- * pill with icon + label, ~40-44px tall) so the two buttons read as a
- * paired vertical stack in the bottom-right corner. Sitting on top of
- * the Report FAB with an 8px gap.
- *
- * `bottom: 96` math: Report FAB is at bottom: 24 with height ≈ 64
- * (chip + label + paddings) → 24 + 64 + 8 gap = 96.
- */
-const contactFabStyles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 96,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.moss,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 22,
-    gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
-    zIndex: 50,
-  },
-  icon: { fontSize: 14, color: '#FFFFFF' },
-  label: { color: '#FFFFFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.3 },
-});
+/* contactFabStyles removed 2026-05-01 — ContactFab moved to
+   src/components/common/ContactFab.tsx. The styles now live with
+   the component so other Resources screens (Fish/Camp/Hike) can
+   share the same visual treatment. */
 
 const styles = StyleSheet.create({
   container: {

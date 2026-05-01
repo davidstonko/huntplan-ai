@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import Colors from '../theme/colors';
 import OnboardingTourGate from '../components/OnboardingTourGate';
+import ContactFab from '../components/common/ContactFab';
 
 export default function CampResourcesScreen() {
   const openURL = (url: string) => {
@@ -30,6 +31,10 @@ export default function CampResourcesScreen() {
   const [tourOpen, setTourOpen] = useState(false);
 
   return (
+    // 2026-05-01 (V2.4 audit): wrap ScrollView in relative View so
+    // ContactFab can position absolutely at bottom-right without
+    // scrolling away. Same parallel as Hunt's ResourcesHubScreen.
+    <View style={styles.container}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>Camp Resources</Text>
 
@@ -282,6 +287,8 @@ export default function CampResourcesScreen() {
 
       <View style={{ height: 20 }} />
     </ScrollView>
+    <ContactFab />
+    </View>
   );
 }
 

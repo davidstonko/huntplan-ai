@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import Colors from '../theme/colors';
 import ActivityDisclaimer from '../components/common/ActivityDisclaimer';
+import ContactFab from '../components/common/ContactFab';
 
 interface FishResourceLink {
   id: string;
@@ -482,6 +483,9 @@ export default function FishResourcesScreen() {
         </View>
       </ScrollView>
       <ActivityDisclaimer mode="fish" />
+      {/* 2026-05-01 (V2.4 audit): cross-mode parallel — Hunt's Info tab
+          has a ContactFab; Fish/Camp/Hike Resources should too. */}
+      <ContactFab />
     </View>
   );
 }
