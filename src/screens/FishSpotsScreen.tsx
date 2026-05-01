@@ -141,10 +141,13 @@ export default function FishSpotsScreen() {
           compact
           options={[
             {
+              // 2026-04-30 (V2.4 audit): "All Access" = no filter. Don't
+              // mark active or trigger pill says "(1)" when nothing is
+              // being filtered.
               key: 'all',
               label: 'All Access',
               hint: 'No access-type filter',
-              active: access === 'all',
+              active: false,
             },
             {
               key: 'ramp',
@@ -177,10 +180,12 @@ export default function FishSpotsScreen() {
           compact
           options={[
             {
+              // 2026-04-30 (V2.4 audit): "All Counties" = no filter.
+              // Don't mark active or count says "(1)" with no filtering.
               key: 'all',
               label: 'All Counties',
               hint: 'Statewide',
-              active: county === 'all',
+              active: false,
             },
             ...ALL_COUNTIES.map((c) => ({
               key: c,

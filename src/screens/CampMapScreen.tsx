@@ -359,7 +359,13 @@ export default function CampMapScreen() {
           title="Campground Type"
           compact
           options={[
-            { key: 'all', label: 'All Types', hint: 'No type filter', active: typeFilter === 'all' },
+            // 2026-04-30 (V2.4 audit, second pass): "All Types" is the
+            // unfiltered baseline — when active, *no* filter is applied.
+            // Counting it as active in the auto-count made the trigger
+            // pill say "Type (1)" even when the user wasn't filtering.
+            // Always-false here so the count only goes up when a real
+            // narrowing filter is selected.
+            { key: 'all', label: 'All Types', hint: 'No type filter', active: false },
             { key: 'state_park', label: 'State Park', hint: 'Maryland State Park campgrounds', active: typeFilter === 'state_park' },
             { key: 'state_forest', label: 'State Forest', hint: 'Maryland State Forest sites', active: typeFilter === 'state_forest' },
             { key: 'private', label: 'Private', hint: 'Private campgrounds + KOA / glamping', active: typeFilter === 'private' },
@@ -371,13 +377,15 @@ export default function CampMapScreen() {
           }}
           onClearAll={() => setTypeFilter('all')}
         />
+        {/*
+          2026-04-30 (V2.4 audit, second pass): FilterPicker auto-appends
+          its own active count to triggerLabel; pre-formatting `(N)` into
+          the label here caused "Amenities (2) (2)" double-count on the
+          live UI. Same bug we just fixed in HikeTrailBrowserScreen.
+          Pass the bare label and trust the picker to count.
+        */}
         <FilterPicker
-          triggerLabel={(() => {
-            const active = (['potableWater', 'flushToilets', 'shower', 'ada'] as const).filter(
-              (k) => amenityFilters[k],
-            );
-            return active.length === 0 ? 'Amenities' : `Amenities (${active.length})`;
-          })()}
+          triggerLabel="Amenities"
           title="Amenities"
           compact
           options={[

@@ -253,10 +253,13 @@ export default function HuntingVideosScreen() {
           compact
           options={[
             {
+              // 2026-04-30 (V2.4 audit): "All Topics" = unfiltered baseline.
+              // Don't count it as active or trigger pill says "(1)" when
+              // nothing is being filtered. Same fix as Camp + Hike maps.
               key: 'all',
               label: 'All Topics',
               hint: 'No topic filter',
-              active: selectedTopic === 'all',
+              active: false,
             },
             ...topics.map((t) => ({
               key: t,

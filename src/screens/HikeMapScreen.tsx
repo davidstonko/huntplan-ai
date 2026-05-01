@@ -664,10 +664,17 @@ export default function HikeMapScreen() {
             title="Hike Map Filters"
             options={[
               {
+                // 2026-04-30 (V2.4 audit, second pass): "All Trails" is
+                // the unfiltered baseline — when active, no narrowing
+                // filter is being applied. Counting it as active made
+                // the trigger pill say "Filters (1)" even when nothing
+                // was actually being filtered. Always-false here so
+                // the count only goes up when a real difficulty is
+                // selected. Same fix applied to CampMapScreen "All Types".
                 key: 'all',
                 label: 'All Trails',
                 hint: 'No difficulty filter',
-                active: difficultyFilter === 'all',
+                active: false,
               },
               {
                 key: 'easy',

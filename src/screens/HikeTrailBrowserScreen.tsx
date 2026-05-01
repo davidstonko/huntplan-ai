@@ -183,15 +183,17 @@ export default function HikeTrailBrowserScreen() {
         FilterPicker that nests all of them. Hint text identifies which
         group each option belongs to so users can scan the list.
       */}
+      {/*
+        2026-04-30 (V2.4 audit, second pass): live simulator showed the
+        trigger pill rendering "Filters (3) (3)" because this screen was
+        pre-formatting `Filters (n)` while FilterPicker also auto-appends
+        the active count from its `options[].active` array. Pass the
+        bare label and let FilterPicker compute the count once — same
+        pattern every other FilterPicker call site already uses.
+      */}
       <View style={styles.filterTriggerWrap}>
         <FilterPicker
-          triggerLabel={(() => {
-            let n = difficultyFilter.size;
-            if (lengthRange !== 'all') n += 1;
-            if (elevationRange !== 'all') n += 1;
-            if (dogFriendlyOnly) n += 1;
-            return n === 0 ? 'Filters' : `Filters (${n})`;
-          })()}
+          triggerLabel="Filters"
           title="Trail Filters"
           options={[
             // Difficulty — multi-select

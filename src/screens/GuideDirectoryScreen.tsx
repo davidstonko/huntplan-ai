@@ -259,10 +259,13 @@ export default function GuideDirectoryScreen() {
           triggerLabel={region === 'all' ? 'Region' : REGION_LABEL[region as Region]}
           title="Region"
           compact
+          // 2026-04-30 (V2.4 audit): "All Regions" = no filter — never
+          // mark it active or the trigger pill says "(1)" with nothing
+          // actually being filtered. Same fix as Camp/Hike/Fish maps.
           options={REGIONS.map((r) => ({
             key: r,
             label: r === 'all' ? 'All Regions' : REGION_LABEL[r as Region],
-            active: region === r,
+            active: r !== 'all' && region === r,
           }))}
           onChange={(key, next) => {
             if (next) setRegion(key as any);

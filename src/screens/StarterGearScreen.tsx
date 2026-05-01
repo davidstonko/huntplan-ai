@@ -1222,10 +1222,13 @@ export default function StarterGearScreen() {
           compact
           options={[
             {
+              // 2026-04-30 (V2.4 audit): "All Tiers" = no filter. Don't
+              // mark active or trigger pill says "(1)" when nothing is
+              // being filtered. Same fix as other "all" rows.
               key: 'all',
               label: 'All Tiers',
               hint: 'No tier filter',
-              active: selectedTier === 'all',
+              active: false,
             },
             {
               key: 'budget',
