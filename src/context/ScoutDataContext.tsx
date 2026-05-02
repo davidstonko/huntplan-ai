@@ -174,92 +174,100 @@ async function migrateAsyncStorageToWatermelon(): Promise<void> {
 
     // Migrate plans
     if (plansJson) {
-      const plansData = JSON.parse(plansJson) as HuntPlan[];
-      await database?.write(async () => {
-        for (const plan of plansData) {
-          const createdTime = new Date(plan.createdAt).getTime();
-          const updatedTime = new Date(plan.updatedAt).getTime();
+      try {
+        const plansData = JSON.parse(plansJson) as HuntPlan[];
+        await database?.write(async () => {
+          for (const plan of plansData) {
+            const createdTime = new Date(plan.createdAt).getTime();
+            const updatedTime = new Date(plan.updatedAt).getTime();
 
-          const planModel = await database
-            .get('hunt_plans')
-            .create((p: any) => {
-              p.name = plan.name;
-              p.color = plan.color;
-              p.visible = plan.visible;
-              p.parkingLat = plan.parkingPoint?.lat ?? null;
-              p.parkingLng = plan.parkingPoint?.lng ?? null;
-              p.parkingLabel = plan.parkingPoint?.label ?? null;
-              p.notes = plan.notes;
-              p.createdAt = createdTime;
-              p.updatedAt = updatedTime;
-            });
-
-          // Migrate waypoints
-          for (const wp of plan.waypoints) {
-            await database
-              .get('waypoints')
-              .create((w: any) => {
-                w.planId = planModel.id;
-                w.label = wp.label;
-                w.lat = wp.lat;
-                w.lng = wp.lng;
-                w.icon = wp.icon;
-                w.createdAt = createdTime;
+            const planModel = await database
+              .get('hunt_plans')
+              .create((p: any) => {
+                p.name = plan.name;
+                p.color = plan.color;
+                p.visible = plan.visible;
+                p.parkingLat = plan.parkingPoint?.lat ?? null;
+                p.parkingLng = plan.parkingPoint?.lng ?? null;
+                p.parkingLabel = plan.parkingPoint?.label ?? null;
+                p.notes = plan.notes;
+                p.createdAt = createdTime;
+                p.updatedAt = updatedTime;
               });
-          }
 
-          // Migrate routes
-          for (const route of plan.routes) {
-            await database
-              .get('routes')
-              .create((r: any) => {
-                r.planId = planModel.id;
-                r.label = route.label;
-                r.pointsJson = JSON.stringify(
-                  route.points.map(([lng, lat]) => ({ lat, lng }))
-                );
-                r.color = route.style; // Store style in color field temporarily
-                r.createdAt = createdTime;
-              });
-          }
+            // Migrate waypoints
+            for (const wp of plan.waypoints) {
+              await database
+                .get('waypoints')
+                .create((w: any) => {
+                  w.planId = planModel.id;
+                  w.label = wp.label;
+                  w.lat = wp.lat;
+                  w.lng = wp.lng;
+                  w.icon = wp.icon;
+                  w.createdAt = createdTime;
+                });
+            }
 
-          // Migrate areas
-          for (const area of plan.areas) {
-            await database
-              .get('drawn_areas')
-              .create((a: any) => {
-                a.planId = planModel.id;
-                a.label = area.label;
-                a.pointsJson = JSON.stringify(
-                  area.polygon.map(([lng, lat]) => ({ lat, lng }))
-                );
-                a.createdAt = createdTime;
-              });
+            // Migrate routes
+            for (const route of plan.routes) {
+              await database
+                .get('routes')
+                .create((r: any) => {
+                  r.planId = planModel.id;
+                  r.label = route.label;
+                  r.pointsJson = JSON.stringify(
+                    route.points.map(([lng, lat]) => ({ lat, lng }))
+                  );
+                  r.color = route.style; // Store style in color field temporarily
+                  r.createdAt = createdTime;
+                });
+            }
+
+            // Migrate areas
+            for (const area of plan.areas) {
+              await database
+                .get('drawn_areas')
+                .create((a: any) => {
+                  a.planId = planModel.id;
+                  a.label = area.label;
+                  a.pointsJson = JSON.stringify(
+                    area.polygon.map(([lng, lat]) => ({ lat, lng }))
+                  );
+                  a.createdAt = createdTime;
+                });
+            }
           }
-        }
-      });
+        });
+      } catch (error) {
+        console.warn('[ScoutData] Failed to migrate plans from AsyncStorage:', error);
+      }
     }
 
     // Migrate tracks
     if (tracksJson) {
-      const tracksData = JSON.parse(tracksJson) as RecordedTrack[];
-      await database?.write(async () => {
-        for (const track of tracksData) {
-          const createdTime = new Date(track.date).getTime();
-          await database
-            .get('recorded_tracks')
-            .create((t: any) => {
-              t.name = track.name;
-              t.pointsJson = JSON.stringify(track.points);
-              t.distanceMeters = track.distanceMeters;
-              t.durationSeconds = track.durationSeconds;
-              t.elevationGain = 0;
-              t.elevationLoss = 0;
-              t.visible = track.visible;
-              t.createdAt = createdTime;
+      try {
+        const tracksData = JSON.parse(tracksJson) as RecordedTrack[];
+        await database?.write(async () => {
+          for (const track of tracksData) {
+            const createdTime = new Date(track.date).getTime();
+            await database
+              .get('recorded_tracks')
+              .create((t: any) => {
+                t.name = track.name;
+                t.pointsJson = JSON.stringify(track.points);
+                t.distanceMeters = track.distanceMeters;
+                t.durationSeconds = track.durationSeconds;
+                t.elevationGain = 0;
+                t.elevationLoss = 0;
+                t.visible = track.visible;
+                t.createdAt = createdTime;
             });
         }
-      });
+        });
+      } catch (error) {
+        console.warn('[ScoutData] Failed to migrate tracks from AsyncStorage:', error);
+      }
     }
 
     // Mark migration as complete
