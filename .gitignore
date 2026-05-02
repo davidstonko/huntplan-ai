@@ -62,3 +62,6 @@ DerivedData/
 
 # macOS
 .DS_Store
+
+# Claude Code working dirs (worktrees, plugin caches)
+.claude/
