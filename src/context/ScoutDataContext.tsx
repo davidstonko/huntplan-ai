@@ -276,30 +276,65 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
   const [tracks, setTracks] = useState<RecordedTrack[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // ── Load from WatermelonDB on mount ──
+  // ── Load on mount ──
+  // 2026-05-02 (V2.4 audit, iter 11/sim): the previous load path
+  // assumed WatermelonDB was always available — line 287 dereferenced
+  // `database.get('hunt_plans')`, but `database` is null in V2.4
+  // (Phase 3 hasn't shipped). Every cold start threw a TypeError that
+  // was swallowed by the catch — plans + tracks never loaded, even
+  // though createPlan/persistPlans had been writing them to
+  // AsyncStorage all along. Users were effectively losing all their
+  // Scout data on every relaunch.
+  //
+  // New flow: prefer WatermelonDB when database is non-null (Phase 3
+  // future); otherwise fall back to AsyncStorage. The original
+  // STORAGE_KEY_PLANS / STORAGE_KEY_TRACKS keys still match what
+  // create/save have been writing to.
   useEffect(() => {
     (async () => {
       try {
-        // Perform one-time AsyncStorage migration
-        await migrateAsyncStorageToWatermelon();
+        if (database) {
+          // Phase 3 path: WatermelonDB is wired up.
+          await migrateAsyncStorageToWatermelon();
 
-        // Load all plans from WatermelonDB
-        const planModels = await database
-          .get('hunt_plans')
-          .query()
-          .fetch();
-        const plansData = await Promise.all(planModels.map(modelToHuntPlan));
-        setPlans(plansData);
+          const planModels = await database
+            .get('hunt_plans')
+            .query()
+            .fetch();
+          const plansData = await Promise.all(planModels.map(modelToHuntPlan));
+          setPlans(plansData);
 
-        // Load all tracks from WatermelonDB
-        const trackModels = await database
-          .get('recorded_tracks')
-          .query()
-          .fetch();
-        const tracksData = trackModels.map(trackModelToTrack);
-        setTracks(tracksData);
+          const trackModels = await database
+            .get('recorded_tracks')
+            .query()
+            .fetch();
+          const tracksData = trackModels.map(trackModelToTrack);
+          setTracks(tracksData);
+        } else {
+          // V2.4 path: AsyncStorage only.
+          const [plansJson, tracksJson] = await Promise.all([
+            AsyncStorage.getItem(STORAGE_KEY_PLANS),
+            AsyncStorage.getItem(STORAGE_KEY_TRACKS),
+          ]);
+          if (plansJson) {
+            try {
+              const parsed = JSON.parse(plansJson) as HuntPlan[];
+              if (Array.isArray(parsed)) setPlans(parsed);
+            } catch {
+              if (__DEV__) console.warn('[ScoutDataContext] plansJson parse failed');
+            }
+          }
+          if (tracksJson) {
+            try {
+              const parsed = JSON.parse(tracksJson) as RecordedTrack[];
+              if (Array.isArray(parsed)) setTracks(parsed);
+            } catch {
+              if (__DEV__) console.warn('[ScoutDataContext] tracksJson parse failed');
+            }
+          }
+        }
       } catch (e) {
-        if (__DEV__) console.warn('[ScoutDataContext] Failed to load from WatermelonDB', e);
+        if (__DEV__) console.warn('[ScoutDataContext] Failed to load Scout data', e);
       }
       setLoaded(true);
     })();
