@@ -1,7 +1,7 @@
 /**
  * ScoutDataContext — Manages hunt plans, waypoints, routes, areas, and GPS tracks.
- * WatermelonDB-backed persistence (V2+). Shared between ScoutScreen and DeerCamp (export).
- * Maintains backward-compatible interface with AsyncStorage migration support.
+ * AsyncStorage-backed persistence in V2. Shared between ScoutScreen and DeerCamp (export).
+ * WatermelonDB migration staged for Phase 3 backend sync (database currently null).
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
