@@ -27,12 +27,16 @@ export default function CompassOverlay({ heading: externalHeading }: CompassOver
   useEffect(() => {
     const h = externalHeading ?? 0;
     setHeading(h);
-    Animated.timing(rotateAnim, {
+    const anim = Animated.timing(rotateAnim, {
       toValue: -h,
       duration: 300,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
-    }).start();
+    });
+    anim.start();
+    return () => {
+      anim.stop();
+    };
   }, [externalHeading, rotateAnim]);
 
   const rotation = rotateAnim.interpolate({

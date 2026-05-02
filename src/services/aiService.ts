@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Config from '../config';
+import Config, { fetchWithTimeout } from '../config';
 import { ActivityMode } from '../context/ActivityModeContext';
 
 /**
@@ -140,7 +140,7 @@ export async function sendChatMessage(
   }
 
   try {
-    const response = await fetch(`${Config.API_BASE_URL}/api/v1/planner/chat`, {
+    const response = await fetchWithTimeout(`${Config.API_BASE_URL}/api/v1/planner/chat`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),

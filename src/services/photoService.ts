@@ -15,7 +15,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'react-native';
 import RNFS from 'react-native-fs';
-import Config from '../config';
+import Config, { fetchWithTimeout } from '../config';
 import { stripExifMarkers, isJpeg, bytesStripped } from './exifStripper';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -279,7 +279,7 @@ export async function uploadPhoto(
       ? 'image/png'
       : 'image/jpeg';
 
-    const urlResponse = await fetch(`${Config.API_BASE_URL}/api/v1/photos/upload-url`, {
+    const urlResponse = await fetchWithTimeout(`${Config.API_BASE_URL}/api/v1/photos/upload-url`, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -304,7 +304,7 @@ export async function uploadPhoto(
       );
     }
 
-    const uploadResponse = await fetch(uploadData.upload_url, {
+    const uploadResponse = await fetchWithTimeout(uploadData.upload_url, {
       method: 'PUT',
       headers: { 'Content-Type': contentType },
       body: photoBlob,

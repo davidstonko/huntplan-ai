@@ -117,6 +117,8 @@ export default function DeerCampScreen() {
   const createCampInputRef = useModalFocus(showCreateModal);
   const inviteInputRef = useModalFocus(showInviteModal);
   const photoCaptionInputRef = useModalFocus(showPhotoModal);
+  // Multi-tap guard: prevent double-create if user taps "Confirm" twice rapidly
+  const createCampInProgressRef = useRef(false);
   const selectedCamp = camps.find((c) => c.id === selectedCampId);
 
   // ── Handlers ──
@@ -167,13 +169,20 @@ export default function DeerCampScreen() {
   /**
    * Step 2 of create flow: user confirms the drawn rectangle. We create
    * the camp now, clear the pending name, and reset the name input.
+   * 2026-05-02 iter 21: guard against multi-tap double-create race.
    */
   const handleAreaConfirm = (area: CampArea) => {
+    if (createCampInProgressRef.current) return; // Debounce
     const name = pendingAreaName;
     if (!name) return;
-    createCamp(name, area);
-    setPendingAreaName(null);
-    setNewCampName('');
+    createCampInProgressRef.current = true;
+    try {
+      createCamp(name, area);
+      setPendingAreaName(null);
+      setNewCampName('');
+    } finally {
+      createCampInProgressRef.current = false;
+    }
   };
 
   /**

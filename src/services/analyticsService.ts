@@ -7,7 +7,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import Config from '../config';
+import Config, { fetchWithTimeout } from '../config';
 
 // Event types
 export type AnalyticsEventType =
@@ -356,7 +356,7 @@ export const flushEvents = async (): Promise<void> => {
     }
 
     // Send to backend
-    const response = await fetch(`${Config.API_BASE_URL}/api/v1/analytics/events`, {
+    const response = await fetchWithTimeout(`${Config.API_BASE_URL}/api/v1/analytics/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
