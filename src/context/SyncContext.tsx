@@ -1,6 +1,9 @@
 /**
  * @file SyncContext.tsx
- * @description React context for managing WatermelonDB sync state and lifecycle.
+ * @description React context for managing backend sync state and lifecycle.
+ * Wraps src/services/syncService.ts which uses AsyncStorage + axios under
+ * the hood. The pull/push protocol matches watermelondb-sync's wire format
+ * so the storage layer can be swapped to WatermelonDB in Phase 3.
  *
  * Tracks:
  * - lastSyncedAt: timestamp of last successful sync

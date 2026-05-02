@@ -1,8 +1,14 @@
 /**
  * @file syncService.ts
- * @description WatermelonDB sync adapter for MDHuntFishOutdoors.
+ * @description Bi-directional sync adapter between local AsyncStorage and the
+ * FastAPI backend. Originally drafted as a WatermelonDB adapter (the JSDoc
+ * said so until 2026-05-02) but the actual implementation never wired
+ * WatermelonDB up — every cache lookup goes through AsyncStorage + axios.
  *
- * Handles bi-directional sync between local WatermelonDB and FastAPI backend.
+ * The pull/push protocol matches the watermelondb-sync shape so the underlying
+ * storage layer can be swapped to WatermelonDB in Phase 3 without breaking
+ * the wire format.
+ *
  * Uses pull/push pattern:
  *   - GET /api/v1/sync/pull?last_pulled_at=TIMESTAMP
  *   - POST /api/v1/sync/push with { changes: {...} }
