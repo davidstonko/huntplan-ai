@@ -79,20 +79,25 @@ export default function FishCampScreen() {
 
   // Load from AsyncStorage
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
-      if (data) {
-        const loaded: FishCamp[] = JSON.parse(data);
-        // 2026-05-01 (V2.4 audit, iter 3): backfill inviteCode for
-        // legacy records. New camps generate eagerly (line 120), but
-        // anything created before today might be missing the field.
-        // Clean migration so every persisted FishCamp has an inviteCode.
-        const migrated = loaded.map((c) =>
-          typeof c?.inviteCode === 'string' && c.inviteCode.length > 0
-            ? c
-            : { ...c, inviteCode: generateInviteCode() },
-        );
-        setCamps(migrated);
-      }
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((data) => {
+        if (data) {
+          try {
+            const loaded: FishCamp[] = JSON.parse(data);
+            // 2026-05-01 (V2.4 audit, iter 3): backfill inviteCode for
+            // legacy records. New camps generate eagerly (line 120), but
+            // anything created before today might be missing the field.
+            // Clean migration so every persisted FishCamp has an inviteCode.
+            const migrated = loaded.map((c) =>
+              typeof c?.inviteCode === 'string' && c.inviteCode.length > 0
+                ? c
+                : { ...c, inviteCode: generateInviteCode() },
+            );
+            setCamps(migrated);
+          } catch (e) {
+            if (__DEV__) console.warn('[FishCampScreen] Failed to load fish camps:', e);
+          }
+        }
     });
   }, []);
 
