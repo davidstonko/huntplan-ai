@@ -108,11 +108,17 @@ export default function ActivityModePicker() {
 
   return (
     <>
-      {/* Header Title Button */}
+      {/* Header Title Button \u2014 2026-05-02 (V2.4 audit, iter 12):
+          added accessibilityRole + label so VoiceOver announces this
+          as "Hunt mode, button" instead of just reading the visible
+          glyph + label. Same hint pattern used on the dropdown rows. */}
       <TouchableOpacity
         style={styles.headerButton}
         onPress={openDropdown}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${config.label} mode`}
+        accessibilityHint="Tap to switch between Hunt, Fish, Camp, and Hike"
       >
         <View style={styles.headerMarkWrap}>
           <ModeLogo mode={activeMode} size="sm" accent={config.accent} />
@@ -142,6 +148,13 @@ export default function ActivityModePicker() {
                   style={[styles.dropdownItem, isActive && styles.dropdownItemActive]}
                   onPress={() => selectMode(mode)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isActive
+                      ? `${modeConf.label}, current mode`
+                      : `Switch to ${modeConf.label}`
+                  }
+                  accessibilityHint={modeConf.sublabel}
                 >
                   <View style={styles.rowMarkWrap}>
                     <ModeLogo mode={mode} size="md" accent={modeConf.accent} />
