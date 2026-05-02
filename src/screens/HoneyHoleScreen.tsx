@@ -460,12 +460,21 @@ export default function HoneyHoleScreen() {
           {/* 2026-04-26: defaultSettings + downtown Baltimore fallback
               (39.2904, -76.6122) — matches the Deer Camp pattern. User
               can pan/zoom freely + use address search to navigate. */}
+          {/* 2026-05-02 (V2.4 audit, iter 16): inMaryland geofence
+              before applying user GPS as initial center. Same fix as
+              ScoutScreen and the map screens — without it, an out-of-
+              state user (or iOS Simulator on a CA-based dev machine)
+              opens to their own location instead of the MD picker
+              cluster the screen exists to surface. */}
           <MapboxGL.Camera
             ref={cameraRef}
             defaultSettings={{
-              centerCoordinate: location
-                ? [location.longitude, location.latitude]
-                : [-76.6122, 39.2904],
+              centerCoordinate:
+                location &&
+                location.longitude >= -79.5 && location.longitude <= -74.9 &&
+                location.latitude >= 37.8 && location.latitude <= 39.8
+                  ? [location.longitude, location.latitude]
+                  : [-76.6122, 39.2904],
               zoomLevel: 12,
             }}
           />

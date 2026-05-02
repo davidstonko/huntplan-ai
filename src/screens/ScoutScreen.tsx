@@ -122,12 +122,24 @@ export default function ScoutScreen() {
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const defaultCenter: [number, number] = [-76.6413, 39.0458];
-  const centerCoords = location ? [location.longitude, location.latitude] : defaultCenter;
+  // 2026-05-02 (V2.4 audit, iter 16): mirror the inMaryland geofence
+  // already present on FishMapScreen / CampMapScreen / HikeMapScreen.
+  // Live simulator audit caught Scout opening to San Francisco when
+  // run on the iOS Simulator (default device location is Cupertino).
+  // Without the geofence, an out-of-state user sees their own coords
+  // instead of the Maryland public-lands cluster the screen exists
+  // to surface — every pin on screen would be 3000+ miles away.
+  const inMaryland = !!location &&
+    location.longitude >= -79.5 && location.longitude <= -74.9 &&
+    location.latitude >= 37.8 && location.latitude <= 39.8;
+  const centerCoords: [number, number] = inMaryland && location
+    ? [location.longitude, location.latitude]
+    : defaultCenter;
 
   // 2026-04-30: zoom buttons added (+/− pair, bottom-right). Mirrors the
   // pattern from MapScreen / FishMapScreen / HikeMapScreen. Scout was the
   // only map missing them, surfaced during the V2.4 UI audit.
-  const [currentZoom, setCurrentZoom] = useState<number>(location ? 10 : 7);
+  const [currentZoom, setCurrentZoom] = useState<number>(inMaryland ? 10 : 7);
   const handleZoomIn = useCallback(() => {
     const newZoom = Math.min(currentZoom + 1, 18);
     setCurrentZoom(newZoom);
@@ -325,7 +337,11 @@ export default function ScoutScreen() {
           ref={cameraRef}
           defaultSettings={{
             centerCoordinate: centerCoords as [number, number],
-            zoomLevel: location ? 10 : 7,
+            // 2026-05-02 (V2.4 audit, iter 16): use inMaryland (not raw
+            // location) for the zoom level too. An out-of-state user
+            // gets the wider regional zoom (7) so MD lands appear in
+            // frame after the camera pans to defaultCenter.
+            zoomLevel: inMaryland ? 10 : 7,
           }}
           animationMode="moveTo"
           animationDuration={800}
