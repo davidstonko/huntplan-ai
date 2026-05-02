@@ -59,7 +59,13 @@ type MarkupDrawParams = {
   };
 };
 
-const MARYLAND_CENTROID: [number, number] = [-76.6122, 39.0458];
+// 2026-05-01 (V2.4 audit, iter 10): aligned with the canonical
+// Baltimore centroid used elsewhere in the app (DeerCampContext,
+// ScoutScreen, BestTimesScreen, exportService tests). The previous
+// -76.6122 longitude was slightly different (~1.6mi east) and made
+// the markup-draw default starting view drift away from the
+// expected Baltimore-area land cluster.
+const MARYLAND_CENTROID: [number, number] = [-76.6413, 39.0458];
 
 export default function MarkupDrawScreen() {
   const route = useRoute<RouteProp<MarkupDrawParams, 'MarkupDraw'>>();
