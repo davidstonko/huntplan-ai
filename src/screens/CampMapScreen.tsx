@@ -29,6 +29,7 @@ import {
 import MapboxGL from '@rnmapbox/maps';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useLocation } from '../hooks/useLocation';
+import { isInMaryland } from '../utils/validateCoord';
 import DisclaimerBanner from '../components/common/DisclaimerBanner';
 import FilterPicker from '../components/common/FilterPicker';
 import UserWaypointLayer from '../components/map/UserWaypointLayer';
@@ -239,7 +240,7 @@ export default function CampMapScreen() {
   }, []);
 
   const centerOnLocation = useCallback(() => {
-    if (location && cameraRef.current) {
+    if (location && cameraRef.current && isInMaryland(location.longitude, location.latitude)) {
       cameraRef.current.setCamera({
         centerCoordinate: [location.longitude, location.latitude],
         zoomLevel: 12,
