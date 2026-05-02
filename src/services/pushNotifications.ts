@@ -77,7 +77,7 @@ export async function requestPermission(): Promise<boolean> {
       settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
       settings.authorizationStatus === AuthorizationStatus.PROVISIONAL;
 
-    if (!granted) {
+    if (!granted && __DEV__) {
       // eslint-disable-next-line no-console
       console.log('[Push] Permission not granted:', settings.authorizationStatus);
     }
@@ -191,8 +191,10 @@ export async function scheduleSeasonAlerts(): Promise<void> {
 
   const granted = await hasPermission();
   if (!granted) {
-    // eslint-disable-next-line no-console
-    console.log('[Push] Skip schedule — no permission');
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('[Push] Skip schedule — no permission');
+    }
     return;
   }
 
@@ -232,8 +234,10 @@ export async function scheduleSeasonAlerts(): Promise<void> {
     }
   }
 
-  // eslint-disable-next-line no-console
-  console.log(`[Push] Scheduled ${scheduled} season alerts`);
+  if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.log(`[Push] Scheduled ${scheduled} season alerts`);
+  }
 }
 
 /**
@@ -243,8 +247,10 @@ export async function cancelSeasonAlerts(): Promise<void> {
   try {
     const ids = MD_SEASON_OPENINGS.map((s) => SEASON_ALERT_PREFIX + s.id);
     await notifee.cancelTriggerNotifications(ids);
-    // eslint-disable-next-line no-console
-    console.log('[Push] Cancelled season alerts');
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('[Push] Cancelled season alerts');
+    }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.warn('[Push] Cancel season alerts failed:', err);

@@ -166,11 +166,13 @@ export const shareCampInvite = async (
       title: `Deer Camp Invite: ${campName}`,
     });
 
-    if (result.action === Share.dismissedAction) {
+    if (result.action === Share.dismissedAction && __DEV__) {
       console.log('[deepLinkService] Share sheet dismissed');
     }
   } catch (error) {
-    console.error('[deepLinkService] Error sharing camp invite:', error);
+    if (__DEV__) {
+      console.error('[deepLinkService] Error sharing camp invite:', error);
+    }
     Alert.alert(
       'Share Failed',
       'Unable to share the camp invite. Please try again.'

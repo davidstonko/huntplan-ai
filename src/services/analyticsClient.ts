@@ -95,8 +95,12 @@ export async function flushAnalyticsQueue(analyticsEnabled: boolean = true): Pro
 
     // Clear queue on success
     await AsyncStorage.removeItem(ANALYTICS_QUEUE_KEY);
-    // eslint-disable-next-line no-console
-    console.log(`[Analytics] Flushed ${queue.length} events`);
+    // 2026-05-02 (V2.4 audit, iter 11): wrapped in __DEV__ so prod
+    // builds don't spam Xcode logs every time a queue flushes.
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log(`[Analytics] Flushed ${queue.length} events`);
+    }
   } catch (err) {
     // Network error or server error — leave queue intact for retry
     // eslint-disable-next-line no-console
