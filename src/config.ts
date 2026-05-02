@@ -129,4 +129,23 @@ if (!MAPBOX_ACCESS_TOKEN) {
   );
 }
 
+
+/**
+ * Helper to fetch with timeout (30s default).
+ * Guards against Render backend cold-starts (~30s) and hung requests.
+ */
+export async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = 30000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export default Config;

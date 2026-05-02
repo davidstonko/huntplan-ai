@@ -74,7 +74,9 @@ export default function App() {
         initAuth().then((authState) => {
           if (authState.isAuthenticated && authState.accessToken) {
             // Also store under 'auth_token' for simple fetch() calls
-            AsyncStorage.setItem('auth_token', authState.accessToken);
+            AsyncStorage.setItem('auth_token', authState.accessToken).catch(() => {
+              if (__DEV__) console.error('[Auth] Failed to store auth token');
+            });
           }
           console.log('[Auth]', authState.isAuthenticated ? 'Authenticated' : 'Offline mode');
         }).catch(() => {

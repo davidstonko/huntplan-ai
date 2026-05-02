@@ -689,12 +689,18 @@ async function _getPendingQueue(): Promise<PendingAction[]> {
   try {
     const json = await AsyncStorage_v23.getItem(PENDING_QUEUE_KEY);
     return json ? JSON.parse(json) : [];
-  } catch { return []; }
+  } catch (error) {
+    if (__DEV__) console.error('[campSync] Failed to parse pending queue:', error);
+    return [];
+  }
 }
 
 async function _getSyncTimestamps(): Promise<Record<string, string>> {
   try {
     const json = await AsyncStorage_v23.getItem(SYNC_TIMESTAMP_KEY);
     return json ? JSON.parse(json) : {};
-  } catch { return {}; }
+  } catch (error) {
+    if (__DEV__) console.error('[campSync] Failed to parse sync timestamps:', error);
+    return {};
+  }
 }
