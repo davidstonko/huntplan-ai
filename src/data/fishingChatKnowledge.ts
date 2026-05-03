@@ -308,6 +308,24 @@ function getFishingSmartResponseRaw(userQuery: string): ChatResponse | null {
     return handleCommunityFishingReportsQuery(userQuery);
   }
 
+  // 2026-05-02 (V2.4 audit, DNR research pass): added 3 specific
+  // intents pulled from the May 2026 sweep. Ordering matters:
+  // is2026StockingProgramQuery before isStockingQuery (already
+  // dispatched above) — actually placed AFTER all earlier intents
+  // so the more-general stocking handler still wins on plain
+  // "when is stocking" queries.
+  if (is2026StockingProgramQuery(q)) {
+    return handle2026StockingProgramQuery(userQuery);
+  }
+
+  if (isSeniorLicenseQuery(q)) {
+    return handleSeniorLicenseQuery(userQuery);
+  }
+
+  if (isPFDQuery(q)) {
+    return handlePFDQuery(userQuery);
+  }
+
   // No match found
   return null;
 }
@@ -342,6 +360,29 @@ function isTideQuery(q: string): boolean {
 
 function isStockingQuery(q: string): boolean {
   return /stock|trout stocking|stock report|when stocked|release|put in/.test(q);
+}
+
+// 2026-05-02 (V2.4 audit, DNR research): added detector for the 2026
+// stocking enhancement program. DNR is stocking 240,000 trout this
+// spring (26% increase). Youth-only day March 21, opening day
+// March 28. Hotline 800-688-3467 option 1 for recorded weekly update.
+function is2026StockingProgramQuery(q: string): boolean {
+  return /enhanced.*stock|2026 stock|240,?000|how many trout|spring stock|youth.*trout|trout opening day|trout hotline/.test(q);
+}
+
+// 2026-05-02 (V2.4 audit, DNR research): senior consolidated license
+// changed in 2025 — trout stamp no longer included. Seniors who fish
+// for trout must buy the $20 trout stamp separately. Added detector
+// since this is a recurring Q for 65+ anglers.
+function isSeniorLicenseQuery(q: string): boolean {
+  return /senior|65|65\+|elderly|consolidated|seniors? license|senior fishing|over 65/.test(q);
+}
+
+// 2026-05-02 (V2.4 audit, DNR research): added detector for boating
+// safety / PFD / boat ramps. Memory had safety as a generic intent
+// but no specific PFD requirement coverage.
+function isPFDQuery(q: string): boolean {
+  return /\bpfd\b|life jacket|life vest|coast guard|type i\b|type ii\b|type iii\b|type iv\b|type v\b|wearable|throwable|child.*pfd|pwc.*pfd/.test(q);
 }
 
 function isLocationQuery(q: string): boolean {
@@ -2360,6 +2401,109 @@ function handleCommunityFishingReportsQuery(userQuery: string): ChatResponse {
       'Latest stocking report?',
       'Current Chesapeake stripers bite?',
       'Water temperature today?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2026-05-02 — DNR research pass handlers (V2.4)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handle2026StockingProgramQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**2026 Spring Trout Stocking Program — Enhanced**\n\n' +
+      'MD DNR is stocking ~240,000 adult trout this spring — a 26% ' +
+      'increase over 2025, thanks to better summer conditions at the ' +
+      'Bear Creek hatchery.\n\n' +
+      '**Stocking timing:**\n' +
+      '• Central / southern / eastern counties: stocking starts February\n' +
+      '• Allegany + Garrett: stocking starts March, runs through May\n' +
+      '• Species: brown, golden rainbow, rainbow trout (no brook from put-and-take)\n\n' +
+      '**Key dates:**\n' +
+      '• March 21 — Youth-Only Trout Fishing Day (kids <16, 2-fish limit)\n' +
+      '• March 28 — Trout Opening Day (closure-period waters reopen)\n\n' +
+      '**Stocking updates:**\n' +
+      '• Daily on the DNR trout-stocking webpage\n' +
+      '• Weekly Friday afternoon on Facebook / X / FishBrain\n' +
+      '• Phone hotline: 800-688-3467, press option 1 (recorded weekly)\n\n' +
+      '**Email signup:** dnr.maryland.gov news service for stocking ' +
+      'alerts as soon as a water gets stocked.',
+    citations: [
+      'https://news.maryland.gov/dnr/2026/02/05/maryland-dnr-offers-enhanced-trout-stocking-program-for-2026/',
+      'https://dnr.maryland.gov/fisheries/Documents/MD_DNR-2026MonthlyStockingSchedule.pdf',
+      'https://dnr.maryland.gov/fisheries/pages/trout/stocking.aspx',
+    ],
+    followUpSuggestions: [
+      'When is opening day?',
+      'Which streams are stocked?',
+      'How do I sign up for stocking alerts?',
+    ],
+  };
+}
+
+function handleSeniorLicenseQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Senior Fishing License (65+)**\n\n' +
+      'Maryland residents 65+ qualify for the **Resident Senior ' +
+      'Consolidated License**, which covers fresh + tidal Bay + ' +
+      'Atlantic / coastal-bay fishing for 365 days from purchase.\n\n' +
+      '**2025 change:**\n' +
+      'The Senior Consolidated License **no longer includes the ' +
+      'trout stamp**. Seniors who fish for trout must now buy the ' +
+      '**$20 Resident Trout Stamp separately**.\n\n' +
+      '**Other senior provisions:**\n' +
+      '• Free fishing days don\'t require a license at any age — ' +
+      'first 2 Saturdays of June + July 4\n' +
+      '• Universal Disability Pass available for seniors with ' +
+      'qualifying disability\n' +
+      '• Lifetime license is one-time purchase, no annual renewal\n\n' +
+      '**How to buy:** Maryland Outdoors licensing system (online), ' +
+      'any DNR license agent, or 866-344-8889 Mon-Fri 8:30am-4:30pm.',
+    citations: [
+      'https://dnr.maryland.gov/pages/service_fishing_license.aspx',
+      'https://www.eregulations.com/maryland/fishing/licenses-fees',
+    ],
+    followUpSuggestions: [
+      'Do I need a trout stamp?',
+      'When are free fishing days?',
+      'How do I get a Universal Disability Pass?',
+    ],
+  };
+}
+
+function handlePFDQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Boating PFD Requirements**\n\n' +
+      '**On any vessel:**\n' +
+      '• At least one wearable Type I, II, III, or V PFD per person\n' +
+      '• All PFDs must be USCG-approved, in serviceable condition, ' +
+      'readily accessible, properly sized\n\n' +
+      '**Boats >16 ft (recreational):**\n' +
+      '• Plus at least one Type IV (throwable — ring buoy or seat ' +
+      'cushion)\n\n' +
+      '**Children under 13:**\n' +
+      '• Must wear a PFD at all times while underway on any vessel ' +
+      '<21 ft, unless below deck / in an enclosed cabin / vessel ' +
+      'is moored or anchored\n\n' +
+      '**Personal watercraft (PWC):**\n' +
+      '• ALL occupants wear a PFD while underway, no size exemption\n\n' +
+      '**Don\'t cut corners:**\n' +
+      '• PFDs in a sealed bag don\'t count as "readily accessible"\n' +
+      '• Type V inflatables only count if worn, not stowed\n' +
+      '• A throwable Type IV alone doesn\'t satisfy the wearable rule\n\n' +
+      'Maryland Natural Resources Police actively boards on the Bay; ' +
+      'fines start ~$50 per missing/expired PFD.',
+    citations: [
+      'https://dnr.maryland.gov/nrp/pages/boatingsafety/state-requirements-for-recreational-vessels.aspx',
+      'https://dnr.maryland.gov/boating/documents/recreationvessels.pdf',
+    ],
+    followUpSuggestions: [
+      'Where can I find boat ramps?',
+      'What\'s the BUI law?',
+      'Do I need a boating safety course?',
     ],
   };
 }

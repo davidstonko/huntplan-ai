@@ -688,9 +688,13 @@ const styles = StyleSheet.create({
   },
 
   // ── Tool hint ──
+  // 2026-05-02 (V2.4 audit, overlap-check pass): top moved 12 → 46 so
+  // the active-tool hint banner (e.g. "Tap map to place a waypoint")
+  // clears the Mapbox scale ruler at top:0 of the map. Same ruler-
+  // clearance pattern as countBadge on the other map screens.
   toolHint: {
     position: 'absolute',
-    top: 12,
+    top: 46,
     left: 12,
     right: 72,
     backgroundColor: Colors.overlay,

@@ -2276,8 +2276,14 @@ const styles = StyleSheet.create({
   // retired — kept the slot id (top: 130) so the picker lines up where
   // the row used to.
   overlayPickerWrap: {
+    // 2026-05-02 (V2.4 audit, user-flagged): top moved 130 → 144 so
+    // the Overlays pill clears the MapFilterPanel collapsed badge
+    // above (now at top:92, ~36pt collapsed height ends ~128pt) plus
+    // 8pt breathing room. Earlier value of 130 sat under the panel
+    // when the "Filters ▶" pill was showing — visible in user
+    // screenshot.
     position: 'absolute',
-    top: 130,
+    top: 144,
     left: 12,
     zIndex: 8,
   },

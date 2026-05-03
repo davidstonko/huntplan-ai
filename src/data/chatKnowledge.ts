@@ -368,6 +368,10 @@ function getSmartResponseRaw(userQuery: string): ChatResponse {
     return handleBowfishingQuery(userQuery);
   }
 
+  if (isHarvestStatsQuery(q)) {
+    return handleHarvestStatsQuery(userQuery);
+  }
+
   // Default: helpful fallback
   return getDefaultResponse();
 }
@@ -486,6 +490,16 @@ function isSikaDeerQuery(q: string): boolean {
 // license tier, season calendar, and reporting flow.
 function isTrappingQuery(q: string): boolean {
   return /trap|trapping|trapper|furbearer|fur-bear|beaver|fisher\b|muskrat|mink\b|raccoon|opossum|possum|skunk|weasel|coyote|conibear|foothold|bodygrip|fur season|fur taking|fur-taker/.test(q);
+}
+
+// 2026-05-02 (V2.4 audit, DNR research pass): added detector for
+// statewide harvest stats. The 2024-2025 deer harvest report (DNR
+// Big Game Report) reported 84,201 deer (15.9% above prior year),
+// and spring 2025 turkey harvest was 4,851 birds. Users asking
+// "how many deer were taken in MD last year" now hit a real handler
+// instead of the default fallback.
+function isHarvestStatsQuery(q: string): boolean {
+  return /how many (deer|turkey|bear|sika)|harvest (stat|report|number|total)|big game report|deer report|turkey report|brood survey|how many.*hunters|annual harvest|statewide harvest|last year.*harvest/.test(q);
 }
 
 // 2026-05-02 (V2.4 audit, DNR research pass): bowfishing for invasive
@@ -1585,6 +1599,52 @@ function handleBowfishingQuery(_userQuery: string): ChatResponse {
       'Do I need a special license to bowfish?',
       'What\'s the snakehead bag limit?',
       'When is bowfishing season?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HARVEST STATS QUERY HANDLER
+// 2026-05-02 (V2.4 audit, DNR research): added so users asking "how many
+// deer were taken last year in MD" hit a real handler instead of the
+// default fallback. Source: MD DNR Big Game Report 2024-25, Wild Turkey
+// Survey 2025.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleHarvestStatsQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Big Game Harvest Report (2024-2025)**\n\n' +
+      'Maryland deer hunters harvested 84,201 deer from Sept. 6, 2024 ' +
+      'through Feb. 4, 2025 — a 15.9% increase over 2023-24 and 10.4% ' +
+      'above the 5-year average.\n\n' +
+      '**Deer breakdown:**\n' +
+      '• Antlered white-tailed: 32,148\n' +
+      '• Antlerless white-tailed: 47,271\n' +
+      '• Antlered sika: 2,143\n' +
+      '• Antlerless sika: 2,639\n\n' +
+      '**Spring 2025 turkey harvest:** 4,851 birds\n\n' +
+      '**Wild Turkey Brood Survey 2025:**\n' +
+      '• 2.6 poults/hen — slightly below the 15-year average (2.5)\n' +
+      '• 54% of hens observed with young\n' +
+      '• Average brood size: 3.7 poults\n' +
+      '• Below average productivity but the moderate output of ' +
+      '2021-2024 should sustain healthy populations\n\n' +
+      '**Where the harvest comes from:**\n' +
+      '• Frederick + Carroll lead all-deer harvest\n' +
+      '• Garrett dominates bear (lottery counties only)\n' +
+      '• Dorchester carries the sika harvest (Eastern Shore marshes)\n\n' +
+      'DNR publishes the full Big Game Report each Feb-Mar. Citation ' +
+      'in the resource hub.',
+    citations: [
+      'https://news.maryland.gov/dnr/2025/02/14/maryland-hunters-harvest-84201-deer-for-2024-2025-season/',
+      'https://dnr.maryland.gov/wildlife/Documents/maryland-Big-Game-Report_2024-25.pdf',
+      'https://dnr.maryland.gov/wildlife/documents/wt_observe_survey.pdf',
+    ],
+    followUpSuggestions: [
+      'Where do most deer get harvested?',
+      'How does sika compare to whitetail harvest?',
+      'When does turkey nesting succeed in MD?',
     ],
   };
 }

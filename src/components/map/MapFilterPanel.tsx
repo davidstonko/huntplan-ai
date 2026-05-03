@@ -255,9 +255,13 @@ const FilterChip: React.FC<FilterChipProps> = ({ label, active, onToggle }) => (
 
 const styles = StyleSheet.create({
   panelContainer: {
+    // 2026-05-02 (V2.4 audit, user-flagged): top moved 70 → 92 to
+    // clear the countBadge above (top:46, ~36pt height = ends ~82pt).
+    // Previous top:70 overlapped the badge so the "Filters ▶" toggle
+    // visually merged into the count text. Added 8pt breathing room.
     position: 'absolute',
     left: 12,
-    top: 70,
+    top: 92,
     backgroundColor: Colors.surfaceElevated,
     borderRadius: 12,
     borderLeftWidth: 3,
