@@ -355,6 +355,19 @@ function getSmartResponseRaw(userQuery: string): ChatResponse {
     return handleSikaDeerQuery(userQuery);
   }
 
+  // 2026-05-02 (DNR research pass): trapping was a class-miss until
+  // today. Keep the dispatch ordered so trapping is checked AFTER
+  // sika (which uses 'eastern shore' that could falsely match) and
+  // BEFORE the default — every query that mentions 'trap' or any of
+  // the 11 furbearer species should hit the dedicated handler.
+  if (isTrappingQuery(q)) {
+    return handleTrappingQuery(userQuery);
+  }
+
+  if (isBowfishingQuery(q)) {
+    return handleBowfishingQuery(userQuery);
+  }
+
   // Default: helpful fallback
   return getDefaultResponse();
 }
@@ -463,6 +476,25 @@ function isSmallGameQuery(q: string): boolean {
 
 function isSikaDeerQuery(q: string): boolean {
   return /sika|sika deer|elk|asian elk|eastern shore|fishing bay|taylor's island/.test(q);
+}
+
+// 2026-05-02 (V2.4 audit, DNR research pass): trapping/furbearer was a
+// CLASS MISS — the entire activity (beaver, fisher, fox, muskrat, mink,
+// raccoon, opossum, skunk, coyote, weasel) had zero coverage in the
+// hunt chat-knowledge. App previously modeled everything as either
+// hunt or fish; trapping uses many of the same lands but its own
+// license tier, season calendar, and reporting flow.
+function isTrappingQuery(q: string): boolean {
+  return /trap|trapping|trapper|furbearer|fur-bear|beaver|fisher\b|muskrat|mink\b|raccoon|opossum|possum|skunk|weasel|coyote|conibear|foothold|bodygrip|fur season|fur taking|fur-taker/.test(q);
+}
+
+// 2026-05-02 (V2.4 audit, DNR research pass): bowfishing for invasive
+// snakehead and blue catfish removes ~20% of the snakehead population
+// annually per DNR's 2026 study. We had bowfishing in fish chat but
+// no cross-link from hunt — bowhunters often add bowfishing as a
+// summer extension of the same skillset.
+function isBowfishingQuery(q: string): boolean {
+  return /bow ?fish|bowfishing|gigging|gar |snakehead|invasive fish|blue catfish/.test(q);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1453,6 +1485,106 @@ function handleSikaDeerQuery(userQuery: string): ChatResponse {
       'Where are sika deer found in Maryland?',
       'Do I need a sika stamp?',
       'When is sika season?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRAPPING / FURBEARER QUERY HANDLER
+// 2026-05-02 (V2.4 audit, DNR research): added because the entire trapping
+// activity was a class-miss in the chat knowledge. Source: MD DNR Hunting
+// & Trapping Guide 2025-2026, Sunday Furbearer Hunting regulations.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleTrappingQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Trapping & Furbearer Hunting**\n\n' +
+      'Maryland has 11 furbearer species that may be trapped or hunted. ' +
+      'A separate Furtaker license is required for trapping; the General ' +
+      'Hunting license alone does not cover trap-set activity.\n\n' +
+      '**Furbearer Species:**\n' +
+      '• Beaver, Fisher, Fox (red & gray), Muskrat, Mink\n' +
+      '• Raccoon, Opossum, Skunk, Coyote, Long-tailed Weasel\n' +
+      '• Bobcat is protected — no open season\n\n' +
+      '**Licenses & Permits:**\n' +
+      '• Resident Furtaker (trapping) license: $30.50\n' +
+      '• Nonresident Furtaker license: $250\n' +
+      '• Trapper Education course required for first-time license holders\n' +
+      '• Trapping on someone else\'s property requires written permission\n\n' +
+      '**Season Highlights (2025-2026):**\n' +
+      '• Most furbearer trapping seasons run roughly Nov–Feb\n' +
+      '• Sunday furbearer HUNTING (not trapping) is allowed in ' +
+      'specific WMAs in Allegany, Cecil, Garrett, St. Mary\'s, ' +
+      'Washington, Wicomico, and Worcester counties\n' +
+      '• Coyote may be hunted year-round, no bag limit\n\n' +
+      '**Legal Trap Types:**\n' +
+      '• Foothold (offset/padded jaws preferred)\n' +
+      '• Conibear/bodygrip (max size restrictions vary by species)\n' +
+      '• Cage/box traps for raccoon, opossum, skunk\n' +
+      '• Snares are restricted — check current regs\n\n' +
+      'Always verify current dates, bag limits, and trap-type rules ' +
+      'on the Maryland DNR Hunters Guide before setting a trapline.',
+    citations: [
+      'https://dnr.maryland.gov/huntersguide/pages/allspecies.aspx',
+      'https://dnr.maryland.gov/wildlife/pages/hunt_trap/home.aspx',
+    ],
+    followUpSuggestions: [
+      'Where can I trap on public land?',
+      'When is coyote season?',
+      'What\'s the muskrat season?',
+      'Is Trapper Education the same as Hunter Education?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOWFISHING QUERY HANDLER
+// 2026-05-02 (V2.4 audit, DNR research): bowfishing for invasive snakehead
+// + blue catfish removes ~20% of the snakehead population annually per
+// DNR's 2026 study. Bowhunters often add it as a summer extension.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleBowfishingQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Bowfishing in Maryland**\n\n' +
+      'A natural summer activity for bowhunters, and one of the most ' +
+      'effective tools for invasive-species removal in the Chesapeake.\n\n' +
+      '**Legal Targets:**\n' +
+      '• Northern Snakehead (Channa) — INVASIVE, no limit\n' +
+      '• Blue Catfish — INVASIVE, no limit, top predator on blue crabs/perch\n' +
+      '• Common Carp — non-game, no limit\n' +
+      '• Longnose & Spotted Gar — open season, check current regs\n' +
+      '• Bowfin — non-game\n\n' +
+      'Game fish (rockfish, largemouth, smallmouth, panfish, etc.) ' +
+      '**may not** be taken with archery tackle.\n\n' +
+      '**Why it matters:**\n' +
+      '• MD DNR 2026 study: bowfishing harvests ~20% of the upper-bay ' +
+      'snakehead population each year\n' +
+      '• Bowfishermen take larger, more-fecund females than hook-and-line ' +
+      'anglers — disproportionately effective at limiting reproduction\n\n' +
+      '**License:**\n' +
+      '• A regular Maryland fishing license covers bowfishing\n' +
+      '• No archery-specific stamp needed for fish\n' +
+      '• Crabbing/oyster license does NOT count\n\n' +
+      '**Where to go:**\n' +
+      '• Upper Chesapeake Bay tributaries (Susquehanna Flats, Sassafras, ' +
+      'Bohemia, Elk rivers)\n' +
+      '• Patapsco River system\n' +
+      '• Tidal Potomac (Mattawoman, Piscataway)\n\n' +
+      'Several charter captains run dedicated bowfishing trips at night ' +
+      'with generator-powered lights — check the Local Pros section in ' +
+      'the Fish tab for guides.',
+    citations: [
+      'https://news.maryland.gov/dnr/2026/02/25/dnr-study-bowfishing-contributes-heavily-to-chesapeake-channa-harvest/',
+      'https://www.eregulations.com/maryland/fishing/invasive-species',
+    ],
+    followUpSuggestions: [
+      'Where can I bowfish for snakehead?',
+      'Do I need a special license to bowfish?',
+      'What\'s the snakehead bag limit?',
+      'When is bowfishing season?',
     ],
   };
 }
