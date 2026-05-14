@@ -319,6 +319,10 @@ function getSmartResponseRaw(userQuery: string): ChatResponse {
     return handleFederalLandsQuery(userQuery);
   }
 
+  if (isConservationOrgsQuery(q)) {
+    return handleConservationOrgsQuery(userQuery);
+  }
+
   if (isWaterfowlQuery(q)) {
     return handleWaterfowlQuery(userQuery);
   }
@@ -443,7 +447,11 @@ function isSpecialHuntsQuery(q: string): boolean {
 }
 
 function isFederalLandsQuery(q: string): boolean {
-  return /blackwater|federal|refuge|national wildlife|eastern neck|patuxent|nwf/.test(q);
+  return /blackwater|federal|refuge|national wildlife|eastern neck|patuxent|nwf|c&o canal|chesapeake.{0,5}ohio|recreation\.gov|non.{0,2}lead|nontoxic|straight.{0,2}wall/.test(q);
+}
+
+function isConservationOrgsQuery(q: string): boolean {
+  return /trout unlimited|ducks unlimited|nwtf|wild turkey federation|sportsmen|conservation org|cbf|chesapeake bay foundation|qdma|backcountry hunters|bha|coastal conservation|cca|izaak walton|banquet|chapter meeting|volunteer.{0,20}(steward|conservation)/.test(q);
 }
 
 function isWaterfowlQuery(q: string): boolean {
@@ -1000,15 +1008,21 @@ function handleCWDQuery(userQuery: string): ChatResponse {
       '✓ **Allowed:** Deboned meat only\n' +
       '✗ **NOT Allowed:** Spine, backbone, skull, head, or bone-in pieces\n' +
       '✗ **NOT Allowed:** Transport of whole carcasses out of CWDMA\n\n' +
+      '**Cumulative cases:** 354 deer confirmed CWD-positive since first detection (Allegany County, Nov 2010). The 2024 annual surveillance survey detected 62 positives — up from 52 in 2023 and 38 in 2022. Allegany + Washington remain the hotspots.\n\n' +
+      '**Sika & CWD:** Sika deer have NOT tested positive in MD to date. Susceptibility in cervid relatives is not fully established; DNR continues surveillance through hunter-submitted heads (free testing).\n\n' +
       '**Testing & Surveillance:**\n' +
       'MD DNR maintains 95% surveillance confidence through voluntary testing and targeted sampling. All harvested deer in CWDMA should be tested (free).\n\n' +
       '**Questions?** Contact MD DNR: **301-334-4255**\n\n' +
       'Always verify current CWD regulations with MD DNR before transporting deer.',
-    citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/CWD.aspx'],
+    citations: [
+      'https://dnr.maryland.gov/wildlife/Pages/hunt_trap/CWD.aspx',
+      'https://news.maryland.gov/dnr/2025/06/24/maryland-department-of-natural-resources-annual-survey-detects-62-deer-with-chronic-wasting-disease-in-2024/',
+    ],
     followUpSuggestions: [
       'How do I test my deer?',
       'Can I bring a whole carcass across county lines?',
       'Is my county in a CWDMA?',
+      'Are sika deer susceptible to CWD?',
     ],
   };
 }
@@ -1173,25 +1187,95 @@ function handleFederalLandsQuery(userQuery: string): ChatResponse {
   return {
     text:
       '**Federal Refuges & Lands in Maryland**\n\n' +
-      '**Blackwater National Wildlife Refuge (NWR)**\n' +
-      '• Location: 15,000 acres in Dorchester County\n' +
-      '• Species: Sika & white-tailed deer\n' +
-      '• Archery: 12+ weeks (extended opportunity)\n' +
-      '• Reservation Fee: $6\n' +
-      '• **Important (Sept 2026):** Non-lead ammunition required\n\n' +
-      '**Eastern Neck National Wildlife Refuge**\n' +
-      '• Location: 2,285 acres in Kent County\n' +
-      '• Mentored Turkey Hunts: Partnership with NWTF (National Wild Turkey Federation)\n' +
-      '• Great for learning and youth programs\n\n' +
-      '**Patuxent National Wildlife Refuge**\n' +
-      '• Limited seasonal hunting opportunities\n' +
-      '• Contact refuge directly for current availability\n\n' +
-      '**Federal lands offer unique hunting experiences with specialized regulations. Check refuge websites or call ahead before visiting.**',
-    citations: ['https://www.fws.gov/refuge/blackwater'],
+      '**Blackwater National Wildlife Refuge (NWR)** — Dorchester County\n' +
+      '• ~15,000 acres open to deer hunting Sept–Jan\n' +
+      '• Species: Sika & white-tailed deer (sika archery is the marquee draw)\n' +
+      '• Archery: 12+ weeks (extended opportunity vs. state seasons)\n' +
+      '• Permits via Recreation.gov; $6 reservation fee\n' +
+      '• Early teal season participates (Sept)\n' +
+      '• **NEW Sept 1, 2026:** Non-lead/non-toxic ammunition REQUIRED for all hunting (deer included). Pre-order copper or other non-lead ahead of season.\n' +
+      '• Straight-wall cartridges allowed during shotgun seasons\n\n' +
+      '**Eastern Neck National Wildlife Refuge** — Kent County\n' +
+      '• 2,285 acres on Chesapeake Bay\n' +
+      '• Youth mentored spring turkey hunt (ages 12–16) — partnership with NWTF\n' +
+      '• Non-lead ammo requirement also applies starting Sept 1, 2026\n' +
+      '• Quality hunt — application via Recreation.gov\n\n' +
+      '**Patuxent Research Refuge** — Anne Arundel/Prince George\'s Counties\n' +
+      '• Limited seasonal deer hunting (lottery-style draws)\n' +
+      '• North Tract has public access for hunting Sept–Jan\n' +
+      '• Contact refuge directly: 301-497-5500\n\n' +
+      '**Chesapeake & Ohio Canal NHP (C&O Canal)**\n' +
+      '• 184.5-mile NPS unit from Cumberland to Georgetown\n' +
+      '• Fishing: requires MD or DC state fishing license (no separate NPS permit)\n' +
+      '• Camping: 6 drive-in campgrounds + 1 group site + 31 hiker/biker sites along the towpath (free, first-come)\n' +
+      '• No hunting in the park itself, but adjacent SF/WMA lands open\n\n' +
+      '**Assateague Island National Seashore**\n' +
+      '• Waterfowl hunting permitted in designated zones with NPS permit + MD license\n' +
+      '• Surf fishing year-round (state license required)\n\n' +
+      '**Federal lands have their own regs layered on top of MD DNR. Always check the refuge-specific brochure on fws.gov before going.**',
+    citations: [
+      'https://www.fws.gov/refuge/blackwater',
+      'https://www.fws.gov/refuge/eastern-neck',
+      'https://www.nps.gov/choh',
+    ],
     followUpSuggestions: [
-      'How do I make a Blackwater reservation?',
-      'Tell me about Eastern Neck turkey hunts',
-      'What species can I hunt on federal land?',
+      'How do I make a Blackwater reservation on Recreation.gov?',
+      'What non-lead ammo do I need for Sept 2026?',
+      'Tell me about Eastern Neck youth turkey hunts',
+      'Can I camp along the C&O Canal?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSERVATION ORGS HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleConservationOrgsQuery(userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Conservation Orgs Active in Maryland**\n\n' +
+      '**Maryland Sportsmen\'s Foundation** — mdsportsmen.org\n' +
+      '• Statewide advocacy for hunting, fishing, trapping access\n' +
+      '• Tracks legislative threats to public-land hunting + 2A rights\n' +
+      '• Sponsors youth hunt and education programs\n\n' +
+      '**Trout Unlimited — Maryland Chapter (MDTU)** — Gold-tier chapter\n' +
+      '• Cold-water restoration (Jones Falls, Patapsco, Gunpowder)\n' +
+      '• Volunteer stream cleanups + monitoring throughout MD\n' +
+      '• 6 active MD chapters total — find local via tu.org/chapters\n\n' +
+      '**Ducks Unlimited — MD State Council** — ducks.org/maryland\n' +
+      '• Wetland conservation across DelMarVa + Eastern Shore\n' +
+      '• Multiple banquet fundraisers each year; check ducksunlimited.myeventscenter.com/browseByState/MD\n' +
+      '• Partners with DNR on Deal Island and Fishing Bay WMA habitat work\n\n' +
+      '**National Wild Turkey Federation (NWTF)** — nwtf.org\n' +
+      '• Two MD chapters: Western MD (wmdnwtf.org) and Southern MD\n' +
+      '• Partners with Eastern Neck NWR on the youth mentored turkey hunt\n' +
+      '• Funds habitat work + Hunting Heritage banquets\n\n' +
+      '**Chesapeake Bay Foundation (CBF)** — cbf.org\n' +
+      '• Largest Bay-focused org; water quality + oyster + grass restoration\n' +
+      '• Member volunteer days; not a hunting/fishing-access org per se but its work directly benefits striped bass, crab, and waterfowl populations\n\n' +
+      '**Coastal Conservation Association MD (CCA MD)** — ccamd.org\n' +
+      '• Saltwater angler advocacy; striped bass + menhaden focus\n' +
+      '• Annual banquets across the Bay region\n\n' +
+      '**Backcountry Hunters & Anglers — MD Chapter (BHA)**\n' +
+      '• Public-land access advocacy; recent push on Sunday hunting expansion\n' +
+      '• Pint Nights monthly in Baltimore/DC region\n\n' +
+      '**Izaak Walton League — MD Division**\n' +
+      '• Oldest conservation org in MD (founded 1922)\n' +
+      '• Local chapters host shooting ranges, fishing access, conservation education\n\n' +
+      '**Why join?** Banquets fund habitat work directly tied to hunts you actually do — Deal Island impoundments, sika range, Bay grass beds. The $50 chapter dues moves more conservation dollars than any tax check.',
+    citations: [
+      'https://mdsportsmen.org/',
+      'https://www.tu.org/chapters/mid-atlantic/maryland/',
+      'https://www.ducks.org/maryland',
+      'https://www.nwtf.org/chapters/western-maryland-chaptermd',
+      'https://www.cbf.org/',
+    ],
+    followUpSuggestions: [
+      'When is the next Ducks Unlimited MD banquet?',
+      'How do I join Trout Unlimited?',
+      'What does CCA MD do for stripers?',
+      'Is there a BHA pint night near me?',
     ],
   };
 }

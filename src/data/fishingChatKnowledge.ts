@@ -326,8 +326,43 @@ function getFishingSmartResponseRaw(userQuery: string): ChatResponse | null {
     return handlePFDQuery(userQuery);
   }
 
+  if (isBassTournamentQuery(q)) {
+    return handleBassTournamentQuery(userQuery);
+  }
+
   // No match found
   return null;
+}
+
+function isBassTournamentQuery(q: string): boolean {
+  return /tournament|bass nation|bassmaster|b\.a\.s\.s\.|mlf|major league fishing|smallwood|aba|club trail|team trail|tournament trail/.test(q);
+}
+
+function handleBassTournamentQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Maryland Bass Tournaments (2026)**\n\n' +
+      '**Headline waters:** Potomac River (the crown jewel — 400+ miles), Chesapeake tidal Bay, Deep Creek Lake, Susquehanna Flats.\n\n' +
+      '**Premier venue:** Smallwood State Park (Marbury) hosts MLF, Bassmaster (B.A.S.S.), and American Bass Anglers events.\n\n' +
+      '**Maryland Bass Nation (MBN)** — mdbassnation.com\n' +
+      '• 4 regions, dozens of affiliated clubs\n' +
+      '• Annual State Championship + High School Championship\n' +
+      '• Year-round club trails and team trails\n\n' +
+      '**2026 calendar:** 91+ MD events. See basscalendar.com/md and mdbasstourney.netlify.app for the rolling schedule.\n\n' +
+      '**Trophy citations:** MD DNR Angler Award Program recognizes smallmouth ≥18", largemouth ≥21", striped bass ≥40" (multiple categories). Free certificates — submit through dnr.maryland.gov/fisheries.\n\n' +
+      '**Tournament permits:** Required from MD DNR if >25 boats or you intend to weigh-in fish. dnr.maryland.gov/fisheries/pages/bass/tournaments.aspx',
+    citations: [
+      'https://dnr.maryland.gov/fisheries/pages/bass/tournaments.aspx',
+      'https://mdbassnation.com/',
+      'https://basscalendar.com/md/',
+    ],
+    followUpSuggestions: [
+      'How do I get a tournament permit?',
+      'What\'s the trophy fish program?',
+      'Best Potomac tournament launch ramps?',
+      'How do I join a Maryland bass club?',
+    ],
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -503,8 +538,14 @@ function handleSeasonQuery(userQuery: string): ChatResponse {
         '• Susquehanna River: Closed April 1 — May 31\n' +
         '• Patapsco River: Closed April 1 — May 31\n\n' +
         '**Where:** Chesapeake Bay, tidal rivers and tributaries\n\n' +
+        '**Stock status (2024 ASMFC update):** Striped bass remain *overfished*. Seven consecutive years of weak Chesapeake recruitment threaten the spawning stock biomass after 2029. ASMFC Addendum III (Oct 2025) allows Maryland to revisit its Chesapeake recreational baseline through a state regulatory process — watch for possible 2026 season changes. A new benchmark stock assessment + peer review is expected Spring 2027.\n\n' +
+        '**What that means for you:** measure carefully, lip-grip release in C&R, single hook on circle hooks where required, avoid surface fishing in water >75°F (post-release mortality spikes).\n\n' +
         'Stripers are a prized species. Keep your license and documentation on you at all times.',
-      citations: ['MD DNR Fisheries Regulations 2026', 'Striped Bass Management Plan'],
+      citations: [
+        'MD DNR Fisheries Regulations 2026',
+        'ASMFC Atlantic Striped Bass Addendum III (2025)',
+        'https://asmfc.org/species/atlantic-striped-bass/',
+      ],
       followUpSuggestions: [
         'Best time to fish for stripers?',
         'What bait should I use?',
