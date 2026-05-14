@@ -76,9 +76,9 @@ export const initializeCrashReporting = (dsn: string, config?: Partial<SentryCon
     Sentry.init(sentryConfig);
     sentryInitialized = true;
 
-    console.log(`[CrashReporting] Initialized (${environment})`);
+    if (__DEV__) console.log(`[CrashReporting] Initialized (${environment})`);
   } catch (error) {
-    console.warn('[CrashReporting] Sentry SDK not available, using no-op fallback');
+    if (__DEV__) console.warn('[CrashReporting] Sentry SDK not available, using no-op fallback');
     sentryAvailable = false;
     sentryInitialized = true;
   }

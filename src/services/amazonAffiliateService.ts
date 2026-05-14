@@ -322,7 +322,7 @@ export function isCreatorsApiAvailable(): boolean {
   // For now, always return false (stubbed)
   const DEMO_MODE = false;
   if (DEMO_MODE) {
-    console.log('[amazonAffiliateService] Creators API available (demo mode)');
+    if (__DEV__) console.log('[amazonAffiliateService] Creators API available (demo mode)');
     return true;
   }
   return false;
@@ -341,9 +341,10 @@ export function isCreatorsApiAvailable(): boolean {
  */
 export async function fetchLiveProductData(asin: string): Promise<AmazonProductRef | null> {
   if (!isCreatorsApiAvailable()) {
-    console.log(
-      '[amazonAffiliateService] Creators API not available yet. Using local catalog data.'
-    );
+    if (__DEV__)
+      console.log(
+        '[amazonAffiliateService] Creators API not available yet. Using local catalog data.'
+      );
     return AMAZON_PRODUCT_CATALOG.find((p) => p.asin === asin) || null;
   }
 
@@ -352,10 +353,10 @@ export async function fetchLiveProductData(asin: string): Promise<AmazonProductR
     // - Refresh OAuth token if needed
     // - Call Creators API /products/{asin} endpoint
     // - Return live pricing and review data
-    console.log('[amazonAffiliateService] Fetching live data from Creators API...');
+    if (__DEV__) console.log('[amazonAffiliateService] Fetching live data from Creators API...');
     return null;
   } catch (error) {
-    console.error('[amazonAffiliateService] Creators API fetch failed:', error);
+    if (__DEV__) console.error('[amazonAffiliateService] Creators API fetch failed:', error);
     // Fall back to local catalog
     return AMAZON_PRODUCT_CATALOG.find((p) => p.asin === asin) || null;
   }
@@ -378,9 +379,10 @@ export async function searchAmazonCatalog(
   category?: string
 ): Promise<AmazonProductRef[]> {
   if (!isCreatorsApiAvailable()) {
-    console.log(
-      '[amazonAffiliateService] Creators API not available. Using local catalog search.'
-    );
+    if (__DEV__)
+      console.log(
+        '[amazonAffiliateService] Creators API not available. Using local catalog search.'
+      );
     return searchProducts(keywords, { category });
   }
 
@@ -389,10 +391,10 @@ export async function searchAmazonCatalog(
     // - Call Creators API /search endpoint with keywords and category
     // - Handle pagination
     // - Return results with live data
-    console.log('[amazonAffiliateService] Searching Creators API...');
+    if (__DEV__) console.log('[amazonAffiliateService] Searching Creators API...');
     return [];
   } catch (error) {
-    console.error('[amazonAffiliateService] Creators API search failed:', error);
+    if (__DEV__) console.error('[amazonAffiliateService] Creators API search failed:', error);
     // Fall back to local catalog
     return searchProducts(keywords, { category });
   }

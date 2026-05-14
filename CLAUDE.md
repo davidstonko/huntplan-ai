@@ -38,7 +38,7 @@ Consolidate all disparate Maryland DNR information (regulations, maps, seasons, 
 - **Maps:** Mapbox GL Native (@rnmapbox/maps 10.1.35)
 - **Navigation:** React Navigation 7.0 (bottom tab navigator)
 - **Local Persistence:** AsyncStorage (V2), WatermelonDB schema ready for backend sync (Phase 3)
-- **State Management:** Context API (ActivityModeContext, ScoutDataContext, DeerCampContext, FishingDataContext)
+- **State Management:** Context API (ActivityModeContext, ScoutDataContext, DeerCampContext, GroupCampContext, CatchLogContext, FavoritesContext, GearChecklistContext, JournalEntryContext, SettingsContext, SyncContext, TrackRecorderContext, UserMarkupContext, UserWaypointContext) — fishing data lives in CatchLogContext + FavoritesContext + screen-local state; no dedicated FishingDataContext shipped
 - **Target:** iPhone 12+ (iOS 15+)
 
 ### Backend (V3+)
@@ -64,7 +64,7 @@ Consolidate all disparate Maryland DNR information (regulations, maps, seasons, 
 - **Theme:** Dark theme throughout with Maryland color palette (mdRed, mdGold, mdBlack, mdWhite, oak, tan, sand, etc.)
 
 ### File Organization
-- `screens/` — 14 screen components (MapScreen, ScoutScreen, DeerCampScreen, AIScreen, RegulationsScreen, etc.)
+- `screens/` — 78+ screen components (MapScreen, ScoutScreen, DeerCampScreen, ChatScreen, RegulationsScreen, etc.) — count drifts upward each release; verify with `ls src/screens/*.tsx | wc -l` before relying
 - `components/` — Feature-organized subdirectories:
   - `scout/` — PlanSidebar, PlanCreationFlow, AnnotationLayer, CompassOverlay, TrackMeBar, MeasureTool
   - `map/` — Map layers, filters, overlays
@@ -320,19 +320,20 @@ Map | Spots | AI | Gear | Info
 - **Gear:** Curated fishing gear. Category picker: Fly · Streams / Lakes & Ponds / Bay · Shore / Bay · Boat. Fly Fishing has subStyle hierarchy (Euro Nymph / Conventional / All) and a "By David" featured section with 26 of David's personal Maryland fly fishing picks. Fishing-rod silhouette tab icon.
 - **Info:** Segmented (Regulations | Links & Guides | Out of State) — fishing-specific content
 
-### Camp Mode (Phase 5A — implemented)
+### Camp Mode (V2.4 — 6 tabs after 2026-04-28 AI tab add)
 ```
-Camp Map | Gear | AI | Group Camp | Resources
+Map | Trip Planner | Group | AI | Gear | Info
 ```
-- **Camp Map:** Full Mapbox with MD campsite locations, park boundaries, amenities filters (water, restrooms, RV hookups), accessibility features
-- **Gear:** Curated camping gear picks with Amazon affiliate links (Amazon Associates, mdoutdoors-20 tag)
-- **AI:** Camp-focused RAG chat — trip planning, weather, gear recommendations, park regulations
-- **Group Camp:** Collaborative shared camping maps with friends/camping groups (mirrors Deer Camp)
-- **Resources:** Segmented (Regulations | Links & Guides | Out of State) — camping-specific content, park contacts. Sub-screens: Visitor Guide (CampOutOfStateScreen), Trip Planner (CampTripPlannerScreen).
+- **Map:** Full Mapbox with MD campsite locations, park boundaries, amenities filters (water, restrooms, RV hookups), accessibility features
+- **Trip Planner:** Location-aware camping trip planner (mirrors Scout/Trails Trip tabs)
+- **Group:** Collaborative shared camping maps with friends/camping groups (mirrors Deer Camp)
+- **AI:** Camp-focused RAG chat — trip planning, weather, gear recommendations, park regulations (added 2026-04-28 — `campingChatKnowledge.ts` had been shipping orphaned)
+- **Gear:** Curated camping gear picks with Amazon affiliate links (Amazon Associates, mdoutdoors1-20 tag)
+- **Info:** Segmented (Regulations | Links & Guides | Out of State) — camping-specific content, park contacts.
 
-### Hike Mode (V2.3 — 5 tabs after 2026-04-26 merge)
+### Hike Mode (V2.4 — 6 tabs after 2026-04-28 AI tab add)
 ```
-Map | Trails | Trip | Gear | Info
+Map | Trails | Trip | AI | Gear | Info
 ```
 - **Trail Map:** Full Mapbox with AT route polyline (40.9 mi), 9 shelters, 10 trailheads, 12 landmarks. Four States Challenge overlay. Filter toggles for each layer.
 - **Trail Guide:** Section-by-section AT browser (5 sections, shelter details, points of interest). Segmented: Sections | Shelters | Points of Interest.
@@ -444,7 +445,7 @@ Map | Trails | Trip | Gear | Info
 - `context/ActivityModeContext.tsx` — Activity mode + settings
 - `context/ScoutDataContext.tsx` — Plans, tracks (AsyncStorage-backed)
 - `context/DeerCampContext.tsx` — Camps, members, annotations, photos (AsyncStorage-backed)
-- `context/FishingDataContext.tsx` — Fishing spots, trips, catches (AsyncStorage-backed, Phase 4)
+- (Fishing data is not in a dedicated context — catches in `CatchLogContext.tsx`, saved spots in `FavoritesContext.tsx`; FishMapScreen + FishSpotsScreen hold trip/spot UI state locally. The FishingDataContext referenced in earlier Phase 4 docs was never built.)
 - `context/GroupCampContext.tsx` — Camping groups, campsites, shared annotations, gear lists (AsyncStorage-backed, Phase 5A)
 
 ### Services

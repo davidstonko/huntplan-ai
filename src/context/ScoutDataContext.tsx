@@ -348,6 +348,27 @@ export function ScoutDataProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
+  // Persist plans + tracks to AsyncStorage whenever they change (after initial
+  // load). Mirrors DeerCampContext's persist effect.
+  //
+  // 2026-05-14: shipped to close the BLOCKER caught by iter-1 audit. The
+  // iter-11 fix (commit 0f5ce9cf) repaired the LOAD side of the V2.4
+  // AsyncStorage path but never added the WRITE side — `createPlan`,
+  // `updatePlan`, `addWaypoint`, `saveTrack` all only called `database?.write`
+  // and `database` is null in V2.4, so every plan/track was lost on reload.
+  // tsc + jest both passed because they don't exercise the AsyncStorage
+  // round-trip live; only a clean-install simulator run catches it.
+  useEffect(() => {
+    if (!loaded) return;
+    if (database) return; // Phase 3 path uses WatermelonDB writes inside CRUD.
+    Promise.all([
+      AsyncStorage.setItem(STORAGE_KEY_PLANS, JSON.stringify(plans)),
+      AsyncStorage.setItem(STORAGE_KEY_TRACKS, JSON.stringify(tracks)),
+    ]).catch((e) => {
+      if (__DEV__) console.warn('[ScoutDataContext] persist failed', e);
+    });
+  }, [plans, tracks, loaded]);
+
   // ── Plan CRUD ──
   const createPlan = useCallback(
     (name: string): HuntPlan => {

@@ -1142,7 +1142,7 @@ function HuntTabs() {
   );
 }
 
-/** Fish mode (4 tabs): Map | Spots | AI | Resources */
+/** Fish mode (5 tabs): Map | Spots | AI | Gear | Info */
 function FishTabs() {
   const sharedScreenOptions = useSharedTabOptions();
   return (

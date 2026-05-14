@@ -2278,12 +2278,13 @@ const styles = StyleSheet.create({
   overlayPickerWrap: {
     // 2026-05-02 (V2.4 audit, user-flagged): top moved 130 → 144 so
     // the Overlays pill clears the MapFilterPanel collapsed badge
-    // above (now at top:92, ~36pt collapsed height ends ~128pt) plus
-    // 8pt breathing room. Earlier value of 130 sat under the panel
-    // when the "Filters ▶" pill was showing — visible in user
-    // screenshot.
+    // above. 2026-05-14 (iter-1 adversarial audit): 144 was off — the
+    // panel's toggleButton is height:50 (NOT 36pt as the prior comment
+    // assumed), so collapsed panel ends at 92+50=142. Bumped to top:154
+    // so we have a real ≥8pt gap above 142. The "panel ~36pt" assumption
+    // was the bug.
     position: 'absolute',
-    top: 144,
+    top: 154,
     left: 12,
     zIndex: 8,
   },
