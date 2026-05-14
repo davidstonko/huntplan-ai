@@ -18,11 +18,13 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Colors from '../theme/colors';
 import OnboardingTourGate from '../components/OnboardingTourGate';
 import ContactFab from '../components/common/ContactFab';
 
 export default function HikeResourcesScreen() {
+  const navigation = useNavigation<any>();
   const openURL = (url: string) => {
     Linking.openURL(url).catch(() => {});
   };
@@ -37,6 +39,33 @@ export default function HikeResourcesScreen() {
     <View style={styles.container}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>Hike Resources</Text>
+
+      {/*
+        2026-05-02 (V2.4 audit, task #57): Forum + Settings quick-nav.
+        Settings + Forum registered at the root Stack (AppNavigator.tsx)
+        so navigate() resolves from any mode. Mirrors the same row on
+        CampResourcesScreen.
+      */}
+      <View style={styles.quickNavRow}>
+        <TouchableOpacity
+          style={styles.quickNavBtn}
+          onPress={() => navigation.navigate('Forum')}
+          accessibilityRole="button"
+          accessibilityLabel="Open Community Forum"
+          activeOpacity={0.7}
+        >
+          <Text style={styles.quickNavLabel}>Forum</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.quickNavBtn}
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityRole="button"
+          accessibilityLabel="Open Settings"
+          activeOpacity={0.7}
+        >
+          <Text style={styles.quickNavLabel}>Settings</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* ── "Take the tour again" — Phase A.26 onboarding replay entry ── */}
       <TouchableOpacity
@@ -356,6 +385,29 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16, paddingBottom: 32 },
   heading: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
+  // 2026-05-02 (V2.4 audit, task #57): Forum + Settings quick-nav row.
+  // Matches the row on CampResourcesScreen.
+  quickNavRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 18,
+  },
+  quickNavBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+    alignItems: 'center',
+  },
+  quickNavLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    letterSpacing: 0.3,
+  },
   section: { marginBottom: 24 },
   sectionTitle: {
     fontSize: 14,

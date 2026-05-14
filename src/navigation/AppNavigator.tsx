@@ -993,6 +993,35 @@ const MdFlagStripe = () => (
  * Keeps the ActivityModePicker in the header title slot so users can
  * cross-switch to a different specialized stack without returning home.
  */
+// 2026-05-02 (V2.4 audit, task #59): derive a screen-reader-friendly
+// accessibility label from the route name so VoiceOver announces
+// "Hunt Map tab" instead of just "Map" (which is ambiguous across the
+// 4 modes that all have a Map tab). Pattern: strip the trailing 'Tab',
+// split on capital letters, prepend the mode if absent. Examples:
+//   MapTab            → 'Map tab'
+//   ScoutTab          → 'Scout tab'
+//   ChatTab           → 'AI Chat tab' (Hunt-specific tab name)
+//   FishMapTab        → 'Fish Map tab'
+//   CampTripPlannerTab → 'Camp Trip Planner tab'
+//   HikeAITab         → 'Hike AI tab'
+//   HuntGearTab       → 'Hunt Gear tab'
+//   DeerCampTab       → 'Deer Camp tab'
+//   ResourcesTab      → 'Info tab' (special-cased — the tabBarLabel is
+//                       'Info' but the route name still says Resources)
+function deriveTabAccessibilityLabel(routeName: string): string {
+  // Special-cases first
+  if (routeName === 'ChatTab') return 'Hunt AI Chat tab';
+  if (routeName === 'ResourcesTab') return 'Hunt Info tab';
+  if (routeName === 'FishResourcesTab') return 'Fish Info tab';
+  if (routeName === 'CampResourcesTab') return 'Camp Info tab';
+  if (routeName === 'HikeResourcesTab') return 'Hike Info tab';
+
+  // General case: strip trailing 'Tab', then split CamelCase into words
+  const base = routeName.replace(/Tab$/, '');
+  const words = base.replace(/([A-Z])/g, ' $1').trim();
+  return `${words} tab`;
+}
+
 function useSharedTabOptions() {
   const insets = useSafeAreaInsets();
   return {
@@ -1017,6 +1046,18 @@ function useSharedTabOptions() {
   };
 }
 
+// 2026-05-02 (V2.4 audit, task #59): per-tab screen options builder that
+// adds tabBarAccessibilityLabel. Pass alongside Tab.Navigator screenOptions
+// like: <Tab.Navigator screenOptions={({route}) => ({ ...shared,
+// ...tabA11yOptions(route.name) })}>. This sidesteps having to add an
+// inline accessibilityLabel string to every one of the 23 Tab.Screen
+// declarations — one central derivation, one source of truth.
+function tabA11yOptions(routeName: string) {
+  return {
+    tabBarAccessibilityLabel: deriveTabAccessibilityLabel(routeName),
+  };
+}
+
 // ── Mode-specific Tab.Navigator components ──
 
 /** Hunt mode (6 tabs): Map | Scout | AI | Camp | Gear | Info
@@ -1030,7 +1071,7 @@ function useSharedTabOptions() {
 function HuntTabs() {
   const sharedScreenOptions = useSharedTabOptions();
   return (
-    <Tab.Navigator screenOptions={sharedScreenOptions}>
+    <Tab.Navigator screenOptions={({ route }) => ({ ...sharedScreenOptions, ...tabA11yOptions(route.name) })}>
       <Tab.Screen
         name="MapTab"
         component={MapStack}
@@ -1105,7 +1146,7 @@ function HuntTabs() {
 function FishTabs() {
   const sharedScreenOptions = useSharedTabOptions();
   return (
-    <Tab.Navigator screenOptions={sharedScreenOptions}>
+    <Tab.Navigator screenOptions={({ route }) => ({ ...sharedScreenOptions, ...tabA11yOptions(route.name) })}>
       <Tab.Screen
         name="FishMapTab"
         component={FishMapStack}
@@ -1161,7 +1202,7 @@ function FishTabs() {
 function CampTabs() {
   const sharedScreenOptions = useSharedTabOptions();
   return (
-    <Tab.Navigator screenOptions={sharedScreenOptions}>
+    <Tab.Navigator screenOptions={({ route }) => ({ ...sharedScreenOptions, ...tabA11yOptions(route.name) })}>
       <Tab.Screen
         name="CampMapTab"
         component={CampMapStack}
@@ -1225,7 +1266,7 @@ function CampTabs() {
 function HikeTabs() {
   const sharedScreenOptions = useSharedTabOptions();
   return (
-    <Tab.Navigator screenOptions={sharedScreenOptions}>
+    <Tab.Navigator screenOptions={({ route }) => ({ ...sharedScreenOptions, ...tabA11yOptions(route.name) })}>
       <Tab.Screen
         name="HikeMapTab"
         component={HikeMapStack}
@@ -1298,6 +1339,26 @@ export default function AppNavigator() {
       <Stack.Screen name="FishTabs" component={FishTabs} />
       <Stack.Screen name="CampTabs" component={CampTabs} />
       <Stack.Screen name="HikeTabs" component={HikeTabs} />
+      {/*
+        2026-05-02 (V2.4 audit, task #57): register Settings + Forum at
+        the root so any tab (from any mode) can call
+        navigation.navigate('Settings') and have it resolve. Previously
+        these routes were only registered inside HuntTabs' MapStack +
+        ResourcesStack — Camp/Hike users had no path to either screen.
+        React Navigation prefers the nearest registration, so the
+        Hunt-local declarations still win when called from inside
+        HuntTabs. From Camp/Hike, the root registration fires.
+      */}
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ headerShown: true, title: 'Settings' }}
+      />
+      <Stack.Screen
+        name="Forum"
+        component={ForumScreen}
+        options={{ headerShown: true, title: 'Community Forum' }}
+      />
     </Stack.Navigator>
   );
 }
