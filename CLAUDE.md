@@ -174,6 +174,47 @@ const styles = StyleSheet.create({
 - Linting: ESLint configured in `.eslintrc.js`
 - Pre-commit: Consider adding hooks to enforce TS/lint checks
 
+## What Landed 2026-05-02 (V2.4.0 Audit Session)
+
+22 audit iterations + DNR research pass + user-caught overlap fix. 33
+V2.4 commits, ~30 bugs fixed. See `RELEASE_NOTES_V2.4.md` for the
+user-facing summary.
+
+**Live-simulator BLOCKERs (sim audit is non-negotiable per user
+directive 2026-05-02):**
+1. ScoutScreen opened to San Francisco (Cupertino default GPS) —
+   missing `inMaryland` geofence. Fixed `7dda956b`. Same gap on
+   HoneyHoleScreen.
+2. ScoutDataContext deref'd `database.get()` while database is null
+   in V2.4 — plans + tracks never loaded. Fixed `0f5ce9cf`.
+3. Hunt Map overlay stack visually collided — countBadge +
+   MapFilterPanel + overlayPickerWrap. User-caught after 21 prior
+   iterations missed it. Fixed `6b1e7d7d`. Pattern locked in
+   memory/audit_overlap_check_2026_05_02.md: every screen with
+   position-absolute overlays must enumerate (top, height) and
+   verify each stack has ≥ 8pt gap.
+
+**Cross-module audit pattern caught repeatedly:**
+- 4 instances of "config fixed but consumers not swept" (email
+  leak; ?code= URL format on FishCamp + GroupCamp; API_BASE_URL
+  hardcoded localhost in 3 files; inviteCode generation across
+  3 contexts)
+- 3 instances of doc/code drift on storage layer
+  (ActivityModeContext, ScoutDataContext, syncService)
+
+**DNR research pass — 1 class miss + several single-miss:**
+- CLASS MISS: trapping/furbearer activity entirely absent. 11
+  species, Furtaker license tier, Trapper Education — none modeled.
+  Fix: new isTrappingQuery + handler in src/data/chatKnowledge.ts.
+- Single-miss: harvest stats (84,201 deer 2024-25, 4,851 turkeys);
+  2026 trout stocking +26% (240k); 2025 senior license trout-stamp
+  removal; PFD requirements; bowfishing cross-ref.
+
+**Released:** V2.4.0 build 1. Versions aligned in package.json,
+src/config.ts, ios/HuntPlanAI.xcodeproj/project.pbxproj. tsc clean,
+112 jest / 2680 / 0 failed. wiringIntegrity went from ~138 to ~196
+assertions today.
+
 ## What Landed 2026-04-26 (Fork Consolidation + V2.3 Work)
 
 A full day's work consolidating two divergent forks into this canonical repo, fixing UX bugs surfaced during the live audit, building out the gear-monetization surfaces, and adding sub-style hierarchies. Single-day delta vs the prior `1d7e65a0 V2.2.0` HEAD: **103 modified files + 340 new files, 13,005 insertions, 5,756 deletions, 0 tsc errors, 102 jest suites / 2438 passed**.
