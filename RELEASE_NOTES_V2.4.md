@@ -82,14 +82,14 @@ shared feedback inbox.
 
 ## Known follow-ups deferred to V2.4.1+
 
-- Camp/Hike Info tabs can't reach Settings or Forum (Hunt+Fish use
-  ResourcesStack; Camp/Hike use direct screens — task #57)
-- Tab.Screen mounts have no explicit accessibilityLabel beyond
-  visual tabBarLabel (task #59)
+- ~~Camp/Hike Info tabs can't reach Settings or Forum (task #57)~~
+  DONE 2026-05-14 (a0c377aa)
+- ~~Tab.Screen accessibilityLabel (task #59)~~ DONE 2026-05-14
+  (a0c377aa)
+- ~~Research Categories C–F~~ DONE 2026-05-14 (ee1d1a6f);
+  Category G (forums) still open
 - Console.log spam in DB models (intentionally dev-only files, not
   blocking release)
-- Research sweep through Categories C-G of RESEARCH_PLAN.md
-  (federal lands, conservation orgs, academic papers, books, forums)
 
 ## Pre-submission checklist
 

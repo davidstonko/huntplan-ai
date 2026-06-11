@@ -2,7 +2,7 @@
 
 > ## CANONICAL REPO — READ THIS FIRST
 >
-> **The only working tree for this app is `~/Documents/huntmaryland-build/`.** Bundle ID `com.davidstonko.huntmaryland` builds from THIS folder; this is what Xcode opens; this is what ships to the App Store.
+> **The only working tree for this app is `~/Code/huntmaryland-build/`** (moved from `~/Documents/huntmaryland-build/` in May 2026 — the Documents tree is gone). Bundle ID `com.davidstonko.huntmaryland` builds from THIS folder; this is what Xcode opens; this is what ships to the App Store.
 >
 > **Never edit a copy or fork of this code.** If you encounter another folder claiming to contain this app (e.g. `~/Documents/Claude/Projects/AI Hunting Planning/huntplan-ai/`, `~/projects/huntplan-ai/`, `~/Desktop/mobile/`), it is **stale**. Flag it to David and stop. Do not merge from it, copy from it, or take it as authoritative.
 >
@@ -47,7 +47,7 @@ Consolidate all disparate Maryland DNR information (regulations, maps, seasons, 
 - Authentication: Username-based profiles (users choose anonymous or real name)
 
 ### Tooling
-- **Build Path:** /Users/davidstonko/Documents/huntmaryland-build (no spaces — Hermes build requirement)
+- **Build Path:** /Users/davidstonko/Code/huntmaryland-build (no spaces — Hermes build requirement; moved from ~/Documents in May 2026)
 - **Pod Install:** `cd ios && RCT_NEW_ARCH_ENABLED=0 pod install`
 - **TypeScript Check:** `npx tsc --noEmit`
 - **Package Manager:** npm (Node.js)
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
 ## Build Notes
 
 ### Build Environment
-- **Build Path:** `/Users/davidstonko/Documents/huntmaryland-build` (no spaces — Hermes requirement)
+- **Build Path:** `/Users/davidstonko/Code/huntmaryland-build` (no spaces — Hermes requirement; moved from ~/Documents in May 2026)
 - **New Architecture:** DISABLED (`RCT_NEW_ARCH_ENABLED=0`) due to Node 25 codegen crash
 - **Pod Install Command:** `cd ios && RCT_NEW_ARCH_ENABLED=0 pod install`
 - **TypeScript Before Build:** Always run `npx tsc --noEmit` — 0 errors required
@@ -173,6 +173,33 @@ const styles = StyleSheet.create({
 - Unused imports: Review and remove before each build
 - Linting: ESLint configured in `.eslintrc.js`
 - Pre-commit: Consider adding hooks to enforce TS/lint checks
+
+## What Landed 2026-06-10 (Submission Prep Session)
+
+Repo relocated to `~/Code/huntmaryland-build/` (canonical lock updated).
+Pushed 47 unpushed commits to origin (a153ff2b..ac4d23a8). Deployed
+huntmaryland-site V2.4.0 update to GitHub Pages — caught + fixed a
+production BLOCKER: the deployed AASA was the legacy `paths` format
+matching `/join*` only, NOT the `/huntmaryland-site/join/CODE` URLs the
+app generates, so Universal Links were broken in production the whole
+time. Also deployed: V2.4 privacy.html (was V2.2; personal email
+swapped for feedback inbox) + new 404.html invite fallback for path-
+style /join/CODE + /trip/CODE links. Authoritative remaining-work
+tracker: `PROJECT_STATUS.md` (new) — keep it updated every session.
+
+## What Landed 2026-05-14 (V2.4 Follow-ups + Audit Iter-1)
+
+Three commits after the V2.4.0 build 1 release commit:
+- a0c377aa — Task #57 (Settings/Forum reachable from Camp/Hike) +
+  Task #59 (Tab accessibility labels). Both former "deferred to
+  V2.4.1" items now DONE.
+- ee1d1a6f — RESEARCH_PLAN.md Categories C+D+E+F swept into chat
+  handlers (federal lands non-lead ammo Sept 2026, conservation
+  orgs, academic, books). Category G (forums) still open.
+- ac4d23a8 — audit iter-1 caught 2 BLOCKERs: ScoutDataContext never
+  PERSISTED to AsyncStorage (iter-11 May fix repaired load side
+  only — plans/tracks lost on reload); Hunt Map overlay stack
+  overlapped by 6pt. Both fixed.
 
 ## What Landed 2026-05-02 (V2.4.0 Audit Session)
 

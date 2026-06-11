@@ -181,15 +181,15 @@ Each category gets a status row updated as we work through it. Use
 `src/data/research/<category>.md` for the actual notes. This top-level
 file just tracks completion %.
 
-| Category | Pages found | Pages reviewed | App update landed |
-|----------|-------------|----------------|-------------------|
-| A — MD DNR | TBD | 0 | Trapping + Bowfishing handlers (00359b64) |
-| B — eRegulations | TBD | 0 | Most license fees + species rules already wired |
-| C — Federal lands | TBD | 0 | C&O Canal + AT in hike data; NWRs in fish data |
-| D — Conservation orgs | TBD | 0 | Some already linked from Resources screens |
-| E — Academic | TBD | 1 | Snakehead bowfishing study cited |
-| F — Books | 0 | 0 | None yet |
-| G — Forums | TBD | 0 | None yet |
+| Category | Status | App update landed |
+|----------|--------|-------------------|
+| A — MD DNR | DONE 2026-05-03 | Trapping + Bowfishing handlers (00359b64) + harvest stats, trout stocking, senior license, PFD |
+| B — eRegulations | DONE (pre-existing) | Most license fees + species rules already wired |
+| C — Federal lands | DONE 2026-05-14 | handleFederalLandsQuery: non-lead ammo Sept 2026 (Blackwater/Eastern Neck), straight-wall cartridges, early teal (ee1d1a6f) |
+| D — Conservation orgs | DONE 2026-05-14 | Swept into chat handlers (ee1d1a6f) |
+| E — Academic | DONE 2026-05-14 | Snakehead study + Category E sweep (ee1d1a6f) |
+| F — Books | DONE 2026-05-14 | Category F sweep (ee1d1a6f) |
+| G — Forums | OPEN | None yet — deferred to V2.4.1+ (not submission-blocking) |
 
 ## Process per source
 
