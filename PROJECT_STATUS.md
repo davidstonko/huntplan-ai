@@ -27,8 +27,9 @@ Last updated: 2026-06-10 (submission-prep session)
 
 ## TO DO — path to App Store submission (in order)
 
-1. [ ] **Re-verify quality gates on current HEAD** — `npx tsc --noEmit` + `npx jest` (last run May 14)
-2. [ ] **Verify site deploy live** — AASA serves components format w/ /trip/*; privacy shows June 10 / V2.4.0; /join/TESTCODE renders invite card (Apple CDN may cache AASA up to ~24h)
+1. [x] **Re-verify quality gates on current HEAD** — DONE 2026-06-10: tsc clean; jest 112 suites / 2680 passed / 5 skipped / 0 failed. NOTE: David's shell exports NODE_ENV=production which breaks RNTL render tests — `npm test` now forces NODE_ENV=test; stale audit worktree pruned (duplicate-mock warning gone)
+2. [~] **Verify site deploy live** — privacy.html verified live (June 10 / V2.4.0 / feedback email). AASA + /join/TESTCODE pending CDN cache flush — re-verify within 24 h
+2b. [ ] **Backend: fix Render huntplan-api** — service down since ~April 30 ("exited status 3" = uvicorn startup failure; suspected expired free-tier Postgres). Dead backend risks review rejection (accounts/forum/AI tabs). Awaiting dashboard logs/DB status from David
 3. [ ] **Live-verify EXIF strip** — upload photo in sim, pull file, `exiftool` confirms GPS/EXIF gone (privacy-policy promise)
 4. [ ] **Simulator visual verify** — every tab in every mode (Hunt 6 / Fish 5 / Camp 6 / Hike 6), overlay-overlap check per audit_overlap_check pattern (DAVID: ⌘R in Xcode)
 5. [ ] **Real-device verify Fish Map drag** (task #46 — only open sim-audit issue; cluster touch interception suspected)
