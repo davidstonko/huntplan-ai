@@ -8,6 +8,7 @@ The blind locations and permit numbers are stored client-side in mobile/src/data
 
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
@@ -26,7 +27,10 @@ class LandownerBlindFavorite(Base):
     __tablename__ = "landowner_blind_favorites"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    # users.id is UUID — an Integer FK here breaks create_all on a fresh DB
+    # (asyncpg DatatypeMismatchError, found 2026-06-10 when the expired Render
+    # Postgres was recreated from scratch). Must match users.id exactly.
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     blind_id = Column(String(50), nullable=False, index=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
