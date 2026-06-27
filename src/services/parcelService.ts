@@ -46,6 +46,8 @@ const OUT_FIELDS = [
   'ACRES',
   'JURSCODE',
   'SDATWEBADR',
+  'DESCEXCL',
+  'DESCLU',
 ].join(',');
 
 const REQUEST_TIMEOUT_MS = 15000;
@@ -76,6 +78,32 @@ export interface ParcelProperties {
   ownerMailing: string | null;
   /** Deep link to this parcel's SDAT page, where the owner name is shown. */
   sdatUrl: string | null;
+  /** SDAT tax-exemption class description, e.g. "STA Parks" (state park). */
+  exemptDesc: string | null;
+  /** SDAT land-use description, e.g. "Exempt". */
+  landUse: string | null;
+  /**
+   * Heuristic bucket for at-a-glance coloring: 'public' = likely a huntable-
+   * relevant public land (park/forest/WMA per the exemption class), else
+   * 'private'. NOT authoritative — confirm access before hunting.
+   */
+  category: 'public' | 'private';
+}
+
+/**
+ * Classify a parcel as likely PUBLIC LAND from its SDAT exemption class.
+ * Matches park/forest/wildlife/recreation/conservation language so state
+ * forests, parks, and WMAs read as public, while churches, schools, and
+ * office buildings (also tax-exempt) stay 'private'. Heuristic, not legal.
+ */
+export function isLikelyPublicLand(props: {
+  DESCEXCL?: string | null;
+}): boolean {
+  const ex = (props.DESCEXCL ?? '').toLowerCase();
+  if (!ex) return false;
+  return /park|forest|wildlife|wma|recreation|conservation|natural resource|greenway|preserve|\bdnr\b/.test(
+    ex,
+  );
 }
 
 export interface ParcelFeature {
@@ -130,6 +158,9 @@ function mapRawFeature(raw: any): ParcelFeature {
       jurisdiction: a.JURSCODE ?? null,
       ownerMailing: formatOwnerMailing(a),
       sdatUrl: a.SDATWEBADR ?? null,
+      exemptDesc: a.DESCEXCL ?? null,
+      landUse: a.DESCLU ?? null,
+      category: isLikelyPublicLand(a) ? 'public' : 'private',
     },
     geometry: raw && raw.geometry ? raw.geometry : null,
   };

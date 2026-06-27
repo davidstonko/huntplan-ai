@@ -9,6 +9,7 @@ import axios from 'axios';
 import {
   fetchParcelsInBounds,
   formatOwnerMailing,
+  isLikelyPublicLand,
   _clearParcelCache,
   ParcelBounds,
 } from '../parcelService';
@@ -63,6 +64,20 @@ beforeEach(() => {
   _clearParcelCache();
 });
 
+describe('isLikelyPublicLand', () => {
+  it('flags park/forest/WMA exemption classes as public', () => {
+    expect(isLikelyPublicLand({ DESCEXCL: 'STA Parks' })).toBe(true);
+    expect(isLikelyPublicLand({ DESCEXCL: 'State Forest' })).toBe(true);
+    expect(isLikelyPublicLand({ DESCEXCL: 'Wildlife Management Area' })).toBe(true);
+  });
+  it('does NOT flag non-land exemptions (church, school, office) as public', () => {
+    expect(isLikelyPublicLand({ DESCEXCL: 'STA Colleges' })).toBe(false);
+    expect(isLikelyPublicLand({ DESCEXCL: 'Religious' })).toBe(false);
+    expect(isLikelyPublicLand({ DESCEXCL: null })).toBe(false);
+    expect(isLikelyPublicLand({})).toBe(false);
+  });
+});
+
 describe('formatOwnerMailing', () => {
   it('builds a one-line mailing address', () => {
     expect(
@@ -94,8 +109,38 @@ describe('fetchParcelsInBounds', () => {
     expect(p.acres).toBe(0.505);
     expect(p.ownerMailing).toBe('6305 DEWEY DR, COLUMBIA, MD 21044');
     expect(p.sdatUrl).toContain('sdat.dat.maryland.gov');
+    expect(p.category).toBe('private'); // a residence, no exemption
     // Critically: there is NO owner name field on the parcel shape.
     expect((p as any).ownerName).toBeUndefined();
+  });
+
+  it('classifies a state-park parcel as public with land-use details', async () => {
+    mockedGet.mockResolvedValueOnce({
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              ACCTID: '0600999',
+              ADDRESS: 'PATAPSCO VALLEY STATE PARK',
+              ACRES: 14000,
+              DESCEXCL: 'STA Parks',
+              DESCLU: 'Exempt',
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[-76.8, 39.2], [-76.79, 39.2], [-76.79, 39.21], [-76.8, 39.2]]],
+            },
+          },
+        ],
+      },
+    });
+    const fc = await fetchParcelsInBounds(goodBounds);
+    const p = fc.features[0].properties;
+    expect(p.category).toBe('public');
+    expect(p.exemptDesc).toBe('STA Parks');
+    expect(p.landUse).toBe('Exempt');
   });
 
   it('queries the MD endpoint filtering out ROW/UNK parcels', async () => {

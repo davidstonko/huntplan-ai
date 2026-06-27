@@ -76,20 +76,30 @@ export default function ParcelLayer({
         if (f?.properties) onSelectParcel(f.properties as ParcelProperties);
       }}
     >
-      {/* Light fill is mostly a tap target; the orange outline is the parcel
-          line. Orange reads clearly on both the Outdoors and Satellite
-          basemaps (gold at low opacity was effectively invisible). */}
+      {/* Color by category: likely-public land (parks/forests/WMAs) green,
+          private orange. Both read clearly on Outdoors + Satellite basemaps. */}
       <MapboxGL.FillLayer
         id="mdParcelsFill"
         style={{
-          fillColor: 'rgba(255,138,0,0.08)',
-          fillOutlineColor: '#FF8A00',
+          fillColor: [
+            'match',
+            ['get', 'category'],
+            'public',
+            'rgba(0,200,83,0.16)',
+            'rgba(255,138,0,0.08)',
+          ],
         }}
       />
       <MapboxGL.LineLayer
         id="mdParcelsLine"
         style={{
-          lineColor: '#FF8A00',
+          lineColor: [
+            'match',
+            ['get', 'category'],
+            'public',
+            '#00C853',
+            '#FF8A00',
+          ],
           lineWidth: 1.6,
           lineOpacity: 0.95,
         }}

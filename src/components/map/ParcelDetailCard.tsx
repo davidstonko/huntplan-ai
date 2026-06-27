@@ -72,10 +72,19 @@ export default function ParcelDetailCard({ parcel, onClose }: ParcelDetailCardPr
 
           {cityZip ? <Text style={styles.subtle}>{cityZip}</Text> : null}
 
+          {parcel?.category === 'public' ? (
+            <View style={styles.publicBadge}>
+              <Text style={styles.publicBadgeText}>
+                ● Likely public land{parcel.exemptDesc ? ` · ${parcel.exemptDesc}` : ''}
+              </Text>
+            </View>
+          ) : null}
+
           <View style={styles.rows}>
             {parcel?.acres != null ? (
               <Row label="Size" value={`${parcel.acres.toFixed(2)} acres`} />
             ) : null}
+            {parcel?.landUse ? <Row label="Land use" value={parcel.landUse} /> : null}
             {parcel?.acctid ? <Row label="Account" value={parcel.acctid} /> : null}
             {parcel?.ownerMailing ? (
               <Row label="Owner mailing" value={titleCase(parcel.ownerMailing)} />
@@ -156,6 +165,21 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
+  },
+  publicBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,200,83,0.15)',
+    borderWidth: 1,
+    borderColor: '#00C853',
+  },
+  publicBadgeText: {
+    color: '#00C853',
+    fontSize: 12,
+    fontWeight: '700',
   },
   rows: {
     marginTop: 14,
