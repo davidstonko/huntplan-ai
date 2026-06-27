@@ -63,9 +63,11 @@ first competitive move is also a bug fix.
    screen + the downloader to `constants/mapStyles` (v12). Guard test in offlineMaps.test.ts.
    Remaining polish: per-viewport "download what I'm looking at" (needs MapView refs) and a
    satellite-style pack (packs currently cover the Outdoors style only).
-2. ✅ **DONE 2026-06-27 (free version) — MD parcel boundaries.** "PRC"/"Parcels" toggle on the
-   Hunt + Scout maps shows property lines for the viewport (MD open ArcGIS REST, zoom ≥14);
-   tap → address, acreage, owner MAILING address + "Look up owner on SDAT" deep-link.
+2. ✅ **DONE 2026-06-27 (free version) — MD parcel boundaries + PUBLIC/PRIVATE coloring.**
+   "PRC"/"Parcels" toggle on the Hunt + Scout maps shows property lines for the viewport
+   (MD open ArcGIS REST); public land (park/forest/WMA per SDAT exemption class) = GREEN,
+   private = ORANGE; tap → address, acreage, "Likely public land · <class>" badge, land use,
+   owner MAILING address + "Look up owner on SDAT" deep-link. SIM-VERIFIED at Patapsco Valley SP.
    Owner NAMES are NOT shown in-app — MD strips names from open data; names would need a
    licensed source (Regrid). `parcelService` + `ParcelLayer` + `ParcelDetailCard`, 8 tests.
    Research verdict: boundaries free+legal; names = paid (Regrid ~$200-400/county or statewide
