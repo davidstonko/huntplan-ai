@@ -25,6 +25,7 @@ import Colors from '../../theme/colors';
 import {
   MARYLAND_REGIONS,
   OfflineRegion,
+  regionFromBounds,
   downloadRegion,
   deleteRegion,
   getDownloadedPacks,
@@ -38,6 +39,17 @@ interface OfflineMapsModalProps {
   onChanged?: () => void;
   /** Offline status, surfaced as a header hint when true. */
   isOffline?: boolean;
+  /**
+   * Optional: returns the map's current viewport so the user can cache exactly
+   * the area they're looking at. When provided, a "download current view"
+   * option appears. Screens without a MapView ref simply omit it.
+   */
+  getBounds?: () => Promise<{
+    minLng: number;
+    minLat: number;
+    maxLng: number;
+    maxLat: number;
+  } | null>;
 }
 
 export default function OfflineMapsModal({
@@ -45,11 +57,13 @@ export default function OfflineMapsModal({
   onClose,
   onChanged,
   isOffline,
+  getBounds,
 }: OfflineMapsModalProps) {
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
   const [totalMB, setTotalMB] = useState(0);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [viewRegion, setViewRegion] = useState<OfflineRegion | null>(null);
 
   const refresh = useCallback(async () => {
     const packs = await getDownloadedPacks();
@@ -57,7 +71,15 @@ export default function OfflineMapsModal({
       new Set(packs.filter((p) => p.status === 'complete').map((p) => p.id)),
     );
     setTotalMB(await getTotalDiskUsage());
-  }, []);
+    if (getBounds) {
+      try {
+        const b = await getBounds();
+        setViewRegion(b ? regionFromBounds(b) : null);
+      } catch {
+        setViewRegion(null);
+      }
+    }
+  }, [getBounds]);
 
   useEffect(() => {
     if (visible) refresh();
@@ -134,6 +156,32 @@ export default function OfflineMapsModal({
               ? "You're offline. Maps only work in areas you've already downloaded."
               : 'Download a region so the map works with no cell service in the field.'}
           </Text>
+
+          {viewRegion && !isOffline ? (
+            <View style={styles.viewCard}>
+              <View style={styles.viewInfo}>
+                <Text style={styles.viewTitle}>Download the area I'm viewing</Text>
+                <Text style={styles.viewMeta}>
+                  ~{viewRegion.estimatedSizeMB} MB · current map view
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.btn,
+                  styles.btnDownload,
+                  downloadingId ? styles.btnDisabled : null,
+                ]}
+                disabled={!!downloadingId}
+                onPress={() => handleDownload(viewRegion)}
+                accessibilityRole="button"
+                accessibilityLabel="Download the current map view for offline use"
+              >
+                <Text style={styles.btnDownloadText}>
+                  {downloadingId === viewRegion.id ? `${progress}%` : 'Download'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
             {MARYLAND_REGIONS.map((region) => {
@@ -247,6 +295,30 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 10,
     lineHeight: 18,
+  },
+  viewCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 10,
+  },
+  viewInfo: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  viewTitle: {
+    color: Colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  viewMeta: {
+    color: Colors.textMuted,
+    fontSize: 12,
+    marginTop: 2,
   },
   list: {
     flexGrow: 0,

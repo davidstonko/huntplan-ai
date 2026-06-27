@@ -12,6 +12,7 @@ import {
   MARYLAND_REGIONS,
   OfflineRegion,
   downloadRegion,
+  regionFromBounds,
   getDownloadedPacks,
   getInterruptedDownloads,
   deleteRegion,
@@ -288,6 +289,32 @@ describe('offlineMaps', () => {
       const createPack = (MapboxGL as any).offlineManager.createPack as jest.Mock;
       expect(createPack).toHaveBeenCalled();
       expect(createPack.mock.calls[0][0].styleURL).toBe(MAP_STYLE_OUTDOORS);
+    });
+  });
+
+  describe('regionFromBounds (download current view)', () => {
+    const bounds = { minLng: -77.1, minLat: 39.2, maxLng: -77.0, maxLat: 39.3 };
+
+    it('produces a valid OfflineRegion from a viewport', () => {
+      const r = regionFromBounds(bounds);
+      expect(r.bounds).toEqual([-77.1, 39.2, -77.0, 39.3]);
+      expect(r.minZoom).toBeLessThan(r.maxZoom);
+      expect(r.maxZoom).toBeLessThanOrEqual(22);
+      expect(r.estimatedSizeMB).toBeGreaterThanOrEqual(8);
+      expect(r.estimatedSizeMB).toBeLessThanOrEqual(250);
+      expect(r.id).toContain('view-');
+    });
+
+    it('gives stable ids for the same bounds and different ids for different bounds', () => {
+      expect(regionFromBounds(bounds).id).toBe(regionFromBounds(bounds).id);
+      expect(regionFromBounds(bounds).id).not.toBe(
+        regionFromBounds({ minLng: -76, minLat: 38, maxLng: -75.9, maxLat: 38.1 }).id,
+      );
+    });
+
+    it('clamps the size estimate for a huge viewport', () => {
+      const huge = regionFromBounds({ minLng: -79, minLat: 38, maxLng: -75, maxLat: 39.7 });
+      expect(huge.estimatedSizeMB).toBeLessThanOrEqual(250);
     });
   });
 

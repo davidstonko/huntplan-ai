@@ -1751,6 +1751,26 @@ export default function MapScreen() {
         onClose={() => setOfflineOpen(false)}
         onChanged={offlineMaps.refresh}
         isOffline={offlineMaps.isOffline}
+        getBounds={async () => {
+          try {
+            const vb = await mapRef.current?.getVisibleBounds();
+            if (vb && vb.length === 2) {
+              const [[neLng, neLat], [swLng, swLat]] = vb as [
+                [number, number],
+                [number, number],
+              ];
+              return {
+                minLng: Math.min(neLng, swLng),
+                minLat: Math.min(neLat, swLat),
+                maxLng: Math.max(neLng, swLng),
+                maxLat: Math.max(neLat, swLat),
+              };
+            }
+          } catch {
+            // fall through
+          }
+          return null;
+        }}
       />
 
       <ParcelDetailCard

@@ -84,6 +84,43 @@ export const MARYLAND_REGIONS: OfflineRegion[] = [
   },
 ];
 
+// ─── Custom viewport region ──────────────────────────────────────
+
+/**
+ * Build a downloadable region from a live map viewport (e.g. "download the
+ * area I'm looking at"). Far more useful than the 5 coarse statewide packs —
+ * a hunter caches exactly the woods they're heading into.
+ *
+ * Pure function (no I/O) so it's unit-testable. Size is a rough estimate based
+ * on area + zoom depth; Mapbox reports the true size after download.
+ *
+ * @param b      Viewport bounds in degrees.
+ * @param minZoom Lowest zoom to cache (default 11).
+ * @param maxZoom Highest zoom to cache (default 16 — one deeper than the
+ *                regional packs, for in-the-field detail).
+ */
+export function regionFromBounds(
+  b: { minLng: number; minLat: number; maxLng: number; maxLat: number },
+  minZoom = 11,
+  maxZoom = 16,
+): OfflineRegion {
+  const widthDeg = Math.abs(b.maxLng - b.minLng);
+  const heightDeg = Math.abs(b.maxLat - b.minLat);
+  const areaDeg2 = widthDeg * heightDeg;
+  // ~90k MB per square-degree at this zoom band is a deliberately rough upper
+  // heuristic; clamped to a sane 8–250 MB range so the estimate stays plausible.
+  const estimatedSizeMB = Math.max(8, Math.min(250, Math.round(areaDeg2 * 90000)));
+  const id = `view-${b.minLng.toFixed(3)}_${b.minLat.toFixed(3)}_${b.maxLng.toFixed(3)}_${b.maxLat.toFixed(3)}`;
+  return {
+    id,
+    name: 'Current map view',
+    bounds: [b.minLng, b.minLat, b.maxLng, b.maxLat],
+    minZoom,
+    maxZoom,
+    estimatedSizeMB,
+  };
+}
+
 // ─── Download Management ─────────────────────────────────────────
 
 /**
