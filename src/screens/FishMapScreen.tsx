@@ -43,6 +43,7 @@ import ZoomIcon from '../components/map/ZoomIcon';
 import { useOfflineMaps } from '../hooks/useOfflineMaps';
 import OfflineMapsModal from '../components/map/OfflineMapsModal';
 import GaugeLayer from '../components/map/GaugeLayer';
+import TroutWatershedLayer from '../components/map/TroutWatershedLayer';
 import GaugeDetailCard from '../components/map/GaugeDetailCard';
 import { StreamGauge } from '../services/streamGaugeService';
 import {
@@ -176,6 +177,9 @@ export default function FishMapScreen() {
   // 2026-04-26: Toggle for the curated fishing-hotspots layer
   // (marylandFishingHotspots.ts — 48 named in-water spots with citation).
   const [showHotspots, setShowHotspots] = useState(true);
+  // Wild-trout watershed overlay (native brook / wild brown / wild rainbow),
+  // bundled + offline. Default off so it doesn't clutter the default view.
+  const [showTroutWaters, setShowTroutWaters] = useState(false);
   const [selectedHotspotId, setSelectedHotspotId] = useState<string | null>(null);
 
   // Current camera zoom — kept in sync via onCameraChanged so the +/- buttons
@@ -480,6 +484,25 @@ export default function FishMapScreen() {
           maxZoomLevel={18}
         />
 
+        <TroutWatershedLayer
+          enabled={showTroutWaters}
+          onSelect={({ label, link }) =>
+            Alert.alert(
+              'Wild Trout Waters',
+              label,
+              link
+                ? [
+                    {
+                      text: 'DNR info',
+                      onPress: () => Linking.openURL(link).catch(() => {}),
+                    },
+                    { text: 'Close', style: 'cancel' },
+                  ]
+                : [{ text: 'OK' }],
+            )
+          }
+        />
+
         <GaugeLayer enabled={showGauges} onSelect={setSelectedGauge} />
 
         <MapboxGL.ShapeSource
@@ -708,11 +731,19 @@ export default function FishMapScreen() {
               active: showHotspots,
               accent: '#26A69A',
             },
+            {
+              key: 'troutWaters',
+              label: 'Wild Trout',
+              hint: 'WLD — Native brook & wild trout streams (DNR MBSS)',
+              active: showTroutWaters,
+              accent: '#2E7D32',
+            },
           ]}
           onChange={(key, next) => {
             if (key === 'rivers') setShowRivers(next);
             else if (key === 'tidal') setShowTidalBoundary(next);
             else if (key === 'hotspots') setShowHotspots(next);
+            else if (key === 'troutWaters') setShowTroutWaters(next);
             else {
               // CATEGORIES key — toggle in the activeFilters Set.
               setActiveFilters((prev) => {
@@ -727,6 +758,7 @@ export default function FishMapScreen() {
             setShowRivers(false);
             setShowTidalBoundary(false);
             setShowHotspots(false);
+            setShowTroutWaters(false);
             setActiveFilters(new Set());
           }}
         />
