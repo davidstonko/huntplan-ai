@@ -41,6 +41,9 @@ import Colors from '../theme/colors';
 import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 import { useOfflineMaps } from '../hooks/useOfflineMaps';
 import OfflineMapsModal from '../components/map/OfflineMapsModal';
+import ParcelLayer from '../components/map/ParcelLayer';
+import ParcelDetailCard from '../components/map/ParcelDetailCard';
+import { ParcelBounds, ParcelProperties } from '../services/parcelService';
 import {
   marylandPublicLands,
 } from '../data/marylandPublicLands';
@@ -126,6 +129,40 @@ export default function ScoutScreen() {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const offlineMaps = useOfflineMaps();
   const [offlineOpen, setOfflineOpen] = useState(false);
+  const mapRef = useRef<MapboxGL.MapView>(null);
+  const [showParcels, setShowParcels] = useState(false);
+  const [parcelBounds, setParcelBounds] = useState<ParcelBounds | null>(null);
+  const [selectedParcel, setSelectedParcel] = useState<ParcelProperties | null>(
+    null,
+  );
+  const updateParcelBounds = useCallback(async () => {
+    try {
+      const vb = await mapRef.current?.getVisibleBounds();
+      if (vb && vb.length === 2) {
+        const [[neLng, neLat], [swLng, swLat]] = vb as [
+          [number, number],
+          [number, number],
+        ];
+        setParcelBounds({
+          minLng: Math.min(neLng, swLng),
+          minLat: Math.min(neLat, swLat),
+          maxLng: Math.max(neLng, swLng),
+          maxLat: Math.max(neLat, swLat),
+        });
+      }
+    } catch {
+      // keep prior bounds
+    }
+  }, []);
+  const handleMapIdle = useCallback(
+    (feature: any) => {
+      if (feature?.properties?.zoomLevel) {
+        setCurrentZoom(Math.round(feature.properties.zoomLevel));
+      }
+      if (showParcels) updateParcelBounds();
+    },
+    [showParcels, updateParcelBounds],
+  );
   const defaultCenter: [number, number] = [-76.6413, 39.0458];
   // 2026-05-02 (V2.4 audit, iter 16): mirror the inMaryland geofence
   // already present on FishMapScreen / CampMapScreen / HikeMapScreen.
@@ -329,9 +366,11 @@ export default function ScoutScreen() {
   return (
     <View style={styles.container}>
       <MapboxGL.MapView
+        ref={mapRef}
         style={styles.map}
         styleURL={mapStyleURL}
         onPress={handleMapPress}
+        onMapIdle={handleMapIdle}
       >
         {/* 2026-04-26 (cross-cutting audit): defaultSettings instead of
             controlled centerCoordinate. Same bug as Hunt MapScreen — live
@@ -350,6 +389,13 @@ export default function ScoutScreen() {
           animationDuration={800}
         />
         <MapboxGL.UserLocation visible={true} />
+
+        <ParcelLayer
+          enabled={showParcels}
+          bounds={parcelBounds}
+          zoom={currentZoom}
+          onSelectParcel={setSelectedParcel}
+        />
 
         {/* ── Base land polygon layers ── */}
         {polygonGeoJSON.features.length > 0 && (
@@ -564,6 +610,19 @@ export default function ScoutScreen() {
             Offline
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toolButton, showParcels && styles.toolButtonActive]}
+          onPress={() => {
+            const next = !showParcels;
+            setShowParcels(next);
+            if (next) updateParcelBounds();
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle property parcels"
+        >
+          <Text style={styles.toolEmoji}>{'🗺️'}</Text>
+          <Text style={styles.toolLabel}>Parcels</Text>
+        </TouchableOpacity>
       </View>
 
       {/* 2026-04-30: zoom +/\u2212 pair anchored bottom-right, mirroring the
@@ -655,6 +714,11 @@ export default function ScoutScreen() {
         onClose={() => setOfflineOpen(false)}
         onChanged={offlineMaps.refresh}
         isOffline={offlineMaps.isOffline}
+      />
+
+      <ParcelDetailCard
+        parcel={selectedParcel}
+        onClose={() => setSelectedParcel(null)}
       />
     </View>
   );
