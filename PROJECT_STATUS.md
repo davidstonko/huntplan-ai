@@ -43,6 +43,18 @@ not mission-correctness; the regs DATA had legal-accuracy errors. Fixed this ses
 - V2.4: 22+2 audit iterations, ~35 bugs fixed (7+ live-sim BLOCKERs), trapping/bowfishing/federal-lands chat knowledge, Maryland geofence, ActivityMode + ScoutData persistence, Settings/Forum cross-mode reach (#57), tab a11y labels (#59), research Categories A–F
 - 2026-06-10: 47 commits pushed to origin; **huntmaryland-site V2.4 deployed to GitHub Pages** — fixed production-broken AASA (legacy /join* paths didn't match app URLs), V2.4 privacy.html (feedback email), new 404.html invite fallback for /join/CODE + /trip/CODE
 
+## Competitive feature expansion (started 2026-06-27)
+
+Researched onX Hunt / HuntStand / TroutRoutes / AllTrails → gap analysis in
+`COMPETITIVE_FEATURES_2026_06_27.md`. Build order chosen by David.
+- [x] **Offline maps wired into every map screen** (onX's #1 feature + fixes our own
+  broken offline-first promise). Offline button on all 5 maps → shared `OfflineMapsModal`
+  + `useOfflineMaps` hook. Fixed a silent style mismatch (v11 packs vs v12 maps) via new
+  `constants/mapStyles`. tsc clean, jest 113/2692. Polish left: per-viewport download,
+  satellite-style pack.
+- [ ] MD parcel/landowner boundaries · [ ] fishing USGS gauges + access · [ ] per-stand
+  scent-cone forecast · [ ] live-share safety · [ ] crowd trail conditions (see doc)
+
 ## TO DO — path to App Store submission (in order)
 
 1. [x] **Re-verify quality gates on current HEAD** — DONE 2026-06-10: tsc clean; jest 112 suites / 2680 passed / 5 skipped / 0 failed. NOTE: David's shell exports NODE_ENV=production which breaks RNTL render tests — `npm test` now forces NODE_ENV=test; stale audit worktree pruned (duplicate-mock warning gone)

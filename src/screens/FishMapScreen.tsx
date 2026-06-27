@@ -38,7 +38,10 @@ import UserMarkupLayer from '../components/map/UserMarkupLayer';
 import OnboardingTourGate from '../components/OnboardingTourGate';
 import { useMapLongPressWaypoint } from '../hooks/useMapLongPressWaypoint';
 import Colors from '../theme/colors';
+import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 import ZoomIcon from '../components/map/ZoomIcon';
+import { useOfflineMaps } from '../hooks/useOfflineMaps';
+import OfflineMapsModal from '../components/map/OfflineMapsModal';
 import {
   MARYLAND_ANGLER_ACCESS_SITES,
   type AnglerAccessSite,
@@ -145,6 +148,8 @@ export default function FishMapScreen() {
   );
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<MapboxGL.Camera>(null);
+  const offlineMaps = useOfflineMaps();
+  const [offlineOpen, setOfflineOpen] = useState(false);
   const { location, loading: locationLoading } = useLocation();
   const [selected, setSelected] = useState<AnglerAccessSite | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<CategoryKey>>(
@@ -455,7 +460,7 @@ export default function FishMapScreen() {
       <MapboxGL.MapView
         style={styles.map}
         styleURL={
-          mapStyle === 'satellite' ? MapboxGL.StyleURL.SatelliteStreet : MapboxGL.StyleURL.Outdoors
+          mapStyle === 'satellite' ? MAP_STYLE_SATELLITE : MAP_STYLE_OUTDOORS
         }
         onPress={handleMapPress}
         onLongPress={onLongPressMap}
@@ -732,6 +737,23 @@ export default function FishMapScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlBtn} onPress={centerOnLocation}>
           <Text style={styles.controlCrosshair}>{'\u2316'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.controlBtn}
+          onPress={() => setOfflineOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Offline maps"
+        >
+          <Text
+            style={[
+              styles.controlText,
+              offlineMaps.isOffline && !offlineMaps.hasPacks
+                ? { color: Colors.mdRed }
+                : null,
+            ]}
+          >
+            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -1068,6 +1090,13 @@ export default function FishMapScreen() {
       />
 
       <OnboardingTourGate mode="fish" />
+
+      <OfflineMapsModal
+        visible={offlineOpen}
+        onClose={() => setOfflineOpen(false)}
+        onChanged={offlineMaps.refresh}
+        isOffline={offlineMaps.isOffline}
+      />
     </View>
   );
 }

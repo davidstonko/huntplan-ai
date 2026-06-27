@@ -13,6 +13,7 @@
 
 import MapboxGL from '@rnmapbox/maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MAP_STYLE_OUTDOORS } from '../constants/mapStyles';
 
 const STORAGE_KEY = '@offline_packs';
 
@@ -96,7 +97,9 @@ export async function downloadRegion(
   region: OfflineRegion,
   onProgress?: (progress: number, details?: unknown) => void,
 ): Promise<void> {
-  const styleURL = MapboxGL.StyleURL.Outdoors;
+  // Must match the styleURL the map screens render (see constants/mapStyles.ts)
+  // or Mapbox will not serve these tiles to the live map.
+  const styleURL = MAP_STYLE_OUTDOORS;
 
   // Define the pack
   const packName = region.id;

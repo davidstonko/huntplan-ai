@@ -32,9 +32,12 @@ import UserMarkupLayer from '../components/map/UserMarkupLayer';
 import TrailNavChip from '../components/map/TrailNavChip';
 import ZoomIcon from '../components/map/ZoomIcon';
 import OnboardingTourGate from '../components/OnboardingTourGate';
+import { useOfflineMaps } from '../hooks/useOfflineMaps';
+import OfflineMapsModal from '../components/map/OfflineMapsModal';
 import { useMapLongPressWaypoint } from '../hooks/useMapLongPressWaypoint';
 import type { NearestTrailCandidate } from '../services/trailNavService';
 import Colors from '../theme/colors';
+import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 import { MARYLAND_APPALACHIAN_TRAIL, AT_POLYLINE_IS_APPROXIMATE } from '../data/marylandATTrail';
 import {
   MARYLAND_LOCAL_SERVICES,
@@ -82,6 +85,8 @@ export default function HikeMapScreen() {
   );
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<MapboxGL.Camera>(null);
+  const offlineMaps = useOfflineMaps();
+  const [offlineOpen, setOfflineOpen] = useState(false);
   const { location, loading: locationLoading } = useLocation();
 
   const [selected, setSelected] = useState<SelectedFeature | null>(null);
@@ -469,7 +474,7 @@ export default function HikeMapScreen() {
       <MapboxGL.MapView
         style={styles.map}
         styleURL={
-          mapStyle === 'satellite' ? MapboxGL.StyleURL.SatelliteStreet : MapboxGL.StyleURL.Outdoors
+          mapStyle === 'satellite' ? MAP_STYLE_SATELLITE : MAP_STYLE_OUTDOORS
         }
         onPress={handleMapPress}
         onLongPress={onLongPressMap}
@@ -735,6 +740,23 @@ export default function HikeMapScreen() {
         <TouchableOpacity style={styles.controlBtn} onPress={centerOnLocation}>
           <Text style={styles.controlCrosshair}>{'\u2316'}</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.controlBtn}
+          onPress={() => setOfflineOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Offline maps"
+        >
+          <Text
+            style={[
+              styles.controlText,
+              offlineMaps.isOffline && !offlineMaps.hasPacks
+                ? { color: Colors.mdRed }
+                : null,
+            ]}
+          >
+            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* 2026-04-26 (zoom relocation): zoom buttons moved to bottom-right
@@ -979,6 +1001,13 @@ export default function HikeMapScreen() {
       />
 
       <OnboardingTourGate mode="hike" />
+
+      <OfflineMapsModal
+        visible={offlineOpen}
+        onClose={() => setOfflineOpen(false)}
+        onChanged={offlineMaps.refresh}
+        isOffline={offlineMaps.isOffline}
+      />
     </View>
   );
 }

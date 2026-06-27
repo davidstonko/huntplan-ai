@@ -36,8 +36,11 @@ import UserWaypointLayer from '../components/map/UserWaypointLayer';
 import UserMarkupLayer from '../components/map/UserMarkupLayer';
 import ZoomIcon from '../components/map/ZoomIcon';
 import OnboardingTourGate from '../components/OnboardingTourGate';
+import { useOfflineMaps } from '../hooks/useOfflineMaps';
+import OfflineMapsModal from '../components/map/OfflineMapsModal';
 import { useMapLongPressWaypoint } from '../hooks/useMapLongPressWaypoint';
 import Colors from '../theme/colors';
+import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 import { MARYLAND_CAMPGROUNDS } from '../data/marylandCampgrounds';
 import type { Campground, CampgroundType } from '../types/camp';
 import { MAPBOX_ACCESS_TOKEN } from '../config';
@@ -85,6 +88,8 @@ const TYPE_COLORS: Record<CampgroundType, string> = {
 
 export default function CampMapScreen() {
   const cameraRef = useRef<MapboxGL.Camera>(null);
+  const offlineMaps = useOfflineMaps();
+  const [offlineOpen, setOfflineOpen] = useState(false);
   const navigation = useNavigation<any>();
   const onLongPressMap = useMapLongPressWaypoint({
     mode: 'camp',
@@ -297,7 +302,7 @@ export default function CampMapScreen() {
       <MapboxGL.MapView
         style={styles.map}
         styleURL={
-          mapStyle === 'satellite' ? MapboxGL.StyleURL.SatelliteStreet : MapboxGL.StyleURL.Outdoors
+          mapStyle === 'satellite' ? MAP_STYLE_SATELLITE : MAP_STYLE_OUTDOORS
         }
         onPress={handleMapPress}
         onLongPress={onLongPressMap}
@@ -420,6 +425,23 @@ export default function CampMapScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlBtn} onPress={centerOnLocation}>
           <Text style={styles.controlCrosshair}>{'\u2316'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.controlBtn}
+          onPress={() => setOfflineOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Offline maps"
+        >
+          <Text
+            style={[
+              styles.controlText,
+              offlineMaps.isOffline && !offlineMaps.hasPacks
+                ? { color: Colors.mdRed }
+                : null,
+            ]}
+          >
+            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -585,6 +607,13 @@ export default function CampMapScreen() {
       />
 
       <OnboardingTourGate mode="camp" />
+
+      <OfflineMapsModal
+        visible={offlineOpen}
+        onClose={() => setOfflineOpen(false)}
+        onChanged={offlineMaps.refresh}
+        isOffline={offlineMaps.isOffline}
+      />
     </View>
   );
 }

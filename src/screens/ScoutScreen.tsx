@@ -38,6 +38,9 @@ import TrackMeBar from '../components/scout/TrackMeBar';
 import CompassOverlay from '../components/scout/CompassOverlay';
 import MeasureTool, { MeasurePoint, measurePointsToGeoJSON } from '../components/scout/MeasureTool';
 import Colors from '../theme/colors';
+import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
+import { useOfflineMaps } from '../hooks/useOfflineMaps';
+import OfflineMapsModal from '../components/map/OfflineMapsModal';
 import {
   marylandPublicLands,
 } from '../data/marylandPublicLands';
@@ -121,6 +124,8 @@ export default function ScoutScreen() {
   });
 
   const cameraRef = useRef<MapboxGL.Camera>(null);
+  const offlineMaps = useOfflineMaps();
+  const [offlineOpen, setOfflineOpen] = useState(false);
   const defaultCenter: [number, number] = [-76.6413, 39.0458];
   // 2026-05-02 (V2.4 audit, iter 16): mirror the inMaryland geofence
   // already present on FishMapScreen / CampMapScreen / HikeMapScreen.
@@ -319,9 +324,7 @@ export default function ScoutScreen() {
     setMapTapMode('none');
   };
 
-  const mapStyleURL = showTopo
-    ? 'mapbox://styles/mapbox/satellite-streets-v12'
-    : 'mapbox://styles/mapbox/outdoors-v12';
+  const mapStyleURL = showTopo ? MAP_STYLE_SATELLITE : MAP_STYLE_OUTDOORS;
 
   return (
     <View style={styles.container}>
@@ -543,6 +546,24 @@ export default function ScoutScreen() {
         >
           <Text style={styles.crosshairIcon}>{'\u2316'}</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.toolButton}
+          onPress={() => setOfflineOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Offline maps"
+        >
+          <Text style={styles.toolEmoji}>{'\u2b07\ufe0f'}</Text>
+          <Text
+            style={[
+              styles.toolLabel,
+              offlineMaps.isOffline && !offlineMaps.hasPacks
+                ? { color: Colors.mdRed }
+                : null,
+            ]}
+          >
+            Offline
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* 2026-04-30: zoom +/\u2212 pair anchored bottom-right, mirroring the
@@ -628,6 +649,13 @@ export default function ScoutScreen() {
       )}
 
       <DisclaimerBanner />
+
+      <OfflineMapsModal
+        visible={offlineOpen}
+        onClose={() => setOfflineOpen(false)}
+        onChanged={offlineMaps.refresh}
+        isOffline={offlineMaps.isOffline}
+      />
     </View>
   );
 }

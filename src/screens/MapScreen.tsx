@@ -47,6 +47,9 @@ import OnboardingTourGate from '../components/OnboardingTourGate';
 import { useMapLongPressWaypoint } from '../hooks/useMapLongPressWaypoint';
 import { useUserWaypoints } from '../context/UserWaypointContext';
 import Colors from '../theme/colors';
+import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
+import { useOfflineMaps } from '../hooks/useOfflineMaps';
+import OfflineMapsModal from '../components/map/OfflineMapsModal';
 import {
   marylandPublicLands,
   shootingRanges,
@@ -244,6 +247,8 @@ export default function MapScreen() {
   // top of the expanded legend before this was added.
   const [legendExpanded, setLegendExpanded] = useState(false);
   const cameraRef = useRef<MapboxGL.Camera>(null);
+  const offlineMaps = useOfflineMaps();
+  const [offlineOpen, setOfflineOpen] = useState(false);
   const mapRef = useRef<MapboxGL.MapView>(null);
 
   // ── Phase B.2: Hunt wind panel + scent cones ──
@@ -698,9 +703,7 @@ export default function MapScreen() {
       ? [location.longitude, location.latitude]
       : defaultCenter;
 
-  const mapStyleURL = showTopo
-    ? 'mapbox://styles/mapbox/satellite-streets-v12'
-    : 'mapbox://styles/mapbox/outdoors-v12';
+  const mapStyleURL = showTopo ? MAP_STYLE_SATELLITE : MAP_STYLE_OUTDOORS;
 
   const handleZoomIn = () => {
     const newZoom = Math.min(currentZoom + 1, 18);
@@ -1474,6 +1477,25 @@ export default function MapScreen() {
             >
               <Text style={styles.controlButtonLabel}>⌖</Text>
             </TouchableOpacity>
+            {/* Offline maps — download MD regions so the basemap works with no signal */}
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={() => setOfflineOpen(true)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Offline maps"
+            >
+              <Text
+                style={[
+                  styles.controlButtonLabel,
+                  offlineMaps.isOffline && !offlineMaps.hasPacks
+                    ? { color: Colors.mdRed }
+                    : null,
+                ]}
+              >
+                {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* 2026-04-26 (zoom relocation): Zoom buttons split out of the
@@ -1661,6 +1683,13 @@ export default function MapScreen() {
       />
 
       <OnboardingTourGate mode="hunt" />
+
+      <OfflineMapsModal
+        visible={offlineOpen}
+        onClose={() => setOfflineOpen(false)}
+        onChanged={offlineMaps.refresh}
+        isOffline={offlineMaps.isOffline}
+      />
     </View>
   );
 }

@@ -7,9 +7,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // 2026-04-26 (fork merge): getDownloadState was removed from offlineMaps in
 // the V2.3 refactor. Tests that referenced it are now skipped.
+import MapboxGL from '@rnmapbox/maps';
 import {
   MARYLAND_REGIONS,
   OfflineRegion,
+  downloadRegion,
   getDownloadedPacks,
   getInterruptedDownloads,
   deleteRegion,
@@ -17,6 +19,7 @@ import {
   getTotalDiskUsage,
   cancelDownload,
 } from '../services/offlineMaps';
+import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 const getDownloadState = (..._args: any[]): any => null;
 
 // Mock AsyncStorage
@@ -267,6 +270,24 @@ describe('offlineMaps', () => {
           try { await cancelDownload('md-western'); } catch { /* mapbox stub */ }
         })()
       ).resolves.not.toThrow();
+    });
+  });
+
+  // Regression guard (2026-06-27): offline tiles only serve to the live map if
+  // the pack's styleURL EXACTLY matches what the screens render. Before this,
+  // packs used StyleURL.Outdoors (outdoors-v11) while Hunt/Scout rendered
+  // outdoors-v12 — so the downloaded tiles were silently unused. Lock the match.
+  describe('offline pack style matches the map screens', () => {
+    it('uses the same Outdoors v12 / Satellite v12 style strings the screens use', () => {
+      expect(MAP_STYLE_OUTDOORS).toBe('mapbox://styles/mapbox/outdoors-v12');
+      expect(MAP_STYLE_SATELLITE).toBe('mapbox://styles/mapbox/satellite-streets-v12');
+    });
+
+    it('downloadRegion requests tiles for MAP_STYLE_OUTDOORS', async () => {
+      await downloadRegion(MARYLAND_REGIONS[0]);
+      const createPack = (MapboxGL as any).offlineManager.createPack as jest.Mock;
+      expect(createPack).toHaveBeenCalled();
+      expect(createPack.mock.calls[0][0].styleURL).toBe(MAP_STYLE_OUTDOORS);
     });
   });
 
