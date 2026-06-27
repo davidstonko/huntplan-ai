@@ -73,6 +73,10 @@ first competitive move is also a bug fix.
    post-revenue.
 3. **Fishing intelligence: live USGS gauges + stream classification + access/easements** —
    TroutRoutes parity for our fish module; USGS NWIS API is free and easy. (S→M)
+   ✅ DONE 2026-06-27 (gauges): "USGS" toggle on Fish map → live discharge/gage-height/water-temp
+   per MD station, tap for detail + USGS link (`streamGaugeService` + `GaugeLayer` +
+   `GaugeDetailCard`, 6 tests). STILL TODO: stream-quality classification coloring +
+   public-access/easement overlays (the data-curation-heavy TroutRoutes crown jewels).
 4. **Per-stand scent-cone wind forecast (72hr)** — extend the wind widget we already have to a
    forward-projected per-marker cone; HuntStand's signature. (M)
 5. **Live-Share safety location** + **wrong-turn alerts** — cross-activity safety (AllTrails). (M)

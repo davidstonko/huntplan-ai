@@ -55,8 +55,10 @@ Researched onX Hunt / HuntStand / TroutRoutes / AllTrails → gap analysis in
 - [x] **MD parcel boundaries (free version)** — PRC/Parcels toggle on Hunt + Scout maps;
   viewport query from MD open ArcGIS, tap → address/acreage/owner mailing + SDAT owner
   deep-link. Owner NAMES deferred (MD hides them; needs licensed Regrid feed). 8 tests.
-- [ ] fishing USGS gauges + access · [ ] per-stand scent-cone forecast · [ ] live-share
-  safety · [ ] crowd trail conditions (see COMPETITIVE_FEATURES doc)
+- [x] **fishing live USGS gauges** — "USGS" toggle on Fish map, live flow/height/temp per
+  MD station + detail sheet (free NWIS API, 6 tests). TODO next: stream classification +
+  access/easement overlays.
+- [ ] per-stand scent-cone forecast · [ ] live-share safety · [ ] crowd trail conditions
 
 ## TO DO — path to App Store submission (in order)
 
