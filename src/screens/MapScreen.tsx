@@ -809,7 +809,6 @@ export default function MapScreen() {
             <ParcelLayer
               enabled={showParcels}
               bounds={parcelBounds}
-              zoom={currentZoom}
               onSelectParcel={setSelectedParcel}
             />
 
@@ -1518,46 +1517,6 @@ export default function MapScreen() {
             >
               <Text style={styles.controlButtonLabel}>⌖</Text>
             </TouchableOpacity>
-            {/* Offline maps — download MD regions so the basemap works with no signal */}
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => setOfflineOpen(true)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Offline maps"
-            >
-              <Text
-                style={[
-                  styles.controlButtonLabel,
-                  offlineMaps.isOffline && !offlineMaps.hasPacks
-                    ? { color: Colors.mdRed }
-                    : null,
-                ]}
-              >
-                {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
-              </Text>
-            </TouchableOpacity>
-            {/* Property parcels (boundaries + owner mailing + SDAT lookup) */}
-            <TouchableOpacity
-              style={[styles.controlButton, showParcels && styles.controlButtonActive]}
-              onPress={() => {
-                const next = !showParcels;
-                setShowParcels(next);
-                if (next) updateParcelBounds();
-              }}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Toggle property parcels"
-            >
-              <Text
-                style={[
-                  styles.controlButtonLabel,
-                  showParcels && styles.controlButtonLabelActive,
-                ]}
-              >
-                PRC
-              </Text>
-            </TouchableOpacity>
           </View>
 
           {/* 2026-04-26 (zoom relocation): Zoom buttons split out of the
@@ -1582,6 +1541,50 @@ export default function MapScreen() {
               accessibilityLabel="Zoom out"
             >
               <ZoomIcon variant="minus" color={Colors.textPrimary} size={20} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Map tools (bottom-left, mirrors the bottom-right zoom pair):
+              offline downloads + property parcels. Kept out of the right
+              control column so it doesn't overflow into the zoom buttons. */}
+          <View style={styles.mapTools}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={() => setOfflineOpen(true)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Offline maps"
+            >
+              <Text
+                style={[
+                  styles.controlButtonLabel,
+                  offlineMaps.isOffline && !offlineMaps.hasPacks
+                    ? { color: Colors.mdRed }
+                    : null,
+                ]}
+              >
+                {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.controlButton, showParcels && styles.controlButtonActive]}
+              onPress={() => {
+                const next = !showParcels;
+                setShowParcels(next);
+                if (next) updateParcelBounds();
+              }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Toggle property parcels"
+            >
+              <Text
+                style={[
+                  styles.controlButtonLabel,
+                  showParcels && styles.controlButtonLabelActive,
+                ]}
+              >
+                PRC
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -2419,6 +2422,12 @@ const styles = StyleSheet.create({
   // (which is at bottom: 62, height ~44 → top of search at ~106).
   zoomControls: {
     position: 'absolute', right: 12, bottom: 118,
+    flexDirection: 'column',
+    gap: 8, alignItems: 'center',
+  },
+  // Offline + parcels tools, bottom-left, mirroring zoomControls on the right.
+  mapTools: {
+    position: 'absolute', left: 12, bottom: 118,
     flexDirection: 'column',
     gap: 8, alignItems: 'center',
   },

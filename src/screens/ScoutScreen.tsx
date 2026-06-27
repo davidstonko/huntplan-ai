@@ -393,7 +393,6 @@ export default function ScoutScreen() {
         <ParcelLayer
           enabled={showParcels}
           bounds={parcelBounds}
-          zoom={currentZoom}
           onSelectParcel={setSelectedParcel}
         />
 

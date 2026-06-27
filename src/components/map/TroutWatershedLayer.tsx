@@ -36,11 +36,11 @@ export default function TroutWatershedLayer({
     >
       <MapboxGL.FillLayer
         id="troutWatersFill"
-        style={{ fillColor: ['get', 'color'], fillOpacity: 0.22 }}
+        style={{ fillColor: ['get', 'color'], fillOpacity: 0.3 }}
       />
       <MapboxGL.LineLayer
         id="troutWatersLine"
-        style={{ lineColor: ['get', 'color'], lineWidth: 1, lineOpacity: 0.7 }}
+        style={{ lineColor: ['get', 'color'], lineWidth: 2, lineOpacity: 1 }}
       />
     </MapboxGL.ShapeSource>
   );

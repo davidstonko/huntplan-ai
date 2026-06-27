@@ -14,7 +14,6 @@ import MapboxGL from '@rnmapbox/maps';
 import Colors from '../../theme/colors';
 import {
   fetchParcelsInBounds,
-  MIN_PARCEL_ZOOM,
   ParcelBounds,
   ParcelFeatureCollection,
   ParcelProperties,
@@ -24,25 +23,38 @@ interface ParcelLayerProps {
   enabled: boolean;
   /** Current map viewport; null until the map reports its first bounds. */
   bounds: ParcelBounds | null;
-  /** Current integer zoom; parcels only load at MIN_PARCEL_ZOOM or higher. */
-  zoom: number;
   onSelectParcel: (parcel: ParcelProperties) => void;
 }
 
 const EMPTY: ParcelFeatureCollection = { type: 'FeatureCollection', features: [] };
 
+/**
+ * Only load parcels once the viewport is small enough (~zoom 14). We gate on
+ * the actual viewport SPAN rather than a zoom number, because the host screen's
+ * tracked zoom only updates on the +/- buttons, not on pinch/double-tap — so a
+ * zoom-number gate silently blocked fetches after a gesture zoom.
+ */
+const PARCEL_MAX_SPAN_DEG = 0.12;
+
 export default function ParcelLayer({
   enabled,
   bounds,
-  zoom,
   onSelectParcel,
 }: ParcelLayerProps) {
   const [fc, setFc] = useState<ParcelFeatureCollection>(EMPTY);
 
   useEffect(() => {
     let cancelled = false;
-    if (!enabled || !bounds || zoom < MIN_PARCEL_ZOOM) {
+    if (!enabled || !bounds) {
       setFc(EMPTY);
+      return;
+    }
+    const span = Math.max(
+      bounds.maxLng - bounds.minLng,
+      bounds.maxLat - bounds.minLat,
+    );
+    if (span > PARCEL_MAX_SPAN_DEG) {
+      setFc(EMPTY); // too zoomed out — avoid pulling thousands of parcels
       return;
     }
     fetchParcelsInBounds(bounds).then((result) => {
@@ -51,7 +63,7 @@ export default function ParcelLayer({
     return () => {
       cancelled = true;
     };
-  }, [enabled, bounds, zoom]);
+  }, [enabled, bounds]);
 
   if (!enabled || fc.features.length === 0) return null;
 
@@ -64,19 +76,22 @@ export default function ParcelLayer({
         if (f?.properties) onSelectParcel(f.properties as ParcelProperties);
       }}
     >
+      {/* Light fill is mostly a tap target; the orange outline is the parcel
+          line. Orange reads clearly on both the Outdoors and Satellite
+          basemaps (gold at low opacity was effectively invisible). */}
       <MapboxGL.FillLayer
         id="mdParcelsFill"
         style={{
-          fillColor: 'rgba(255,215,0,0.06)',
-          fillOutlineColor: Colors.mdGold,
+          fillColor: 'rgba(255,138,0,0.08)',
+          fillOutlineColor: '#FF8A00',
         }}
       />
       <MapboxGL.LineLayer
         id="mdParcelsLine"
         style={{
-          lineColor: Colors.mdGold,
-          lineWidth: 1.2,
-          lineOpacity: 0.85,
+          lineColor: '#FF8A00',
+          lineWidth: 1.6,
+          lineOpacity: 0.95,
         }}
       />
     </MapboxGL.ShapeSource>

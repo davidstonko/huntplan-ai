@@ -16,12 +16,17 @@ import {
   TroutWatershed,
 } from '../data/marylandTroutWatersheds';
 
-/** Native brook = green; wild brown = brown/oak; wild rainbow = blue. */
+/**
+ * Bright, high-contrast species colors so the overlay is visible on BOTH the
+ * green Outdoors basemap and dark Satellite imagery (the muted originals were
+ * effectively invisible against green landcover):
+ * native brook = vivid green; wild brown = amber; wild rainbow = pink stripe.
+ */
 export const TROUT_COLORS = {
-  brook: '#2E7D32',
-  brown: '#8B5E3C',
-  rainbow: '#1E88E5',
-  none: '#6B7280',
+  brook: '#00C853',
+  brown: '#FFB300',
+  rainbow: '#EC407A',
+  none: '#9E9E9E',
 } as const;
 
 export function troutTypeLabel(w: TroutWatershed): string {

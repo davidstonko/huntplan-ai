@@ -848,15 +848,15 @@ export default function FishMapScreen() {
           {showTroutWaters ? (
             <>
               <View style={styles.legendRow}>
-                <View style={[styles.legendDot, { backgroundColor: '#2E7D32' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#00C853' }]} />
                 <Text style={styles.legendLabel}>WLD · Brook (native)</Text>
               </View>
               <View style={styles.legendRow}>
-                <View style={[styles.legendDot, { backgroundColor: '#8B5E3C' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#FFB300' }]} />
                 <Text style={styles.legendLabel}>WLD · Wild brown</Text>
               </View>
               <View style={styles.legendRow}>
-                <View style={[styles.legendDot, { backgroundColor: '#1E88E5' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#EC407A' }]} />
                 <Text style={styles.legendLabel}>WLD · Wild rainbow</Text>
               </View>
             </>
