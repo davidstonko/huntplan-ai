@@ -55,10 +55,10 @@ export default function GaugeLayer({ enabled, onSelect }: GaugeLayerProps) {
       <MapboxGL.CircleLayer
         id="usgsGaugesDot"
         style={{
-          circleRadius: 6,
+          circleRadius: 8,
           circleColor: '#1E88E5',
           circleStrokeColor: Colors.mdWhite,
-          circleStrokeWidth: 1.5,
+          circleStrokeWidth: 2,
         }}
       />
       <MapboxGL.SymbolLayer

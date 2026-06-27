@@ -503,8 +503,6 @@ export default function FishMapScreen() {
           }
         />
 
-        <GaugeLayer enabled={showGauges} onSelect={setSelectedGauge} />
-
         <MapboxGL.ShapeSource
           id="fishPoints"
           shape={pointGeoJSON as any}
@@ -666,6 +664,10 @@ export default function FishMapScreen() {
         {/* ── Personal waypoints (Phase A.1b) ──
             User-created pins for fish mode. Long-press on the water to
             drop a new hole / ramp / put-in; tap a pin to edit. */}
+        {/* Gauges render on top of the access/hotspot layers so their dots
+            receive taps (otherwise the upper layers swallow the touch). */}
+        <GaugeLayer enabled={showGauges} onSelect={setSelectedGauge} />
+
         <UserWaypointLayer mode="fish" onWaypointPress={openWaypointEdit} />
         <UserMarkupLayer mode="fish" onMarkupPress={openMarkupEdit} />
       </MapboxGL.MapView>
@@ -803,7 +805,13 @@ export default function FishMapScreen() {
           accessibilityRole="button"
           accessibilityLabel="Toggle live USGS stream gauges"
         >
-          <Text style={[styles.controlText, showGauges ? { color: '#42A5F5' } : null]}>
+          <Text
+            style={[
+              styles.controlText,
+              { fontSize: 12 },
+              showGauges ? { color: '#42A5F5' } : null,
+            ]}
+          >
             USGS
           </Text>
         </TouchableOpacity>
