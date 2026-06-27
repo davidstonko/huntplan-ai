@@ -8,6 +8,7 @@ import axios from 'axios';
 import {
   parseNwisResponse,
   fetchMarylandStreamGauges,
+  bundledGaugeStations,
   gaugesToGeoJSON,
   _clearGaugeCache,
 } from '../streamGaugeService';
@@ -81,9 +82,24 @@ describe('fetchMarylandStreamGauges', () => {
     expect(mockedGet).toHaveBeenCalledTimes(1);
   });
 
-  it('returns [] when offline / endpoint errors (never throws)', async () => {
+  it('falls back to bundled station locations when offline (never throws)', async () => {
     mockedGet.mockRejectedValueOnce(new Error('offline'));
-    await expect(fetchMarylandStreamGauges()).resolves.toEqual([]);
+    const gauges = await fetchMarylandStreamGauges();
+    expect(gauges.length).toBeGreaterThan(100); // bundled MD stations
+    expect(gauges[0].flowCfs).toBeNull(); // locations only, no live readings
+  });
+});
+
+describe('bundledGaugeStations', () => {
+  it('exposes the bundled MD stations with locations and no readings', () => {
+    const stations = bundledGaugeStations();
+    expect(stations.length).toBeGreaterThan(100);
+    for (const s of stations.slice(0, 5)) {
+      expect(Number.isFinite(s.latitude)).toBe(true);
+      expect(Number.isFinite(s.longitude)).toBe(true);
+      expect(s.usgsUrl).toContain(s.siteCode);
+      expect(s.flowCfs).toBeNull();
+    }
   });
 });
 

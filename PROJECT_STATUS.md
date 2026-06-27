@@ -56,9 +56,15 @@ Researched onX Hunt / HuntStand / TroutRoutes / AllTrails → gap analysis in
   viewport query from MD open ArcGIS, tap → address/acreage/owner mailing + SDAT owner
   deep-link. Owner NAMES deferred (MD hides them; needs licensed Regrid feed). 8 tests.
 - [x] **fishing live USGS gauges** — "USGS" toggle on Fish map, live flow/height/temp per
-  MD station + detail sheet (free NWIS API, 6 tests). TODO next: stream classification +
-  access/easement overlays.
-- [ ] per-stand scent-cone forecast · [ ] live-share safety · [ ] crowd trail conditions
+  MD station + detail sheet (free NWIS API, 6 tests).
+- [x] **wild-trout classification overlay** — "Wild Trout" filter on Fish map shades 159 MD
+  watersheds by species (brook/brown/rainbow) from bundled DNR MBSS data; tap → species + DNR
+  link. Offline (6 tests).
+- [x] **offline "download the area I'm viewing"** — Hunt + Scout offline sheet (3 tests).
+- [~] per-stand scent-cone forecast — LARGELY ALREADY BUILT (scentConeGeometry, ScentConeLayer,
+  StandScoreService, HuntWindPanel, StandWindBadge). Don't rebuild; consider a multi-day planner.
+- [ ] fishing access/easement overlays (data-curation-heavy) · [ ] live-share safety (needs
+  backend) · [ ] wrong-turn alerts (pure geometry, testable) · [ ] crowd trail conditions (backend)
 
 ## TO DO — path to App Store submission (in order)
 

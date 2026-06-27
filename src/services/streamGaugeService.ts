@@ -17,6 +17,7 @@
  */
 
 import axios from 'axios';
+import { MARYLAND_STREAM_GAGES } from '../data/marylandStreamGages';
 
 const NWIS_IV_URL = 'https://waterservices.usgs.gov/nwis/iv/';
 const CACHE_TTL_MS = 15 * 60 * 1000; // gauges report roughly hourly
@@ -49,6 +50,23 @@ export interface StreamGauge {
 }
 
 let memCache: { ts: number; data: StreamGauge[] } | null = null;
+
+/**
+ * Offline fallback: the 186 bundled MD USGS station locations with no live
+ * readings, so the gauge layer still shows WHERE gauges are with no signal.
+ */
+export function bundledGaugeStations(): StreamGauge[] {
+  return MARYLAND_STREAM_GAGES.map((s) => ({
+    siteCode: s.usgsId,
+    name: s.name,
+    latitude: s.lat,
+    longitude: s.lng,
+    flowCfs: null,
+    gageHeightFt: null,
+    waterTempF: null,
+    usgsUrl: `https://waterdata.usgs.gov/monitoring-location/${s.usgsId}/`,
+  }));
+}
 
 function latestReading(ts: any): { value: number; unit: string; at: string } | null {
   const unit = ts?.variable?.unit?.unitCode ?? '';
@@ -110,8 +128,9 @@ export function parseNwisResponse(json: any): StreamGauge[] {
 }
 
 /**
- * Fetch live Maryland stream gauges (statewide, cached 15 min).
- * Returns [] on any failure or offline — never throws.
+ * Fetch live Maryland stream gauges (statewide, cached 15 min). Never throws.
+ * Falls back to the bundled station locations (no live readings) when offline
+ * or when the API returns nothing, so the layer is useful with no signal.
  */
 export async function fetchMarylandStreamGauges(): Promise<StreamGauge[]> {
   if (memCache && Date.now() - memCache.ts < CACHE_TTL_MS) {
@@ -128,10 +147,13 @@ export async function fetchMarylandStreamGauges(): Promise<StreamGauge[]> {
       },
     });
     const gauges = parseNwisResponse(response.data);
-    memCache = { ts: Date.now(), data: gauges };
-    return gauges;
+    if (gauges.length > 0) {
+      memCache = { ts: Date.now(), data: gauges };
+      return gauges;
+    }
+    return memCache ? memCache.data : bundledGaugeStations();
   } catch {
-    return memCache ? memCache.data : [];
+    return memCache ? memCache.data : bundledGaugeStations();
   }
 }
 
