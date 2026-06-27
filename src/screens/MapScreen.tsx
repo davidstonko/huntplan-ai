@@ -50,6 +50,12 @@ import Colors from '../theme/colors';
 import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 import { useOfflineMaps } from '../hooks/useOfflineMaps';
 import OfflineMapsModal from '../components/map/OfflineMapsModal';
+import ParcelLayer from '../components/map/ParcelLayer';
+import ParcelDetailCard from '../components/map/ParcelDetailCard';
+import {
+  ParcelBounds,
+  ParcelProperties,
+} from '../services/parcelService';
 import {
   marylandPublicLands,
   shootingRanges,
@@ -249,6 +255,11 @@ export default function MapScreen() {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const offlineMaps = useOfflineMaps();
   const [offlineOpen, setOfflineOpen] = useState(false);
+  const [showParcels, setShowParcels] = useState(false);
+  const [parcelBounds, setParcelBounds] = useState<ParcelBounds | null>(null);
+  const [selectedParcel, setSelectedParcel] = useState<ParcelProperties | null>(
+    null,
+  );
   const mapRef = useRef<MapboxGL.MapView>(null);
 
   // ── Phase B.2: Hunt wind panel + scent cones ──
@@ -717,10 +728,33 @@ export default function MapScreen() {
     cameraRef.current?.setCamera({ zoomLevel: newZoom, animationDuration: 300 });
   };
 
+  // Capture the current map viewport so the parcel layer can query it. Mapbox
+  // returns [[neLng, neLat], [swLng, swLat]].
+  const updateParcelBounds = useCallback(async () => {
+    try {
+      const vb = await mapRef.current?.getVisibleBounds();
+      if (vb && vb.length === 2) {
+        const [[neLng, neLat], [swLng, swLat]] = vb as [
+          [number, number],
+          [number, number],
+        ];
+        setParcelBounds({
+          minLng: Math.min(neLng, swLng),
+          minLat: Math.min(neLat, swLat),
+          maxLng: Math.max(neLng, swLng),
+          maxLat: Math.max(neLat, swLat),
+        });
+      }
+    } catch {
+      // Visible bounds unavailable this frame — keep the prior bounds.
+    }
+  }, []);
+
   const handleRegionChange = (feature: any) => {
     if (feature?.properties?.zoomLevel) {
       setCurrentZoom(Math.round(feature.properties.zoomLevel));
     }
+    if (showParcels) updateParcelBounds();
   };
 
   const handleFilterChange = useCallback((newFilters: FilterState) => {
@@ -771,6 +805,13 @@ export default function MapScreen() {
               animationDuration={800}
             />
             <MapboxGL.UserLocation visible={true} />
+
+            <ParcelLayer
+              enabled={showParcels}
+              bounds={parcelBounds}
+              zoom={currentZoom}
+              onSelectParcel={setSelectedParcel}
+            />
 
             {/* ── 3D Terrain (DEM source + hillshade) ── */}
             {show3D && (
@@ -1496,6 +1537,27 @@ export default function MapScreen() {
                 {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
               </Text>
             </TouchableOpacity>
+            {/* Property parcels (boundaries + owner mailing + SDAT lookup) */}
+            <TouchableOpacity
+              style={[styles.controlButton, showParcels && styles.controlButtonActive]}
+              onPress={() => {
+                const next = !showParcels;
+                setShowParcels(next);
+                if (next) updateParcelBounds();
+              }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Toggle property parcels"
+            >
+              <Text
+                style={[
+                  styles.controlButtonLabel,
+                  showParcels && styles.controlButtonLabelActive,
+                ]}
+              >
+                PRC
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* 2026-04-26 (zoom relocation): Zoom buttons split out of the
@@ -1689,6 +1751,11 @@ export default function MapScreen() {
         onClose={() => setOfflineOpen(false)}
         onChanged={offlineMaps.refresh}
         isOffline={offlineMaps.isOffline}
+      />
+
+      <ParcelDetailCard
+        parcel={selectedParcel}
+        onClose={() => setSelectedParcel(null)}
       />
     </View>
   );
