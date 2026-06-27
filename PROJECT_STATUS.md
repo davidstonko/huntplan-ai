@@ -5,7 +5,25 @@
 > (V2_3_*, PRE_BUILD_AUDIT_*, PUSH_AUDIT.md) are historical records —
 > this file supersedes them for "what's left."
 
-Last updated: 2026-06-27 (audit + hunt-regs accuracy session)
+Last updated: 2026-06-27 (audit + regs accuracy + competitive features + LIVE-SIM verification)
+
+## Live-simulator verification 2026-06-27 (the audit step that was missing)
+
+Built + ran the app on iPhone 17 Pro / iOS 26.5 and tapped through every new
+feature in all 4 modes. This caught **5 bugs that tsc + 2716 jest tests did NOT**
+(commits a29e224b, dcaf7d89):
+1. Hunt DL/PRC buttons overlapped the zoom controls → moved to bottom-left group.
+2. Parcels never fetched (gated on a zoom value gesture-zoom doesn't update) →
+   gate on viewport span from getVisibleBounds.
+3. Parcel lines invisible (0.06 fill on tan basemap) → visible orange.
+4. Trout watersheds invisible (muted colors on green basemap) → bright green/amber/pink.
+5. Gauges not tappable (rendered under the access layers) → moved on top; also
+   shrank the "USGS" label to fit + enlarged the gauge dot.
+VERIFIED WORKING on-device: boot/disclaimer/onboarding, Hunt offline modal +
+download-current-view, Hunt parcels render + SDAT detail card, Fish gauges render
++ tap → detail (Gwynns Falls 44 cfs / 2.55 ft), Fish wild-trout overlay (Gunpowder
+amber), no overlap on Fish/Scout/Hike. Camp not separately checked (identical to Hike).
+**These commits are LOCAL (not pushed) and not yet archived.**
 
 ## What landed 2026-06-27 (audit + audit-of-audit)
 
