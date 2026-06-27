@@ -63,8 +63,14 @@ first competitive move is also a bug fix.
    screen + the downloader to `constants/mapStyles` (v12). Guard test in offlineMaps.test.ts.
    Remaining polish: per-viewport "download what I'm looking at" (needs MapView refs) and a
    satellite-style pack (packs currently cover the Outdoors style only).
-2. **MD parcel boundaries + landowner info** — the flagship differentiator that sells onX/
-   HuntStand; MD iMap publishes parcel GIS. Big "wow," MD-tractable, free for us. (L)
+2. ✅ **DONE 2026-06-27 (free version) — MD parcel boundaries.** "PRC"/"Parcels" toggle on the
+   Hunt + Scout maps shows property lines for the viewport (MD open ArcGIS REST, zoom ≥14);
+   tap → address, acreage, owner MAILING address + "Look up owner on SDAT" deep-link.
+   Owner NAMES are NOT shown in-app — MD strips names from open data; names would need a
+   licensed source (Regrid). `parcelService` + `ParcelLayer` + `ParcelDetailCard`, 8 tests.
+   Research verdict: boundaries free+legal; names = paid (Regrid ~$200-400/county or statewide
+   custom quote, in-app display permitted w/ attribution) or SDAT paid file. Defer names to
+   post-revenue.
 3. **Fishing intelligence: live USGS gauges + stream classification + access/easements** —
    TroutRoutes parity for our fish module; USGS NWIS API is free and easy. (S→M)
 4. **Per-stand scent-cone wind forecast (72hr)** — extend the wind widget we already have to a

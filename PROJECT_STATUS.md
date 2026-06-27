@@ -52,8 +52,11 @@ Researched onX Hunt / HuntStand / TroutRoutes / AllTrails → gap analysis in
   + `useOfflineMaps` hook. Fixed a silent style mismatch (v11 packs vs v12 maps) via new
   `constants/mapStyles`. tsc clean, jest 113/2692. Polish left: per-viewport download,
   satellite-style pack.
-- [ ] MD parcel/landowner boundaries · [ ] fishing USGS gauges + access · [ ] per-stand
-  scent-cone forecast · [ ] live-share safety · [ ] crowd trail conditions (see doc)
+- [x] **MD parcel boundaries (free version)** — PRC/Parcels toggle on Hunt + Scout maps;
+  viewport query from MD open ArcGIS, tap → address/acreage/owner mailing + SDAT owner
+  deep-link. Owner NAMES deferred (MD hides them; needs licensed Regrid feed). 8 tests.
+- [ ] fishing USGS gauges + access · [ ] per-stand scent-cone forecast · [ ] live-share
+  safety · [ ] crowd trail conditions (see COMPETITIVE_FEATURES doc)
 
 ## TO DO — path to App Store submission (in order)
 

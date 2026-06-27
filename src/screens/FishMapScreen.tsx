@@ -42,6 +42,9 @@ import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles'
 import ZoomIcon from '../components/map/ZoomIcon';
 import { useOfflineMaps } from '../hooks/useOfflineMaps';
 import OfflineMapsModal from '../components/map/OfflineMapsModal';
+import GaugeLayer from '../components/map/GaugeLayer';
+import GaugeDetailCard from '../components/map/GaugeDetailCard';
+import { StreamGauge } from '../services/streamGaugeService';
 import {
   MARYLAND_ANGLER_ACCESS_SITES,
   type AnglerAccessSite,
@@ -150,6 +153,8 @@ export default function FishMapScreen() {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const offlineMaps = useOfflineMaps();
   const [offlineOpen, setOfflineOpen] = useState(false);
+  const [showGauges, setShowGauges] = useState(false);
+  const [selectedGauge, setSelectedGauge] = useState<StreamGauge | null>(null);
   const { location, loading: locationLoading } = useLocation();
   const [selected, setSelected] = useState<AnglerAccessSite | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<CategoryKey>>(
@@ -475,6 +480,8 @@ export default function FishMapScreen() {
           maxZoomLevel={18}
         />
 
+        <GaugeLayer enabled={showGauges} onSelect={setSelectedGauge} />
+
         <MapboxGL.ShapeSource
           id="fishPoints"
           shape={pointGeoJSON as any}
@@ -753,6 +760,19 @@ export default function FishMapScreen() {
             ]}
           >
             {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.controlBtn,
+            showGauges ? { borderColor: '#42A5F5', borderWidth: 1.5 } : null,
+          ]}
+          onPress={() => setShowGauges((v) => !v)}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle live USGS stream gauges"
+        >
+          <Text style={[styles.controlText, showGauges ? { color: '#42A5F5' } : null]}>
+            USGS
           </Text>
         </TouchableOpacity>
       </View>
@@ -1096,6 +1116,11 @@ export default function FishMapScreen() {
         onClose={() => setOfflineOpen(false)}
         onChanged={offlineMaps.refresh}
         isOffline={offlineMaps.isOffline}
+      />
+
+      <GaugeDetailCard
+        gauge={selectedGauge}
+        onClose={() => setSelectedGauge(null)}
       />
     </View>
   );
