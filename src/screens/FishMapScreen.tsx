@@ -845,6 +845,28 @@ export default function FishMapScreen() {
               </Text>
             </View>
           ))}
+          {showTroutWaters ? (
+            <>
+              <View style={styles.legendRow}>
+                <View style={[styles.legendDot, { backgroundColor: '#2E7D32' }]} />
+                <Text style={styles.legendLabel}>WLD · Brook (native)</Text>
+              </View>
+              <View style={styles.legendRow}>
+                <View style={[styles.legendDot, { backgroundColor: '#8B5E3C' }]} />
+                <Text style={styles.legendLabel}>WLD · Wild brown</Text>
+              </View>
+              <View style={styles.legendRow}>
+                <View style={[styles.legendDot, { backgroundColor: '#1E88E5' }]} />
+                <Text style={styles.legendLabel}>WLD · Wild rainbow</Text>
+              </View>
+            </>
+          ) : null}
+          {showGauges ? (
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#1E88E5' }]} />
+              <Text style={styles.legendLabel}>USGS · Live gauge (cfs)</Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
 
