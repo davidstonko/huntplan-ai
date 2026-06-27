@@ -254,6 +254,21 @@ export function getSmartResponse(userQuery: string): ChatResponse {
 function getSmartResponseRaw(userQuery: string): ChatResponse {
   const q = userQuery.toLowerCase().trim();
 
+  // Specific legal-detail intents go first — they use words ("when", "how
+  // many", "need", "time") that the broader season/license/bag handlers below
+  // would otherwise grab.
+  if (isShootingHoursQuery(q)) {
+    return handleShootingHoursQuery(userQuery);
+  }
+
+  if (isBlazeOrangeQuery(q)) {
+    return handleBlazeOrangeQuery(userQuery);
+  }
+
+  if (isFieldTaggingQuery(q)) {
+    return handleFieldTaggingQuery(userQuery);
+  }
+
   // Detect intent and route to appropriate handler
   if (isSeasonQuery(q)) {
     return handleSeasonQuery(userQuery);
@@ -463,7 +478,25 @@ function isManagedHuntQuery(q: string): boolean {
 }
 
 function isHarvestReportingQuery(q: string): boolean {
-  return /report harvest|check station|report deer|tag|confirmation|harvest report|compass\.dnr/.test(q);
+  return /report harvest|check station|report deer|confirmation|harvest report|compass\.dnr|mdoutdoors|register.*(deer|turkey|harvest)/.test(q);
+}
+
+function isShootingHoursQuery(q: string): boolean {
+  return /shooting hours|hunting hours|legal hours|shooting light|legal light|what time.*hunt|how early.*hunt|how late.*hunt|before sunrise|after sunset|sunrise|sunset|half hour/.test(
+    q
+  );
+}
+
+function isBlazeOrangeQuery(q: string): boolean {
+  return /blaze orange|fluorescent|hunter orange|safety orange|daylight orange|\borange\b|fluorescent pink|what.*(to )?wear/.test(
+    q
+  );
+}
+
+function isFieldTaggingQuery(q: string): boolean {
+  return /field tag|field-tag|\btagging\b|tag (my|the|your|a|that) (deer|turkey|bear|animal|harvest|kill)|possession tag|how.*tag|attach.*tag|do i.*tag|need.*tag/.test(
+    q
+  );
 }
 
 function isHunterEducationQuery(q: string): boolean {
@@ -594,8 +627,8 @@ function handleBagLimitQuery(userQuery: string): ChatResponse {
     return {
       text:
         'Bag limits vary by species. Which animal are you asking about?\n\n' +
-        '• **Deer**: 2 antlered, 5 antlerless per year\n' +
-        '• **Turkey**: 1 in spring, 2 in fall\n' +
+        '• **Deer**: 2 antlered per year (plus a Bonus Antlered Deer Stamp for more). Antlerless depends on your deer region — Region A (Allegany, Garrett, western Washington) is just 2 for the year; Region B is much higher (archery 15, firearms 10, muzzleloader 10).\n' +
+        '• **Turkey**: 1 in spring, 2 in fall/winter combined\n' +
         '• **Ducks**: 6 per day\n' +
         '• **Rabbits**: 4 per day\n' +
         '• **Squirrels**: 6 per day\n\n' +
@@ -791,12 +824,12 @@ function handleLicenseQuery(userQuery: string): ChatResponse {
       '**Maryland Hunting License Requirements**\n\n' +
       '**Required:**\n' +
       '• **Hunting License** — Resident or Non-Resident\n' +
-      '  Resident: $20/year or $8/3-day\n' +
-      '  Non-Resident: $120/year or $35/10-day\n\n' +
-      '• **Deer Stamp** — Required for deer hunting\n' +
-      '  $11.65 (included in combo licenses)\n\n' +
-      '• **Migratory Bird Stamp (HIP)** — Required for waterfowl\n' +
-      '  Free online registration (compass.dnr.maryland.gov)\n\n' +
+      '  Resident: $35/year (Junior under 16: $15, Senior 65+: $5)\n' +
+      '  Non-Resident: $160/year (Junior: $80, Senior: $65)\n\n' +
+      '• **Bonus Antlered Deer Stamp** — only for additional antlered deer\n' +
+      '  $10 resident / $25 non-resident\n\n' +
+      '• **Waterfowl** — free **HIP registration** plus the **Maryland Migratory\n' +
+      '  Game Bird Stamp ($15)** and the **Federal Duck Stamp ($29)**\n\n' +
       '• **Hunter Safety Course** — Required if born after 1-1-1976\n' +
       '  Take the course online, then pass the exam\n\n' +
       '**Optional but Common:**\n' +
@@ -831,17 +864,19 @@ function handleSundayHuntingQuery(userQuery: string): ChatResponse {
         text:
           `**Sunday Hunting in ${county.name} County, Maryland**\n\n` +
           (county.sundayHuntingAllowed
-            ? `✓ **Sunday hunting IS allowed**\n\n` +
-              `On private land: Allowed statewide on Sundays\n` +
-              `On public land (WMAs): Varies by area — check specific WMA rules`
-            : `✗ **Sunday hunting is NOT generally allowed** (with limited exceptions)\n\n` +
-              `Check with local WMAs for special weekend hunting opportunities.`) +
+            ? `Maryland does **not** allow hunting every Sunday. Sunday deer hunting is open only on **specific designated dates** that vary by county, season, and weapon.\n\n` +
+              `${county.name} County has some designated Sunday hunting dates, but you must check the exact dates and whether they apply to private land only or also designated public land.\n\n` +
+              `📅 See DNR's **Sunday Deer Hunting Calendar** for this county's exact dates.`
+            : `✗ **No Sunday deer hunting** is offered in ${county.name} County.`) +
           `\n\nAlways verify current rules with MD DNR before your hunt.`,
-        citations: ['MD DNR Hunting Regulations'],
+        citations: [
+          'MD DNR Sunday Deer Hunting Calendar',
+          'https://dnr.maryland.gov/huntersguide/documents/sundaydeerhuntingcalendar.pdf',
+        ],
         followUpSuggestions: [
           'Other counties?',
-          'Private vs public land Sunday rules?',
-          'WMA Sunday hunting?',
+          'What are the Sunday hunting hours?',
+          'Sunday hunting on public land?',
         ],
       };
     }
@@ -850,15 +885,18 @@ function handleSundayHuntingQuery(userQuery: string): ChatResponse {
   return {
     text:
       '**Sunday Hunting in Maryland**\n\n' +
-      '**Private Land:** Sunday hunting is allowed statewide on private land you have permission to hunt.\n\n' +
-      '**Public Land (WMAs):** Varies by area. Some WMAs allow Sunday hunting, others do not. Check your specific WMA.\n\n' +
-      '**General Rule:** Always verify with MD DNR and your specific hunting area before planning a Sunday hunt.\n\n' +
-      'Tip: Tell me your county and I can give you specific rules!',
-    citations: ['MD DNR Hunting Regulations'],
+      'Maryland does **not** have blanket Sunday hunting. Sunday deer hunting is allowed only on **specific designated dates** that vary by **county, season, and weapon** — and a few counties (Baltimore, Howard, Prince George’s) offer none.\n\n' +
+      '**Where it applies:** some counties open designated Sundays on private and designated public land; others on private land only. Some Sundays also carry restricted shooting hours.\n\n' +
+      '**Find your dates:** DNR publishes a dedicated **Sunday Deer Hunting Calendar** each license year — that is the authoritative source.\n\n' +
+      'Tip: Tell me your county and I can point you to the right rules.',
+    citations: [
+      'MD DNR Sunday Deer Hunting Calendar',
+      'https://dnr.maryland.gov/huntersguide/documents/sundaydeerhuntingcalendar.pdf',
+    ],
     followUpSuggestions: [
-      'Which counties allow Sunday hunting?',
-      'Can I hunt on Sunday in my WMA?',
-      'Rules for Garrett County?',
+      'Sunday hunting in Garrett County?',
+      'What are the legal hunting hours?',
+      'Which counties have no Sunday hunting?',
     ],
   };
 }
@@ -893,9 +931,9 @@ function handleCountySpecificQuery(userQuery: string): ChatResponse {
   return {
     text:
       `**Hunting in ${county.name} County, Maryland**\n\n` +
-      `**Region:** ${county.deerManagementRegion}\n` +
-      `**Sunday Hunting:** ${county.sundayHuntingAllowed ? 'Allowed on private land' : 'Limited'}\n` +
-      `**Antler Restrictions:** ${county.notes}\n\n` +
+      `**Deer Region:** ${county.deerManagementRegion}\n` +
+      `**Sunday Hunting:** ${county.sundayHuntingAllowed ? 'Designated Sundays only — see DNR Sunday Deer Hunting Calendar' : 'None offered'}\n` +
+      `**Antler Restriction:** ${county.antlerRestrictions}\n\n` +
       (wmAs.length > 0
         ? `**Public Hunting Areas:**\n${wmAs.map((w) => `• ${w.name}`).join('\n')}\n\n`
         : 'No major WMAs found in this county. Check private land access.\n\n') +
@@ -1067,17 +1105,17 @@ function handleLicenseFeeQuery(userQuery: string): ChatResponse {
       '**Base License:**\n' +
       '• Resident: $35/year\n' +
       '• Senior (65+): $5/year\n' +
-      '• Junior (under 16): $10.50/year (includes archery & muzzleloader stamps)\n' +
+      '• Junior (under 16): $15/year (free one-time after Hunter Education, with archery & muzzleloader stamps)\n' +
       '• Disabled Veteran: FREE lifetime license\n' +
-      '• Nonresident: $160/year\n' +
-      '• Apprentice: $15 resident / $40 nonresident\n\n' +
+      '• Nonresident: $160/year (Junior $80, Senior $65)\n\n' +
       '**Required Stamps & Permits:**\n' +
-      '• Archery Stamp: $6\n' +
-      '• Muzzleloader Stamp: $6\n' +
-      '• Sika Deer Stamp: $10\n' +
-      '• Bonus Buck Stamp: $10\n' +
-      '• Migratory Bird Stamp (HIP): FREE registration\n' +
-      '• Federal Duck Stamp: $25\n\n' +
+      '• Archery Stamp: $6 resident / $25 nonresident\n' +
+      '• Muzzleloader Stamp: $6 resident / $25 nonresident\n' +
+      '• Sika Deer Stamp: $10 resident / $200 nonresident\n' +
+      '• Bonus Antlered Deer Stamp: $10 resident / $25 nonresident\n' +
+      '• HIP registration: FREE (required for all migratory bird hunting)\n' +
+      '• Maryland Migratory Game Bird Stamp: $15\n' +
+      '• Federal Duck Stamp: $29 (via Maryland)\n\n' +
       '**Purchase:** compass.dnr.maryland.gov or authorized vendors\n\n' +
       'Many stamps are included in combo licenses — check the COMPASS website for best pricing.',
     citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/huntinglicenses.aspx'],
@@ -1351,14 +1389,14 @@ function handleManagedHuntQuery(userQuery: string): ChatResponse {
 function handleHarvestReportingQuery(userQuery: string): ChatResponse {
   return {
     text:
-      '**Harvest Reporting Requirements**\n\n' +
+      '**Harvest Reporting Requirements (Deer & Turkey)**\n\n' +
+      '**At the place of kill, before moving the animal:** complete a field tag in ink and attach it, **or** check the animal in there and get a confirmation number. (See "field tagging" for the details.)\n\n' +
       '**Reporting Timeline:**\n' +
-      '• **24-Hour Requirement:** You must report your harvest before removing the head or hide\n' +
-      '• Report immediately to avoid violations\n\n' +
+      '• **Register within 24 hours** of recovering the deer or turkey\n\n' +
       '**Reporting Methods:**\n' +
-      '• Online: compass.dnr.maryland.gov (preferred)\n' +
-      '• Phone: Call MD DNR during business hours\n' +
-      '• Mobile App: Use MDHuntFishOutdoors or MD Outdoors app\n\n' +
+      '• Online: mdoutdoors.maryland.gov (preferred)\n' +
+      '• Phone: Big Game Registration line, (888) 800-0121\n' +
+      '• Mobile App: Use the MD Outdoors app\n\n' +
       '**Check Stations:**\n' +
       'No physical check stations since 2004 — all reporting is done online or by phone.\n\n' +
       '**Confirmation Number:**\n' +
@@ -1372,6 +1410,83 @@ function handleHarvestReportingQuery(userQuery: string): ChatResponse {
       'How do I report my harvest online?',
       'What if I forget my confirmation number?',
       'Can I report by phone?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEGAL HUNTING HOURS HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleShootingHoursQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Legal Hunting Hours in Maryland**\n\n' +
+      '**Deer, fall turkey, and small game:**\n' +
+      '• One half hour before sunrise to one half hour after sunset.\n\n' +
+      '**Spring turkey:**\n' +
+      '• Early portion: one half hour before sunrise to **noon**.\n' +
+      '• Later portion: one half hour before sunrise to **sunset**.\n\n' +
+      '**Waterfowl & migratory birds (ducks, geese, coots, snipe, woodcock):**\n' +
+      '• One half hour before sunrise to **sunset**.\n\n' +
+      '**Doves:**\n' +
+      '• Early season: **noon to sunset**; later segments one half hour before sunrise to sunset.\n\n' +
+      'Some designated Sundays in some counties carry restricted hours. Always use local sunrise/sunset times for the exact day and place you hunt, and verify with the current DNR guide.',
+    citations: ['https://www.eregulations.com/maryland/hunting'],
+    followUpSuggestions: [
+      'What are the spring turkey hours?',
+      'What time can I shoot ducks?',
+      'Do I need to wear orange?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLUORESCENT ORANGE / PINK HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleBlazeOrangeQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Fluorescent Orange / Pink Requirement (Maryland)**\n\n' +
+      'During firearms and muzzleloader deer seasons you must wear daylight fluorescent **orange or pink** as an outer garment at all times, in one of these forms:\n\n' +
+      '• A solid fluorescent orange/pink **cap**; **or**\n' +
+      '• A **vest or jacket** with at least **250 square inches** of solid fluorescent orange/pink on the front and back; **or**\n' +
+      '• An outer garment of camouflage fluorescent orange/pink worn above the waist that is at least **50%** fluorescent color.\n\n' +
+      '**Ground blinds:** display a fluorescent orange/pink cap or a 250-square-inch panel on or within 25 feet of the blind.\n\n' +
+      '**Exemptions:** archery-only deer season; falconry; and hunters pursuing waterfowl, dove, crow, furbearers, or turkey. **But** archery hunters afield during an open firearms deer season must still comply.\n\n' +
+      'When in doubt, wear it — it is the cheapest insurance in the woods.',
+    citations: ['https://www.eregulations.com/maryland/hunting/hunting-regulations'],
+    followUpSuggestions: [
+      'Do I need orange for archery?',
+      'Orange rules for ground blinds?',
+      'What are the legal hunting hours?',
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FIELD TAGGING HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleFieldTaggingQuery(_userQuery: string): ChatResponse {
+  return {
+    text:
+      '**Field Tagging & Game Registration (Deer & Turkey)**\n\n' +
+      '**At the place of kill, before you move the animal, do ONE of these:**\n' +
+      '1. **Complete a field tag in ink** — harvest date, county of kill, your name, and DNRid number — and attach it to the animal; **or**\n' +
+      '2. **Check the animal in** right there and get a **confirmation number** — then you may move it untagged.\n\n' +
+      '**Then register the harvest within 24 hours** of recovering the animal:\n' +
+      '• Online — **mdoutdoors.maryland.gov** (or the MD Outdoors app)\n' +
+      '• Phone — **Big Game Registration line, (888) 800-0121**\n\n' +
+      'Keep your confirmation number — you must show it if checked by a wildlife officer. (Black bear has its own mandatory tagging and registration rules under the bear-hunt permit.)',
+    citations: [
+      'https://www.eregulations.com/maryland/hunting/deer-turkey-tagging-checking',
+    ],
+    followUpSuggestions: [
+      'How do I register my harvest?',
+      'What is a DNRid number?',
+      'Do I tag a turkey the same way?',
     ],
   };
 }

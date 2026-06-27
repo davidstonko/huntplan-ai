@@ -139,7 +139,7 @@ export default function CampGearScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          All affiliate links use the mdoutdoors-20 tag. Direct links shown when available.
+          As an Amazon Associate, MDHuntFishOutdoors earns from qualifying purchases. Direct links shown when available.
         </Text>
       </View>
 

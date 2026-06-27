@@ -3,7 +3,7 @@
  *
  * Shows a read-only list of recommended gear bundles organized by activity
  * and budget tier. Each item can be tapped to open an Amazon affiliate link
- * (mdoutdoors-20 tag). No user accounts, no purchase tracking, no in-app
+ * (mdoutdoors1-20 tag). No user accounts, no purchase tracking, no in-app
  * commerce — users are sent to Amazon via Linking.openURL.
  *
  * Built 2026-04-17 for V2.2.0 to replace the "Coming Soon" placeholder and
@@ -82,7 +82,7 @@ interface GearItem {
   seasonHint?: [number, number];
 }
 
-const AFFILIATE_TAG = 'mdoutdoors-20';
+const AFFILIATE_TAG = 'mdoutdoors1-20';
 
 // Amazon search URLs with affiliate tag — users can browse within the result.
 // Not direct product links (those change), so these survive catalog updates.

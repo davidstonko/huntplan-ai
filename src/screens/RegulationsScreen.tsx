@@ -164,8 +164,9 @@ export default function RegulationsScreen() {
     // Parse the date
     const dateObj = new Date(huntDate + 'T00:00:00');
 
-    // Check if in season using local helper
-    const inSeason = isInSeason(huntSpecies, dateObj, huntWeapon);
+    // Check if in season using local helper — county-aware so that county-
+    // restricted seasons (e.g. bear, grouse) don't read "in season" statewide.
+    const inSeason = isInSeason(huntSpecies, dateObj, huntWeapon, huntCounty);
 
     if (inSeason) {
       const matchingSeasons = MD_SEASONS.filter(
@@ -173,7 +174,12 @@ export default function RegulationsScreen() {
           s.species === huntSpecies &&
           s.startDate <= huntDate &&
           huntDate <= s.endDate &&
-          s.weaponType.toLowerCase().includes(huntWeapon.toLowerCase())
+          s.weaponType.toLowerCase().includes(huntWeapon.toLowerCase()) &&
+          (!s.countyRestrictions ||
+            s.countyRestrictions.length === 0 ||
+            s.countyRestrictions.some(
+              (c) => c.toLowerCase() === huntCounty.toLowerCase()
+            ))
       );
 
       const seasonInfo =

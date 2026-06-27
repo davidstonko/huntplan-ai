@@ -5,7 +5,25 @@
 > (V2_3_*, PRE_BUILD_AUDIT_*, PUSH_AUDIT.md) are historical records —
 > this file supersedes them for "what's left."
 
-Last updated: 2026-06-10 (submission-prep session)
+Last updated: 2026-06-27 (audit + hunt-regs accuracy session)
+
+## What landed 2026-06-27 (audit + audit-of-audit)
+
+Four-auditor pass (domain coverage / wiring / meta-audit / submission risk) →
+`AUDIT_2026_06_27.md`. Core finding: the audit cadence verifies build-integrity,
+not mission-correctness; the regs DATA had legal-accuracy errors. Fixed this session:
+- **Submission:** app-icon alpha channel removed (Apple upload reject); affiliate
+  tag typo `mdoutdoors-20`→`mdoutdoors1-20` (main gear screen was earning $0).
+- **Hunt regs accuracy (verified vs DNR/eRegulations):** real Region A/B deer model
+  + statewide antler-point restriction; region-aware antlerless limits (was a flat
+  wrong "5/yr"); Sunday-hunting messaging fixed to "designated dates only";
+  added chat handlers for legal hunting hours, blaze orange, field tagging;
+  `isInSeason()` now county-aware so Can-I-Hunt no longer green-lights bear/grouse
+  statewide; bear season → 4 counties; license fees reconciled; winter muzzleloader
+  dates fixed; staleness banner now fires. Guard test `huntRegsAccuracy.test.ts`.
+- tsc clean · jest 113 suites / 2690 passed / 0 failed.
+- **Still open from audit:** wholesale 2026-27 season-date refresh; offline-with-radio-off
+  verify; first-run/zero-data states; real-device cold-start; EXIF strip live-verify.
 
 ## Where we are
 

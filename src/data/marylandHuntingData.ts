@@ -44,7 +44,10 @@ export interface RegulationsMeta {
 export const REGULATIONS_META: RegulationsMeta = {
   seasonLabel: '2025-2026',
   publishedOn: '2025-07-15',
-  nextSeasonExpectedBy: '2026-08-01',
+  // The 2025-26 license year has closed; DNR publishes the new license-year
+  // regulations in early July. Flag the bundled data as stale from 2026-07-01
+  // so the in-app banner tells hunters to verify the current 2026-27 dates.
+  nextSeasonExpectedBy: '2026-07-01',
   sourceUrl: 'https://dnr.maryland.gov/huntersguide',
 };
 
@@ -86,9 +89,17 @@ export interface WildlifeManagementArea {
 
 export interface MarylandCounty {
   name: string;
+  // Maryland uses a TWO-region deer system: 'Region A' (western: Allegany,
+  // Garrett, and western Washington) and 'Region B' (the rest of the state).
+  // The regions carry very different antlerless bag limits — see MD_BAG_LIMITS.
   deerManagementRegion: string;
+  // Sunday deer hunting in MD is allowed only on specific DESIGNATED DATES that
+  // vary by county and season (see DNR's Sunday Deer Hunting Calendar). This
+  // boolean means "some Sunday deer hunting dates exist in this county"; it does
+  // NOT mean every Sunday is open. A few counties allow none.
   sundayHuntingAllowed: boolean;
-  antlerRestrictions: string; // e.g. 'No antler restrictions', 'Minimum 15" inside or 17" outside'
+  // Maryland's statewide antler-point restriction (same in every county).
+  antlerRestrictions: string;
   notes: string;
 }
 
@@ -148,8 +159,8 @@ export const MD_SEASONS: HuntingSeason[] = [
     id: 'deer_muzzleloader_winter_2025',
     species: 'White-tailed Deer',
     seasonType: 'Muzzleloader (Winter)',
-    startDate: '2025-12-14',
-    endDate: '2025-12-20',
+    startDate: '2025-12-20',
+    endDate: '2026-01-03',
     weaponType: 'Muzzleloader',
     bagLimit: '1 antlered per season',
     notes:
@@ -305,8 +316,8 @@ export const MD_SEASONS: HuntingSeason[] = [
     weaponType: 'Rifle',
     bagLimit: '1 per season',
     notes:
-      'Designated counties only (primarily Garrett and Allegany). Rifle or shotgun slug. Lottery draw for permits.',
-    countyRestrictions: ['Garrett', 'Allegany'],
+      'Lottery-draw permit hunt in Allegany, Frederick, Garrett, and Washington counties. Rifle or shotgun slug. Apply for the bear lottery before the season.',
+    countyRestrictions: ['Allegany', 'Frederick', 'Garrett', 'Washington'],
   },
 ];
 
@@ -525,174 +536,192 @@ export const MD_WMAS: WildlifeManagementArea[] = [
 // MARYLAND COUNTIES (23 counties + Baltimore City)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Maryland's antler-point restriction is STATEWIDE and identical in every
+// county. Source: eRegulations MD Deer Seasons & Bag Limits.
+const STATEWIDE_APR =
+  'Statewide: your first antlered deer may be any buck; each additional ' +
+  'antlered deer must have at least 3 points on one antler.';
+
+// Counties that allow NO Sunday deer hunting (per DNR Sunday Deer Hunting
+// Calendar). Everywhere else, Sunday hunting is open only on designated dates.
+// Source: https://dnr.maryland.gov/huntersguide/documents/sundaydeerhuntingcalendar.pdf
 export const MD_COUNTIES: MarylandCounty[] = [
   {
     name: 'Allegany',
-    deerManagementRegion: 'Western',
+    deerManagementRegion: 'Region A',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Mountain region. Western Maryland. Grouse hunting available.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region A (western). Restrictive antlerless limits — see bag limits. Mountain region. Grouse and bear hunting available.',
   },
   {
     name: 'Anne Arundel',
-    deerManagementRegion: 'Central',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Around Annapolis. Urban and suburban. Waterfowl hunting in tidewater.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region B. Part of the Urban/Suburban Deer Management Zone (unlimited antlerless archery). Around Annapolis. Waterfowl in tidewater.',
   },
   {
     name: 'Baltimore',
-    deerManagementRegion: 'Central',
-    sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Urban/suburban. Limited hunting areas. Bow and shotgun emphasis.',
+    deerManagementRegion: 'Region B',
+    sundayHuntingAllowed: false,
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region B. No Sunday deer hunting. Urban/Suburban Deer Management Zone (unlimited antlerless archery). Bow and shotgun emphasis.',
   },
   {
     name: 'Baltimore City',
-    deerManagementRegion: 'Central',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: false,
-    antlerRestrictions: 'No hunting except special programs',
-    notes: 'Urban area. Limited hunting except dedicated wildlife management areas.',
+    antlerRestrictions: 'No general hunting except dedicated programs/WMAs.',
+    notes: 'Urban area. Limited hunting except dedicated wildlife management programs.',
   },
   {
     name: 'Calvert',
-    deerManagementRegion: 'Central',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Southern Maryland. Tidewater. Waterfowl and deer habitat.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Southern Maryland. Tidewater. Waterfowl and deer habitat.',
   },
   {
     name: 'Caroline',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Eastern Shore. Agricultural land. Good deer and upland game.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Eastern Shore. Agricultural land. Good deer and upland game.',
   },
   {
     name: 'Carroll',
-    deerManagementRegion: 'Central',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Northwestern Maryland. Rolling hills. Good deer hunting.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Northwestern Maryland. Rolling hills. Good deer hunting.',
   },
   {
     name: 'Cecil',
-    deerManagementRegion: 'Northern',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Upper Eastern Shore. Mixed habitat. Good all-around hunting.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Upper Eastern Shore. Mixed habitat. Good all-around hunting.',
   },
   {
     name: 'Charles',
-    deerManagementRegion: 'Southern',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Southern Maryland. Potomac River area. Waterfowl and deer.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Southern Maryland. Potomac River area. Waterfowl and deer.',
   },
   {
     name: 'Dorchester',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Eastern Shore marshlands. Excellent waterfowl. Deer available.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Eastern Shore marshlands. Excellent waterfowl. Deer available.',
   },
   {
     name: 'Frederick',
-    deerManagementRegion: 'Central',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'North-central Maryland. Appalachian foothills. Good deer.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region B. North-central Maryland. Appalachian foothills. One of four counties open to bear hunting.',
   },
   {
     name: 'Garrett',
-    deerManagementRegion: 'Western',
+    deerManagementRegion: 'Region A',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Far western Maryland. High elevation. Bear season. Grouse habitat.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region A (western). Restrictive antlerless limits — see bag limits. Far western Maryland. Bear season. Grouse habitat.',
   },
   {
     name: 'Harford',
-    deerManagementRegion: 'Northern',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Northern Maryland. Rolling terrain. Good deer and turkey.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Northern Maryland. Rolling terrain. Good deer and turkey.',
   },
   {
     name: 'Howard',
-    deerManagementRegion: 'Central',
-    sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Central Maryland. Urban/suburban. Limited hunting areas.',
+    deerManagementRegion: 'Region B',
+    sundayHuntingAllowed: false,
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region B. No Sunday deer hunting. Urban/Suburban Deer Management Zone (unlimited antlerless archery). Limited hunting areas.',
   },
   {
     name: 'Kent',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Upper Eastern Shore. Chesapeake Bay tributaries. Mixed habitat.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Upper Eastern Shore. Chesapeake Bay tributaries. Mixed habitat.',
   },
   {
     name: 'Montgomery',
-    deerManagementRegion: 'Central',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Northern suburban Maryland. Multiple WMAs. Shotgun/bow emphasis.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region B. Urban/Suburban Deer Management Zone (unlimited antlerless archery). Multiple WMAs. Shotgun/bow emphasis.',
   },
   {
     name: 'Prince George\'s',
-    deerManagementRegion: 'Central',
-    sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Washington D.C. suburbs. Limited hunting areas.',
+    deerManagementRegion: 'Region B',
+    sundayHuntingAllowed: false,
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Region B. No Sunday deer hunting. Urban/Suburban Deer Management Zone (unlimited antlerless archery). D.C. suburbs; limited areas.',
   },
   {
     name: 'Queen Anne\'s',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Upper Eastern Shore. Chesapeake Bay area. Waterfowl and deer.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Upper Eastern Shore. Chesapeake Bay area. Waterfowl and deer.',
   },
   {
     name: 'Somerset',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Lower Eastern Shore. Swamp habitat. Excellent waterfowl.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Lower Eastern Shore. Swamp habitat. Excellent waterfowl.',
   },
   {
     name: 'St. Mary\'s',
-    deerManagementRegion: 'Southern',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Southern Maryland. Potomac River. Waterfowl and deer.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Southern Maryland. Potomac River. Waterfowl and deer.',
   },
   {
     name: 'Talbot',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Upper Eastern Shore. Chesapeake Bay area. Waterfowl habitat.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Upper Eastern Shore. Chesapeake Bay area. Waterfowl habitat.',
   },
   {
     name: 'Washington',
-    deerManagementRegion: 'Western',
+    deerManagementRegion: 'Region A (west) / Region B (east)',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Western Maryland. Potomac area. Appalachian terrain.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes:
+      'Split county: the western portion is Region A (restrictive antlerless limits), the eastern portion is Region B. One of four bear-hunting counties. Verify which region your specific area falls in.',
   },
   {
     name: 'Wicomico',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Lower Eastern Shore. Mixed habitat. Good hunting.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Lower Eastern Shore. Mixed habitat. Good hunting.',
   },
   {
     name: 'Worcester',
-    deerManagementRegion: 'Eastern Shore',
+    deerManagementRegion: 'Region B',
     sundayHuntingAllowed: true,
-    antlerRestrictions: 'No restrictions',
-    notes: 'Lower Eastern Shore. Coastal area. Waterfowl emphasis.',
+    antlerRestrictions: STATEWIDE_APR,
+    notes: 'Region B. Lower Eastern Shore. Coastal area. Waterfowl emphasis.',
   },
 ];
 
@@ -708,16 +737,29 @@ export const MD_BAG_LIMITS: BagLimitRule[] = [
     limitType: 'season',
     quantity: 2,
     timePeriod: 'calendar year',
-    notes: 'Antlered deer: Maximum 2 per calendar year.',
+    notes:
+      'Antlered deer: 2 per year on the regular bag (a Bonus Antlered Deer Stamp is required for additional antlered deer). Antler-point rule (statewide): your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.',
+  },
+  // Antlerless limits differ sharply by deer region — the most commonly
+  // misunderstood MD rule. Source: eRegulations MD Deer Seasons & Bag Limits.
+  {
+    species: 'White-tailed Deer',
+    weaponType: 'Any',
+    limitType: 'season',
+    quantity: 2,
+    timePeriod: 'calendar year',
+    notes:
+      'Antlerless — REGION A (Allegany, Garrett, western Washington): maximum 1 per day and 2 total for the year, combined across archery, firearms, and muzzleloader. Do not exceed 2.',
+    countyRestrictions: ['Allegany', 'Garrett', 'Washington'],
   },
   {
     species: 'White-tailed Deer',
     weaponType: 'Any',
     limitType: 'season',
-    quantity: 5,
-    timePeriod: 'calendar year',
+    quantity: 15,
+    timePeriod: 'season',
     notes:
-      'Antlerless deer: 5 per calendar year (varies by county). Check specific county bag limits.',
+      'Antlerless — REGION B (rest of the state): archery 15 per season, firearms 10 per season, muzzleloader 10 per season. Unlimited antlerless archery in the Urban/Suburban Deer Management Zone (Anne Arundel, Baltimore, Howard, Montgomery, Prince George’s).',
   },
   {
     species: 'White-tailed Deer',
@@ -817,7 +859,7 @@ export const MD_BAG_LIMITS: BagLimitRule[] = [
     quantity: 1,
     timePeriod: 'calendar year',
     notes:
-      'Bear: 1 per calendar year in designated counties (Garrett, Allegany). Lottery draw permits.',
+      'Bear: 1 per calendar year. Lottery-draw permit hunt in Allegany, Frederick, Garrett, and Washington counties.',
   },
 ];
 
@@ -836,21 +878,33 @@ export function getSeasonsBySpecies(species: string): HuntingSeason[] {
 
 /**
  * Check if a given date falls within a hunting season for a species.
+ *
+ * When `county` is supplied, seasons that are restricted to specific counties
+ * (via `countyRestrictions`) are only considered open in those counties — so a
+ * bear/grouse hunt does not read "in season" statewide. Omitting `county`
+ * preserves the old statewide behavior for callers that don't have one.
  */
 export function isInSeason(
   species: string,
   date: Date,
-  weaponType: string
+  weaponType: string,
+  county?: string
 ): boolean {
   const seasons = getSeasonsBySpecies(species);
   const dateStr = date.toISOString().split('T')[0];
 
-  return seasons.some(
-    (season) =>
-      season.startDate <= dateStr &&
-      dateStr <= season.endDate &&
-      season.weaponType.toLowerCase().includes(weaponType.toLowerCase())
-  );
+  return seasons.some((season) => {
+    const dateOk = season.startDate <= dateStr && dateStr <= season.endDate;
+    const weaponOk = season.weaponType
+      .toLowerCase()
+      .includes(weaponType.toLowerCase());
+    const restrictedTo = season.countyRestrictions ?? [];
+    const countyOk =
+      !county ||
+      restrictedTo.length === 0 ||
+      restrictedTo.some((c) => c.toLowerCase() === county.toLowerCase());
+    return dateOk && weaponOk && countyOk;
+  });
 }
 
 /**

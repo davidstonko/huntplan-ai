@@ -160,7 +160,7 @@ export interface GearItem {
   notes: string | null;
   /**
    * Amazon ASIN for optional affiliate link. Falsy means no link.
-   * Affiliate tag mdoutdoors-20 is applied at render time.
+   * Affiliate tag mdoutdoors1-20 is applied at render time.
    */
   asin: string | null;
   /** True if the item was auto-added by the rules engine vs user. */
