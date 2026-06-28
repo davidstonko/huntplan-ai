@@ -84,6 +84,12 @@ describe('chat surfaces the previously-missing regulatory topics', () => {
 
   it('answers legal hunting hours', () =>
     expectContains('what are the legal hunting hours', 'sunrise'));
+  it('gives concrete shooting times for today (not just the rule)', () => {
+    const r: any = getSmartResponse('what are the legal hunting hours');
+    const text = r?.text || '';
+    expect(text).toContain('Today');
+    expect(/\d{1,2}:\d{2}\s?(AM|PM)/.test(text)).toBe(true);
+  });
   it('answers blaze orange', () =>
     expectContains('do I need to wear orange', 'fluorescent'));
   it('answers field tagging', () =>

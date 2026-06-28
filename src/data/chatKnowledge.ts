@@ -32,6 +32,15 @@ import {
   type LocalService,
 } from './marylandLocalServices';
 import { CURATED_HUNTING_GEAR } from './curatedHuntingGear';
+import { getLocalSolunarData } from '../services/solunarService';
+
+/** "HH:MM" (24h) -> "h:mm AM/PM". */
+function toClock12h(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hr = h % 12 === 0 ? 12 : h % 12;
+  return `${hr}:${String(m).padStart(2, '0')} ${period}`;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -1419,9 +1428,20 @@ function handleHarvestReportingQuery(userQuery: string): ChatResponse {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function handleShootingHoursQuery(_userQuery: string): ChatResponse {
+  // Today's actual legal window for central MD (Eastern time), so the answer
+  // is concrete rather than just stating the rule.
+  const today = new Date().toISOString().split('T')[0];
+  const sun = getLocalSolunarData(39.0, -76.6, today).sun;
+  const deerHours = `${toClock12h(sun.legal_start)} – ${toClock12h(sun.legal_end)}`;
+  const waterfowlHours = `${toClock12h(sun.legal_start)} – ${toClock12h(sun.sunset)}`;
   return {
     text:
       '**Legal Hunting Hours in Maryland**\n\n' +
+      `**Today (${today}) — central MD, approximate:**\n` +
+      `• Deer / turkey / small game: **${deerHours}**\n` +
+      `• Waterfowl: **${waterfowlHours}**\n` +
+      '_(Times shift a few minutes east/west — confirm local sunrise/sunset.)_\n\n' +
+      '**The rules:**\n' +
       '**Deer, fall turkey, and small game:**\n' +
       '• One half hour before sunrise to one half hour after sunset.\n\n' +
       '**Spring turkey:**\n' +
