@@ -7,6 +7,17 @@
 
 Last updated: 2026-06-27 (audit + regs accuracy + competitive features + LIVE-SIM verification)
 
+## More features (sim-verified) 2026-06-27/28
+
+- **Public-vs-private parcel coloring** (Hunt + Scout): public land (park/forest/WMA per SDAT
+  exemption class) = green, private = orange; tap → "Likely public land · <class>" badge +
+  land use. Verified at Patapsco Valley SP. (commit ec042678)
+- **Today's legal shooting hours** in the "Can I Hunt?" checker: ½hr before sunrise to ½hr
+  after sunset (waterfowl ends at sunset), central-MD Eastern time. Verified
+  "5:14 AM – 8:58 PM" on device. **Surfaced + fixed a pre-existing solunar bug** — sunrise/
+  sunset were ~10 hrs off (wrong ET-offset sign), which also broke the Sun & Moon panel.
+  Added DST handling. (commit d1363e9f)
+
 ## Live-simulator verification 2026-06-27 (the audit step that was missing)
 
 Built + ran the app on iPhone 17 Pro / iOS 26.5 and tapped through every new
