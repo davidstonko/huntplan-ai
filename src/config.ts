@@ -16,8 +16,8 @@
 //   - APP_MARKETING_VERSION must match CFBundleShortVersionString in Info.plist
 //   - APP_BUILD_NUMBER must match CFBundleVersion
 //
-export const APP_MARKETING_VERSION = '2.4.0';
-export const APP_BUILD_NUMBER = '1';
+export const APP_MARKETING_VERSION = '2.5.0';
+export const APP_BUILD_NUMBER = '2';
 export const APP_VERSION = `${APP_MARKETING_VERSION}+${APP_BUILD_NUMBER}`;
 
 // ── App identity ─────────────────────────────────────────────────

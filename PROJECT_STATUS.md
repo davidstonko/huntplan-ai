@@ -7,6 +7,20 @@
 
 Last updated: 2026-06-27 (audit + regs accuracy + competitive features + LIVE-SIM verification)
 
+## Submission readiness 2026-06-28
+
+App is feature-complete for the next release and sim-verified on iPhone 17 Pro.
+- **Version bumped 2.4.0/1 → 2.5.0 build 2** (package.json, src/config.ts,
+  pbxproj MARKETING_VERSION + CURRENT_PROJECT_VERSION; Info.plist uses $() refs).
+  2.4.0 build 1 is the build already on the App Store; 2.5.0 carries this
+  session's new features (parcels, USGS gauges, wild-trout, offline maps,
+  public/private coloring, legal shooting hours) + the regs-accuracy fixes.
+- tsc clean · jest 117 suites / 2724 passed · no stray debug logs in new files.
+- Location permission string already present (used by maps/parcels).
+- **Remaining = David's manual steps:** Xcode Archive (signing/certs) → upload to
+  App Store Connect → metadata/screenshots → submit. The engineering is done +
+  pushed to origin.
+
 ## More features (sim-verified) 2026-06-27/28
 
 - **Public-vs-private parcel coloring** (Hunt + Scout): public land (park/forest/WMA per SDAT
