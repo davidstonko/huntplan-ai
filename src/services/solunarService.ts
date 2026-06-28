@@ -195,6 +195,21 @@ export function bestSolunarDay(
  * Sun & Moon panel — Phase A.29) can render sunrise/sunset and moon
  * phase without an awaited fetch and without re-implementing the math.
  */
+
+/**
+ * True if the given date falls in US Eastern Daylight Time (2nd Sunday of
+ * March 02:00 to 1st Sunday of November 02:00). Used to pick the ET UTC
+ * offset (EDT -4 vs EST -5) for the local sunrise/sunset approximation.
+ */
+export function isUsEasternDst(d: Date): boolean {
+  const year = d.getFullYear();
+  const marchFirstDow = new Date(year, 2, 1).getDay();
+  const dstStart = new Date(year, 2, 1 + ((7 - marchFirstDow) % 7) + 7, 2);
+  const novFirstDow = new Date(year, 10, 1).getDay();
+  const dstEnd = new Date(year, 10, 1 + ((7 - novFirstDow) % 7), 2);
+  return d >= dstStart && d < dstEnd;
+}
+
 export function getLocalSolunarData(
   latitude: number,
   longitude: number,
@@ -227,7 +242,12 @@ export function getLocalSolunarData(
   const declRad = (declination * Math.PI) / 180;
   const cosHour = Math.max(-1, Math.min(1, -Math.tan(latRad) * Math.tan(declRad)));
   const hourAngle = (Math.acos(cosHour) * 180) / Math.PI;
-  const solarNoon = 12.0 - longitude / 15.0 + 5.0; // ET offset
+  // Local solar noon (clock time). Solar noon in UTC = 12 - longitude/15; then
+  // subtract the Eastern-time UTC offset (EDT -4 during DST, EST -5 otherwise).
+  // The previous formula ADDED 5, putting solar noon near 22:00 and scrambling
+  // sunrise/sunset (they came out ~10 hours off).
+  const etOffset = isUsEasternDst(dt) ? 4 : 5;
+  const solarNoon = 12.0 - longitude / 15.0 - etOffset;
   const sunrise = solarNoon - hourAngle / 15.0;
   const sunset = solarNoon + hourAngle / 15.0;
 

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Colors from '../theme/colors';
 import { useModalFocus } from '../hooks/useModalFocus';
+import { getLocalSolunarData } from '../services/solunarService';
 import {
   MD_SEASONS,
   MD_COUNTIES,
@@ -24,6 +25,14 @@ import {
   REGULATIONS_META,
   isRegulationsStale,
 } from '../data/marylandHuntingData';
+
+/** Convert a 24h "HH:MM" string to a 12h "h:mm AM/PM" label. */
+function to12h(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hr = h % 12 === 0 ? 12 : h % 12;
+  return `${hr}:${String(m).padStart(2, '0')} ${period}`;
+}
 
 /**
  * @file RegulationsScreen.tsx
@@ -108,6 +117,7 @@ export default function RegulationsScreen() {
   const [huntResult, setHuntResult] = useState<{
     allowed: boolean;
     reason: string;
+    legalHours: string;
   } | null>(null);
 
   // Dropdown visibility states
@@ -164,6 +174,16 @@ export default function RegulationsScreen() {
     // Parse the date
     const dateObj = new Date(huntDate + 'T00:00:00');
 
+    // Today's legal shooting hours for this date. Deer/turkey/small game:
+    // 1/2 hr before sunrise to 1/2 hr after sunset. Waterfowl: 1/2 hr before
+    // sunrise to SUNSET. These are MARYLAND hours, so use a central-MD point
+    // (Eastern time) rather than device GPS — the device could be anywhere
+    // (traveling, or a non-MD simulator) which would mismatch the ET offset.
+    const solar = getLocalSolunarData(39.0, -76.6, huntDate);
+    const isWaterfowl = /waterfowl|duck|goose|geese|teal|brant/i.test(huntSpecies);
+    const legalEnd = isWaterfowl ? solar.sun.sunset : solar.sun.legal_end;
+    const legalHours = `${to12h(solar.sun.legal_start)} – ${to12h(legalEnd)}`;
+
     // Check if in season using local helper — county-aware so that county-
     // restricted seasons (e.g. bear, grouse) don't read "in season" statewide.
     const inSeason = isInSeason(huntSpecies, dateObj, huntWeapon, huntCounty);
@@ -190,11 +210,13 @@ export default function RegulationsScreen() {
       setHuntResult({
         allowed: true,
         reason: `${huntSpecies} hunting is in season in ${huntCounty} County with ${huntWeapon}. ${seasonInfo}`,
+        legalHours,
       });
     } else {
       setHuntResult({
         allowed: false,
         reason: `${huntSpecies} is not in season on ${huntDate} with ${huntWeapon} in ${huntCounty} County.`,
+        legalHours,
       });
     }
   };
@@ -428,8 +450,16 @@ export default function RegulationsScreen() {
                   {huntResult.allowed ? 'HUNT IS IN SEASON' : 'NOT IN SEASON'}
                 </Text>
                 <Text style={styles.resultReason}>{huntResult.reason}</Text>
+                <View style={styles.legalHoursRow}>
+                  <Text style={styles.legalHoursLabel}>
+                    Legal shooting hours ({huntDate}):
+                  </Text>
+                  <Text style={styles.legalHoursValue}>{huntResult.legalHours}</Text>
+                </View>
                 <Text style={styles.resultDisclaimer}>
-                  Always verify with MD DNR before heading out.
+                  Approximate for central Maryland — times shift a few minutes
+                  east/west; confirm exact local sunrise/sunset, and always
+                  verify with MD DNR before heading out.
                 </Text>
               </View>
             )}
@@ -775,6 +805,25 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 20,
     marginBottom: 8,
+  },
+  legalHoursRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.clay,
+  },
+  legalHoursLabel: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginRight: 6,
+  },
+  legalHoursValue: {
+    fontSize: 14,
+    color: Colors.mdGold,
+    fontWeight: '800',
   },
   resultDisclaimer: {
     fontSize: 11,
