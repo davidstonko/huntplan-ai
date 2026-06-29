@@ -232,23 +232,30 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
         </TouchableOpacity>
 
         {/* ── Dev tools ── (added 2026-04-26 fork merge) */}
-        <Text style={styles.sectionTitle}>Dev tools</Text>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => navigation?.navigate?.('WindWidgetPlayground')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.linkRow}>
-            <View>
-              <Text style={styles.linkLabel}>Wind widget playground</Text>
-              <Text style={styles.linkDesc}>
-                Drag, resize, and tweak the Hunt-map wind/scent-cone widget,
-                then copy the resulting StyleSheet snippet.
-              </Text>
-            </View>
-            <Text style={styles.chevron}>{'\u203A'}</Text>
-          </View>
-        </TouchableOpacity>
+        {/* DEBUG BUILDS ONLY: a shipping dev tool is a "hidden feature" under
+            App Review 2.3.1(a) \u2014 it was in the rejected 2.3 build. __DEV__ is
+            false in Release, so the App Store build never renders this. */}
+        {__DEV__ && (
+          <>
+            <Text style={styles.sectionTitle}>Dev tools</Text>
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation?.navigate?.('WindWidgetPlayground')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.linkRow}>
+                <View>
+                  <Text style={styles.linkLabel}>Wind widget playground</Text>
+                  <Text style={styles.linkDesc}>
+                    Drag, resize, and tweak the Hunt-map wind/scent-cone widget,
+                    then copy the resulting StyleSheet snippet.
+                  </Text>
+                </View>
+                <Text style={styles.chevron}>{'\u203A'}</Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
 
         {/* ── Units ── */}
         <Text style={styles.sectionTitle}>Units</Text>
