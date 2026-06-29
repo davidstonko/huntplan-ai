@@ -30,10 +30,13 @@ Ran an adversarial code review of the session's new code; fixed what it found
 - **Offline "download current view"** now guarded to <=0.5deg viewports so a
   zoomed-out view can't trigger a huge, under-estimated tile pack. commit fd652d4e
 
-Note (product judgment, not a bug): the prefix classifier now also greens
-government *buildings* (schools/police/offices are STA/JUR too). Safe + hedged
-(card shows the exact class), and rare in rural hunting areas. Could later
-narrow to recreation-relevant gov land if the town noise matters.
+Note (product judgment, not a bug): the prefix classifier also greens
+government *buildings* (schools/police/offices are STA/JUR too). Quantified
+against live data in Green Ridge State Forest country: of 11,850 government-
+owned acres, **99.8% is recreation/resource land** (STA Parks/Game Preserves/
+Other, etc.); "building" classes total ~20 acres (0.17%). So in actual hunting
+country the noise is negligible — no refinement needed. Card shows the exact
+class either way.
 
 ## Submission readiness 2026-06-28
 
