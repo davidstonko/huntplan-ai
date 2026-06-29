@@ -64,15 +64,25 @@ beforeEach(() => {
   _clearParcelCache();
 });
 
-describe('isLikelyPublicLand', () => {
-  it('flags park/forest/WMA exemption classes as public', () => {
+describe('isLikelyPublicLand (SDAT exemption-class ownership prefix)', () => {
+  // Real DESCEXCL values verified against the live MD parcel layer 2026-06-29.
+  it('flags government-owned classes (STA/JUR/MUN/PUB) as public', () => {
     expect(isLikelyPublicLand({ DESCEXCL: 'STA Parks' })).toBe(true);
-    expect(isLikelyPublicLand({ DESCEXCL: 'State Forest' })).toBe(true);
-    expect(isLikelyPublicLand({ DESCEXCL: 'Wildlife Management Area' })).toBe(true);
+    expect(isLikelyPublicLand({ DESCEXCL: 'STA Game Preserves' })).toBe(true);
+    // "STA Other" is how state-FOREST land is coded — old keyword match missed it.
+    expect(isLikelyPublicLand({ DESCEXCL: 'STA Other' })).toBe(true);
+    expect(isLikelyPublicLand({ DESCEXCL: 'JUR Parks & Recreation' })).toBe(true);
+    expect(isLikelyPublicLand({ DESCEXCL: 'MUN Parks And Recreation' })).toBe(true);
+    expect(isLikelyPublicLand({ DESCEXCL: 'PUB Other' })).toBe(true);
   });
-  it('does NOT flag non-land exemptions (church, school, office) as public', () => {
-    expect(isLikelyPublicLand({ DESCEXCL: 'STA Colleges' })).toBe(false);
-    expect(isLikelyPublicLand({ DESCEXCL: 'Religious' })).toBe(false);
+  it('does NOT flag privately-owned classes as public', () => {
+    // OTH Conservation Tax Credit = PRIVATE land with a tax break. The old
+    // keyword match wrongly flagged it public via the word "conservation".
+    expect(isLikelyPublicLand({ DESCEXCL: 'OTH Conservation Tax Credit' })).toBe(false);
+    expect(
+      isLikelyPublicLand({ DESCEXCL: 'PVT Churches, Synagogues, & Parsonages' }),
+    ).toBe(false);
+    expect(isLikelyPublicLand({ DESCEXCL: 'NPF Clubs' })).toBe(false);
     expect(isLikelyPublicLand({ DESCEXCL: null })).toBe(false);
     expect(isLikelyPublicLand({})).toBe(false);
   });

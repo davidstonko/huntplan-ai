@@ -83,27 +83,37 @@ export interface ParcelProperties {
   /** SDAT land-use description, e.g. "Exempt". */
   landUse: string | null;
   /**
-   * Heuristic bucket for at-a-glance coloring: 'public' = likely a huntable-
-   * relevant public land (park/forest/WMA per the exemption class), else
-   * 'private'. NOT authoritative — confirm access before hunting.
+   * Heuristic bucket for at-a-glance coloring: 'public' = government-owned
+   * land (state/county/municipal/public per the SDAT exemption-class prefix),
+   * else 'private'. Government-owned is not always huntable (e.g. armories,
+   * schools) — NOT authoritative, confirm access before hunting.
    */
   category: 'public' | 'private';
 }
 
 /**
- * Classify a parcel as likely PUBLIC LAND from its SDAT exemption class.
- * Matches park/forest/wildlife/recreation/conservation language so state
- * forests, parks, and WMAs read as public, while churches, schools, and
- * office buildings (also tax-exempt) stay 'private'. Heuristic, not legal.
+ * SDAT exemption-class ownership prefixes that denote GOVERNMENT-owned land:
+ * STA = State, JUR = County/jurisdiction, MUN = Municipal, PUB = Public.
+ * Everything else is privately owned: OTH (e.g. "Conservation Tax Credit" —
+ * a tax break on PRIVATE land), PVT (churches/cemeteries), NPF (non-profits).
+ */
+const PUBLIC_OWNER_PREFIXES = ['STA', 'JUR', 'MUN', 'PUB'];
+
+/**
+ * Classify a parcel as likely PUBLIC (government-owned) LAND from its SDAT
+ * exemption class. Keys on the exemption-class OWNERSHIP PREFIX, not free-text
+ * keywords — verified against the live MD parcel layer (2026-06-29). This
+ * correctly buckets "STA Other" (state forest) as public and "OTH Conservation
+ * Tax Credit" (private easement land) as private, both of which the old
+ * keyword match got wrong. Government-owned ≠ always huntable (e.g. armories,
+ * schools), so the detail card shows the exact class. Heuristic, not legal.
  */
 export function isLikelyPublicLand(props: {
   DESCEXCL?: string | null;
 }): boolean {
-  const ex = (props.DESCEXCL ?? '').toLowerCase();
-  if (!ex) return false;
-  return /park|forest|wildlife|wma|recreation|conservation|natural resource|greenway|preserve|\bdnr\b/.test(
-    ex,
-  );
+  const desc = (props.DESCEXCL ?? '').trim().toUpperCase();
+  if (!desc) return false;
+  return PUBLIC_OWNER_PREFIXES.includes(desc.slice(0, 3));
 }
 
 export interface ParcelFeature {
