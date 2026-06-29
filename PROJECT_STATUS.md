@@ -5,7 +5,35 @@
 > (V2_3_*, PRE_BUILD_AUDIT_*, PUSH_AUDIT.md) are historical records —
 > this file supersedes them for "what's left."
 
-Last updated: 2026-06-27 (audit + regs accuracy + competitive features + LIVE-SIM verification)
+Last updated: 2026-06-29 (Release-build verification + adversarial review + fixes)
+
+## Pre-submission review pass 2026-06-29
+
+Verified the **Release** production build (Hermes bundle, Metro killed) launches
+and runs every mode on iPhone 17 Pro — Hunt map, Fish gauges, and the Daily
+Briefing Sun & Moon panel all render correctly (confirms the solunar fix and
+that the archive will be clean). Wrote App Store listing copy
+(APP_STORE_LISTING_2.5.0.md) + submission walkthrough (RELEASE_2.5.0.md).
+
+Ran an adversarial code review of the session's new code; fixed what it found
+(all pushed, tsc clean, jest 117 suites / 2728 passed):
+- **Over-greedy Hunt chat intents** stole unrelated queries (bare
+  sunrise/sunset, bare "orange", loose `*tag` matched "how many tags do I
+  need"). Tightened all three regexes + added routing-precision tests.
+  (Hunt chat is mode-scoped; Fish/Camp/Hike use their own.) commit fd652d4e
+- **Parcel public/private classifier was logically wrong** — verified against
+  the live MD parcel layer: it false-positived `OTH Conservation Tax Credit`
+  (PRIVATE easement land → green) and false-negatived `STA Other` (state forest
+  → orange). Rewrote to classify by SDAT exemption-class ownership PREFIX
+  (STA/JUR/MUN/PUB = public). commit 76117afc. See memory
+  parcel-public-private-classification.md.
+- **Offline "download current view"** now guarded to <=0.5deg viewports so a
+  zoomed-out view can't trigger a huge, under-estimated tile pack. commit fd652d4e
+
+Note (product judgment, not a bug): the prefix classifier now also greens
+government *buildings* (schools/police/offices are STA/JUR too). Safe + hedged
+(card shows the exact class), and rare in rural hunting areas. Could later
+narrow to recreation-relevant gov land if the town noise matters.
 
 ## Submission readiness 2026-06-28
 
