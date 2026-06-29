@@ -74,7 +74,13 @@ export default function OfflineMapsModal({
     if (getBounds) {
       try {
         const b = await getBounds();
-        setViewRegion(b ? regionFromBounds(b) : null);
+        // Only offer "download current view" for a reasonably-sized viewport.
+        // A zoomed-out view (e.g. the whole state) would pull a huge tile pack
+        // and the MB estimate is clamped, so it would badly under-report size.
+        const span = b
+          ? Math.max(b.maxLng - b.minLng, b.maxLat - b.minLat)
+          : Infinity;
+        setViewRegion(b && span <= 0.5 ? regionFromBounds(b) : null);
       } catch {
         setViewRegion(null);
       }

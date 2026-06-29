@@ -491,19 +491,22 @@ function isHarvestReportingQuery(q: string): boolean {
 }
 
 function isShootingHoursQuery(q: string): boolean {
-  return /shooting hours|hunting hours|legal hours|shooting light|legal light|what time.*hunt|how early.*hunt|how late.*hunt|before sunrise|after sunset|sunrise|sunset|half hour/.test(
+  // Require hunting context — bare "sunrise"/"sunset" stole rut/deer queries.
+  return /shooting hours|hunting hours|legal hours|shooting light|legal light|what time.*(hunt|shoot)|how (early|late).*(hunt|shoot)|half hour (before|after)/.test(
     q
   );
 }
 
 function isBlazeOrangeQuery(q: string): boolean {
-  return /blaze orange|fluorescent|hunter orange|safety orange|daylight orange|\borange\b|fluorescent pink|what.*(to )?wear/.test(
+  // Bare "orange" and "what to wear" were too broad; require orange + apparel/legal context.
+  return /blaze orange|fluorescent|hunter orange|safety orange|daylight orange|fluorescent pink|wear.*orange|orange.*(vest|cap|hat|coat|jacket|garment|wear|require|required|requirement|law|rule)/.test(
     q
   );
 }
 
 function isFieldTaggingQuery(q: string): boolean {
-  return /field tag|field-tag|\btagging\b|tag (my|the|your|a|that) (deer|turkey|bear|animal|harvest|kill)|possession tag|how.*tag|attach.*tag|do i.*tag|need.*tag/.test(
+  // Dropped loose need/how/do-i .*tag (stole "how many tags do I need" from bag/license).
+  return /field tag|field-tag|\btagging\b|tag (my|the|your|a|that) (deer|turkey|bear|animal|harvest|kill)|possession tag|attach.*tag/.test(
     q
   );
 }

@@ -101,3 +101,19 @@ describe('chat surfaces the previously-missing regulatory topics', () => {
     );
   });
 });
+
+describe('chat intent routing precision (no over-greedy misrouting)', () => {
+  const ask = (q: string) => ((getSmartResponse(q) as any)?.text || '');
+  it('"how many tags do I need" is NOT hijacked by the field-tagging handler', () => {
+    expect(ask('how many tags do I need')).not.toContain('Field Tagging');
+  });
+  it('a deer-at-sunset query is NOT hijacked by the shooting-hours handler', () => {
+    expect(ask('are deer active at sunset')).not.toContain('Legal Hunting Hours');
+  });
+  it('still routes a genuine "wear orange" query to the orange handler', () => {
+    expect(ask('do I need to wear orange')).toContain('Fluorescent Orange');
+  });
+  it('still routes a genuine "field tag my deer" query to tagging', () => {
+    expect(ask('how do I field tag my deer')).toContain('Field Tagging');
+  });
+});
