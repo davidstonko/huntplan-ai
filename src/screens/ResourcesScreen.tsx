@@ -325,6 +325,14 @@ const HUNT_TOOLS: InAppTool[] = [
     route: 'BestTimes',
     code: 'BTM',
   },
+  {
+    id: 'wind-forecast',
+    title: 'Wind Forecast & Stand Planner',
+    description:
+      '7-day wind outlook plus which of your stands the wind favors each day.',
+    route: 'WindForecast',
+    code: 'WND',
+  },
 ];
 
 const FISH_TOOLS: InAppTool[] = [

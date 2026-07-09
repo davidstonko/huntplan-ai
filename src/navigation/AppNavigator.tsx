@@ -41,6 +41,7 @@ import CampAreaPickerScreen from '../screens/CampAreaPickerScreen';
 import ResourcesHubScreen from '../screens/ResourcesHubScreen';
 import RutCalendarScreen from '../screens/RutCalendarScreen';
 import BestTimesScreen from '../screens/BestTimesScreen';
+import WindForecastScreen from '../screens/WindForecastScreen';
 
 // ── Sub-screens (accessible via stack push within tabs) ──
 import SettingsScreen from '../screens/SettingsScreen';
@@ -523,6 +524,11 @@ function ResourcesStack() {
         name="BestTimes"
         component={BestTimesScreen}
         options={{ headerShown: true, title: 'Best Times' }}
+      />
+      <Stack.Screen
+        name="WindForecast"
+        component={WindForecastScreen}
+        options={{ headerShown: true, title: 'Wind Forecast' }}
       />
     </Stack.Navigator>
   );
