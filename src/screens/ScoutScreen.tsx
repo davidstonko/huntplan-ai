@@ -47,7 +47,10 @@ import { ParcelBounds, ParcelProperties } from '../services/parcelService';
 import {
   marylandPublicLands,
 } from '../data/marylandPublicLands';
-import { WaypointIcon, TrackPoint } from '../types/scout';
+import { WaypointIcon, TrackPoint, RecordedTrack } from '../types/scout';
+import { OffRouteBanner } from '../components/scout/OffRouteBanner';
+import { useOffRouteAlerts } from '../hooks/useOffRouteAlerts';
+import { toRouteCoords } from '../services/offRouteService';
 import { MAPBOX_ACCESS_TOKEN } from '../config';
 
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
@@ -109,6 +112,17 @@ export default function ScoutScreen() {
   const [showCompass, setShowCompass] = useState(true);
   const [showMeasure, setShowMeasure] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<MeasurePoint[]>([]);
+
+  // Off-route ("wrong turn") alerts while following a saved track.
+  const [followedTrack, setFollowedTrack] = useState<RecordedTrack | null>(null);
+  const followRoute = useMemo(
+    () => (followedTrack ? toRouteCoords(followedTrack.points) : []),
+    [followedTrack],
+  );
+  const offRouteStatus = useOffRouteAlerts({
+    route: followRoute,
+    enabled: !!followedTrack,
+  });
 
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     landTypes: {
@@ -671,7 +685,20 @@ export default function ScoutScreen() {
           onNewPlan={handleNewPlan}
           onEditPlan={handleEditPlan}
           onClose={() => setShowSidebar(false)}
+          onFollowTrack={setFollowedTrack}
         />
+      )}
+
+      {/* ── Off-route alert banner (following a saved track) ── */}
+      {followedTrack && (
+        <View style={styles.followBanner} pointerEvents="box-none">
+          <OffRouteBanner
+            offRoute={offRouteStatus.offRoute}
+            distanceMeters={offRouteStatus.distanceMeters}
+            routeName={followedTrack.name}
+            onStop={() => setFollowedTrack(null)}
+          />
+        </View>
       )}
 
       {/* ── Plan Creation Flow (component) ── */}
@@ -754,6 +781,15 @@ const styles = StyleSheet.create({
     top: 12,
     flexDirection: 'column',
     gap: 8,
+  },
+  // Off-route follow banner: below the toolHint (top:46, ~34 tall) and left of the
+  // right-side tool column (right:12, w:52) — ≥8pt clearance from both.
+  followBanner: {
+    position: 'absolute',
+    top: 90,
+    left: 12,
+    right: 72,
+    zIndex: 60,
   },
   toolButton: {
     width: 52, height: 52, borderRadius: 12,

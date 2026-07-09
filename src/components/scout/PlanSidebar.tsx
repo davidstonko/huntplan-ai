@@ -22,6 +22,8 @@ interface PlanSidebarProps {
   onNewPlan: () => void;
   onEditPlan: (planId: string) => void;
   onClose: () => void;
+  /** Start following a saved track (off-route alerts). Closes the sidebar. */
+  onFollowTrack?: (track: RecordedTrack) => void;
 }
 
 const formatTrackDuration = (seconds: number): string => {
@@ -36,7 +38,7 @@ const formatTrackDistance = (meters: number): string => {
   return `${(meters / 1609.34).toFixed(1)} mi`;
 };
 
-export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSidebarProps) {
+export default function PlanSidebar({ onNewPlan, onEditPlan, onClose, onFollowTrack }: PlanSidebarProps) {
   const { plans, deletePlan, togglePlanVisibility, tracks, deleteTrack, toggleTrackVisibility } = useScoutData();
   const { camps, importPlanToCamp, exportTrackToCamp } = useDeerCamp();
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
@@ -293,6 +295,17 @@ export default function PlanSidebar({ onNewPlan, onEditPlan, onClose }: PlanSide
 
               {/* Track actions */}
               <View style={styles.trackActions}>
+                {onFollowTrack && track.points.length >= 2 ? (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      onFollowTrack(track);
+                      onClose();
+                    }}
+                  >
+                    <Text style={styles.actionText}>Follow</Text>
+                  </TouchableOpacity>
+                ) : null}
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => handleExportTrackToCamp(track)}
