@@ -25,9 +25,26 @@ import Colors from '../theme/colors';
 import {
   getLocalWeeklySolunar,
   getWeeklySolunar,
-  bestSolunarDay,
   WeeklySolunarDay,
 } from '../services/solunarService';
+import weatherService from '../services/weatherService';
+import { toWindPeriods } from '../services/windCalendarService';
+import {
+  daytimeDayWeather,
+  weatherMovementModifier,
+  blendMovementScore,
+  movementLabel,
+  matchDayWeather,
+  type DayWeather,
+} from '../services/movementForecastService';
+
+/** A solunar day's score adjusted by that day's weather (cold fronts, wind). */
+interface DayMovement {
+  weather: DayWeather;
+  note: string;
+  score: number; // blended 0-100
+  label: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+}
 
 const MD_LAT = 39.0458; // Maryland centroid (approx)
 const MD_LNG = -76.6413;
@@ -58,11 +75,16 @@ function formatRowDate(iso: string, dayOfWeek: string): string {
 function ForecastRow({
   day,
   isPeak,
+  movement,
 }: {
   day: WeeklySolunarDay;
   isPeak: boolean;
+  movement?: DayMovement | null;
 }) {
-  const color = ratingColor(day.rating.label);
+  // When weather is available the score/label reflect the blended movement forecast.
+  const score = movement ? movement.score : day.rating.score;
+  const label = movement ? movement.label : day.rating.label;
+  const color = ratingColor(label);
   return (
     <View style={[styles.row, isPeak && styles.rowPeak]}>
       <View style={styles.rowDate}>
@@ -72,19 +94,29 @@ function ForecastRow({
         <Text style={styles.rowMoon}>
           {day.moon_phase} · {day.illumination}%
         </Text>
+        {movement ? (
+          <>
+            <Text style={styles.rowWeather}>
+              {Math.round(movement.weather.highTemp)}° ·{' '}
+              {movement.weather.windMph ? `${movement.weather.windMph} mph` : 'calm'} ·{' '}
+              {movement.weather.shortForecast}
+            </Text>
+            <Text style={styles.rowNote}>{movement.note}</Text>
+          </>
+        ) : null}
       </View>
       <View style={styles.rowBar}>
         <View
           style={[
             styles.rowBarFill,
-            { width: `${Math.min(100, Math.max(0, day.rating.score))}%`, backgroundColor: color },
+            { width: `${Math.min(100, Math.max(0, score))}%`, backgroundColor: color },
           ]}
         />
-        <Text style={styles.rowScore}>{day.rating.score}</Text>
+        <Text style={styles.rowScore}>{score}</Text>
       </View>
       <View style={[styles.rowChip, { borderColor: color }]}>
         <Text style={[styles.rowChipText, { color }]}>
-          {day.rating.label.toUpperCase().slice(0, 4)}
+          {label.toUpperCase().slice(0, 4)}
         </Text>
       </View>
     </View>
@@ -100,6 +132,7 @@ export default function BestTimesScreen() {
   const [week, setWeek] = useState<WeeklySolunarDay[]>(initialWeek);
   const [source, setSource] = useState<'local' | 'backend'>('local');
   const [refreshing, setRefreshing] = useState(false);
+  const [dayWeather, setDayWeather] = useState<DayWeather[]>([]);
 
   // Best-effort upgrade to backend numbers (which use a richer model).
   useEffect(() => {
@@ -119,7 +152,45 @@ export default function BestTimesScreen() {
     };
   }, []);
 
-  const peak = useMemo(() => bestSolunarDay(week), [week]);
+  // Best-effort NOAA weather to blend into the movement forecast (offline-safe).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const forecasts = await weatherService.getForecast(MD_LAT, MD_LNG);
+      if (cancelled) return;
+      setDayWeather(daytimeDayWeather(toWindPeriods(forecasts)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Cross each solunar day with its weather to get a blended movement score.
+  const movementByDate = useMemo(() => {
+    const map: Record<string, DayMovement> = {};
+    if (dayWeather.length === 0) return map;
+    let prevWeather: DayWeather | null = null;
+    week.forEach((d, i) => {
+      const w = matchDayWeather(d.day_of_week, i, dayWeather);
+      if (w) {
+        const mod = weatherMovementModifier(w, prevWeather);
+        const score = blendMovementScore(d.rating.score, mod);
+        map[d.date] = { weather: w, note: mod.note, score, label: movementLabel(score) };
+        prevWeather = w;
+      }
+    });
+    return map;
+  }, [week, dayWeather]);
+
+  const hasWeather = Object.keys(movementByDate).length > 0;
+  const effScore = (d: WeeklySolunarDay) => movementByDate[d.date]?.score ?? d.rating.score;
+
+  // Peak = the highest EFFECTIVE score (blended when weather is available).
+  const peak = useMemo(() => {
+    if (week.length === 0) return null;
+    return week.reduce((best, d) => (effScore(d) > effScore(best) ? d : best));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [week, movementByDate]);
 
   return (
     <ScrollView
@@ -129,22 +200,28 @@ export default function BestTimesScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Best Times — 7 Day</Text>
         <Text style={styles.headerSub}>
-          Solunar activity rating per day for the Maryland region.
-          Major / minor moon transits + dawn-dusk overlap.
+          Daily movement forecast for the Maryland region — the solunar (moon)
+          rating blended with the NOAA weather forecast (cold fronts, wind).
         </Text>
       </View>
 
       {peak ? (
-        <View style={[styles.peakCard, { borderColor: ratingColor(peak.rating.label) }]}>
+        <View
+          style={[
+            styles.peakCard,
+            { borderColor: ratingColor(movementByDate[peak.date]?.label ?? peak.rating.label) },
+          ]}
+        >
           <Text style={styles.peakLabel}>BEST DAY THIS WEEK</Text>
           <Text style={styles.peakDate}>
             {formatRowDate(peak.date, peak.day_of_week)}
           </Text>
           <Text style={styles.peakScore}>
-            {peak.rating.score} / 100 — {peak.rating.label}
+            {effScore(peak)} / 100 — {movementByDate[peak.date]?.label ?? peak.rating.label}
           </Text>
           <Text style={styles.peakNotes}>
             Moon: {peak.moon_phase} ({peak.illumination}% illum.)
+            {movementByDate[peak.date] ? ` · ${movementByDate[peak.date].note}` : ''}
           </Text>
         </View>
       ) : null}
@@ -156,16 +233,23 @@ export default function BestTimesScreen() {
         </View>
       ) : null}
 
-      <Text style={styles.sectionHeader}>7-DAY FORECAST</Text>
+      <Text style={styles.sectionHeader}>
+        {hasWeather ? '7-DAY MOVEMENT FORECAST' : '7-DAY FORECAST'}
+      </Text>
       {week.map((d) => (
-        <ForecastRow key={d.date} day={d} isPeak={!!peak && d.date === peak.date} />
+        <ForecastRow
+          key={d.date}
+          day={d}
+          isPeak={!!peak && d.date === peak.date}
+          movement={movementByDate[d.date]}
+        />
       ))}
 
       <View style={styles.disclaimer}>
         <Text style={styles.disclaimerText}>
-          Source: {source === 'backend' ? 'Server solunar model' : 'On-device offline model'}.
-          Local model is approximate — moon-phase + simplified sunrise/sunset.
-          Use as guidance, not as a guarantee.
+          Solunar: {source === 'backend' ? 'server model' : 'on-device offline model'}
+          {hasWeather ? '; weather: NOAA weather.gov' : ' (weather unavailable offline)'}.
+          Approximate — use as guidance, not a guarantee. Verify regulations with MD DNR.
         </Text>
       </View>
     </ScrollView>
@@ -269,6 +353,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  rowWeather: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    marginTop: 3,
+  },
+  rowNote: {
+    fontSize: 10,
+    color: Colors.tan,
+    fontStyle: 'italic',
+    marginTop: 1,
   },
   rowBar: {
     flex: 1,

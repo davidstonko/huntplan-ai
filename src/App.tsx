@@ -37,6 +37,9 @@ import { TrackRecorderProvider } from './context/TrackRecorderContext';
 import { JournalEntryProvider } from './context/JournalEntryContext';
 import { GearChecklistProvider } from './context/GearChecklistContext';
 import { FavoritesProvider } from './context/FavoritesContext';
+import { CatchLogProvider } from './context/CatchLogContext';
+// NOTE: SyncProvider intentionally NOT mounted — its hook has zero consumers and
+// it auto-syncs to the (Phase-3-deferred) backend on boot. Mount it when sync ships.
 import Colors from './theme/colors';
 import { initAuth } from './services/authService';
 import { initSentry } from './services/sentryClient';
@@ -130,6 +133,7 @@ export default function App() {
     <JournalEntryProvider>
     <GearChecklistProvider>
     <FavoritesProvider>
+    <CatchLogProvider>
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
       <NavigationContainer
@@ -162,6 +166,7 @@ export default function App() {
         )}
       </NavigationContainer>
     </SafeAreaProvider>
+    </CatchLogProvider>
     </FavoritesProvider>
     </GearChecklistProvider>
     </JournalEntryProvider>
