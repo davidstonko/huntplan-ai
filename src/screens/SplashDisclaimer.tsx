@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ interface SplashDisclaimerProps {
 }
 
 export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
+  const [expanded, setExpanded] = useState(false);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -36,54 +37,73 @@ export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
             <Text style={styles.tagline}>Maryland's outdoor planning companion</Text>
           </View>
 
-          {/* Disclaimer Card */}
+          {/* Disclaimer Card: a short summary by default, the full text
+              behind an expander so first run is one tap. Acceptance is
+              stored by App.tsx under the same key as before, so returning
+              users are not re-prompted. */}
           <View style={styles.disclaimerBox}>
             <View style={styles.disclaimerHeader}>
-              <Text style={styles.disclaimerHeading}>IMPORTANT DISCLAIMER</Text>
+              <Text style={styles.disclaimerHeading}>BEFORE YOU HEAD OUT</Text>
             </View>
 
             <Text style={styles.disclaimerText}>
-              MDHuntFishOutdoors is a planning tool for hunting, fishing,
-              camping, and hiking in Maryland. This application is NOT legal
-              advice and does not replace your responsibility to follow all
-              applicable laws and regulations.
+              MDHuntFishOutdoors is a planning tool, not legal advice.{' '}
+              <Text style={styles.bold}>Always verify current seasons, limits, and access rules</Text>{' '}
+              with Maryland DNR and the managing agency before any trip.
             </Text>
 
-            <Text style={styles.disclaimerText}>
-              <Text style={styles.bold}>Always verify current rules</Text> with
-              the Maryland Department of Natural Resources (DNR), the U.S.
-              Forest Service, the National Park Service, and the Appalachian
-              Trail Conservancy as applicable. Seasons, limits, access rules,
-              and trail conditions change frequently.
-            </Text>
+            {expanded ? (
+              <>
+                <Text style={styles.disclaimerText}>
+                  This application does not replace your responsibility to
+                  follow all applicable laws and regulations. Verify rules with
+                  the Maryland Department of Natural Resources (DNR), the U.S.
+                  Forest Service, the National Park Service, and the Appalachian
+                  Trail Conservancy as applicable. Seasons, limits, access rules,
+                  and trail conditions change frequently.
+                </Text>
 
-            <Text style={styles.disclaimerText}>
-              You are solely responsible for:
-            </Text>
+                <Text style={styles.disclaimerText}>
+                  You are solely responsible for:
+                </Text>
 
-            <Text style={styles.bulletPoint}>
-              Obtaining required licenses, permits, and reservations
-            </Text>
-            <Text style={styles.bulletPoint}>
-              Verifying current seasons, bag limits, and access windows
-            </Text>
-            <Text style={styles.bulletPoint}>
-              Understanding weapon restrictions, fishing regulations, and
-              land-use rules
-            </Text>
-            <Text style={styles.bulletPoint}>
-              Confirming trail, campsite, and public-land access rights
-            </Text>
-            <Text style={styles.bulletPoint}>
-              Following all local, state, and federal laws
-            </Text>
+                <Text style={styles.bulletPoint}>
+                  Obtaining required licenses, permits, and reservations
+                </Text>
+                <Text style={styles.bulletPoint}>
+                  Verifying current seasons, bag limits, and access windows
+                </Text>
+                <Text style={styles.bulletPoint}>
+                  Understanding weapon restrictions, fishing regulations, and
+                  land-use rules
+                </Text>
+                <Text style={styles.bulletPoint}>
+                  Confirming trail, campsite, and public-land access rights
+                </Text>
+                <Text style={styles.bulletPoint}>
+                  Following all local, state, and federal laws
+                </Text>
 
-            <View style={styles.warningBar}>
-              <Text style={styles.warningText}>
-                Data may not reflect current regulations or conditions. When
-                in doubt, contact the relevant agency directly.
+                <View style={styles.warningBar}>
+                  <Text style={styles.warningText}>
+                    Data may not reflect current regulations or conditions. When
+                    in doubt, contact the relevant agency directly.
+                  </Text>
+                </View>
+              </>
+            ) : null}
+
+            <TouchableOpacity
+              style={styles.expandButton}
+              onPress={() => setExpanded((v) => !v)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={expanded ? 'Hide full disclaimer' : 'Read full disclaimer'}
+            >
+              <Text style={styles.expandButtonText}>
+                {expanded ? 'Hide full disclaimer' : 'Read full disclaimer'}
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.spacer} />
@@ -92,8 +112,10 @@ export default function SplashDisclaimer({ onAccept }: SplashDisclaimerProps) {
             style={styles.acceptButton}
             onPress={onAccept}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="I understand"
           >
-            <Text style={styles.acceptButtonText}>I understand — continue</Text>
+            <Text style={styles.acceptButtonText}>I understand</Text>
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
@@ -203,6 +225,17 @@ const styles = StyleSheet.create({
     color: Colors.amber,
     fontStyle: 'italic',
     lineHeight: 18,
+  },
+  expandButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  expandButtonText: {
+    color: Colors.sage,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   spacer: {
     flex: 1,

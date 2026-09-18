@@ -39,6 +39,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import Colors from '../theme/colors';
+import { useOpenPlanner } from '../navigation/useOpenPlanner';
 import type { CampTrip } from '../types/camp';
 import type { HikeTrip } from '../types/hike';
 import {
@@ -108,19 +109,13 @@ export default function UpcomingTripsScreen(): JSX.Element {
    * Future: add a `focusTripId` route param to the planners that
    * scrolls + highlights the row.
    */
+  const openPlanner = useOpenPlanner();
   const onTrip = useCallback(
     (row: UpcomingTripRow) => {
-      if (row.kind === 'camp') {
-        navigation.navigate('CampTripPlannerTab', {
-          screen: 'CampTripPlannerMain',
-        });
-      } else {
-        navigation.navigate('HikeTripPlannerTab', {
-          screen: 'HikeTripPlannerMain',
-        });
-      }
+      // Cross-mode: switches to Camp/Hike if needed, then opens the planner.
+      openPlanner(row.kind === 'camp' ? 'camp' : 'hike');
     },
-    [navigation],
+    [openPlanner],
   );
 
   /**

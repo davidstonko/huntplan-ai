@@ -1,244 +1,114 @@
 /**
  * @file navigation.test.tsx
- * @description Tests for src/navigation/AppNavigator.tsx
- * Verifies tab configuration per activity mode.
+ * @description Tests for the navigation route-name contract
+ * (src/navigation/routes.ts + AppNavigator.tsx).
+ *
+ * 2026-09-18 (five-tab restructure): every mode has the SAME five tabs —
+ * Map | Plan | Log | AI | More — with route names MapTab / PlanTab /
+ * LogTab / AITab / MoreTab. Structural wiring (which stack registers
+ * which screen) is asserted in wiringIntegrity.test.ts; this file locks
+ * the exported contract that screens import.
  */
 
-describe('AppNavigator', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+import {
+  TAB,
+  TAB_ORDER,
+  MODE_TABS_ROUTE,
+  MAP_ROOT,
+  PLAN_ROOT,
+  PLANNER_SCREEN,
+  MODE_LOG_SCREEN,
+  ROOT_ROUTES,
+} from '../navigation/routes';
 
-  describe('Hunt mode tab configuration', () => {
-    // 2026-04-26 (fork merge): Hunt tabs grew from 5 → 6 with the addition
-    // of a top-level Gear tab so curated gear lists are no longer buried
-    // under Resources. The Camp tab label is rendered as a two-line
-    // "Deer\nCamp" via a tabBarLabel render function — for routing-name
-    // purposes we still treat it as 'Deer Camp'.
-    const HUNT_TABS = ['Map', 'Scout', 'AI', 'Deer Camp', 'Gear', 'Info'] as const;
+const MODES = ['hunt', 'fish', 'camp', 'hike'] as const;
 
-    it('should have 6 tabs in Hunt mode', () => {
-      expect(HUNT_TABS).toHaveLength(6);
+describe('navigation route contract', () => {
+  describe('tab names', () => {
+    it('exposes exactly five tabs: Map | Plan | Log | AI | More', () => {
+      expect(TAB_ORDER).toEqual(['MapTab', 'PlanTab', 'LogTab', 'AITab', 'MoreTab']);
+      expect(TAB_ORDER).toHaveLength(5);
     });
 
-    it('should have Map as first Hunt tab', () => {
-      expect(HUNT_TABS[0]).toBe('Map');
+    it('every tab constant ends in "Tab" (so a11y labels derive cleanly)', () => {
+      for (const name of Object.values(TAB)) {
+        expect(name).toMatch(/Tab$/);
+      }
     });
 
-    it('should have Scout as second Hunt tab', () => {
-      expect(HUNT_TABS[1]).toBe('Scout');
+    it('the map agent contract names resolve: LogTab and MoreTab', () => {
+      expect(TAB.LOG).toBe('LogTab');
+      expect(TAB.MORE).toBe('MoreTab');
+      expect(TAB.AI).toBe('AITab');
     });
 
-    it('should have AI as third Hunt tab', () => {
-      expect(HUNT_TABS[2]).toBe('AI');
-    });
-
-    it('should have Deer Camp as fourth Hunt tab', () => {
-      expect(HUNT_TABS[3]).toBe('Deer Camp');
-    });
-
-    it('should have Gear as fifth Hunt tab', () => {
-      expect(HUNT_TABS[4]).toBe('Gear');
-    });
-
-    it('should have Info as sixth Hunt tab', () => {
-      expect(HUNT_TABS[5]).toBe('Info');
+    it('tab names are unique', () => {
+      expect(new Set(TAB_ORDER).size).toBe(TAB_ORDER.length);
     });
   });
 
-  describe('Fish mode tab configuration', () => {
-    // 2026-04-26 (fork merge): Fish tabs are Map · Spots · AI · Gear · Info
-    // (Honey Hole is an orphan screen, not wired into the tab nav). Gear was
-    // added 2026-04-26 to mirror the Hunt-mode Gear tab — bottom-tab access
-    // to David's curated fishing kit (fly, lakes, bay shore, bay boat).
-    const FISH_TABS = ['Map', 'Spots', 'AI', 'Gear', 'Info'] as const;
-
-    it('should have 5 tabs in Fish mode', () => {
-      expect(FISH_TABS).toHaveLength(5);
-    });
-
-    it('should have Map as first Fish tab', () => {
-      expect(FISH_TABS[0]).toBe('Map');
-    });
-
-    it('should have Spots as second Fish tab', () => {
-      expect(FISH_TABS[1]).toBe('Spots');
-    });
-
-    it('should have Gear as fourth Fish tab', () => {
-      expect(FISH_TABS[3]).toBe('Gear');
-    });
-
-    it('should have Info as fifth Fish tab', () => {
-      expect(FISH_TABS[4]).toBe('Info');
-    });
-  });
-
-  describe('Camp mode tab configuration', () => {
-    it('should have 5 tabs in Camp mode', () => {
-      // Camp mode: Camp Map, Gear, AI, Group Camp, Resources
-      const campTabs = ['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources'];
-      expect(campTabs).toHaveLength(5);
-    });
-
-    it('should have Camp Map as first Camp tab', () => {
-      const campTabs = ['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources'];
-      expect(campTabs[0]).toBe('Camp Map');
-    });
-
-    it('should have Gear as second Camp tab', () => {
-      const campTabs = ['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources'];
-      expect(campTabs[1]).toBe('Gear');
-    });
-
-    it('should have Group Camp as fourth Camp tab', () => {
-      const campTabs = ['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources'];
-      expect(campTabs[3]).toBe('Group Camp');
-    });
-  });
-
-  describe('Hike mode tab configuration', () => {
-    it('should have 4 tabs in Hike mode', () => {
-      // Hike mode: Trail Map, Trail Guide, AI, Resources
-      const hikeTabs = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(hikeTabs).toHaveLength(4);
-    });
-
-    it('should have Trail Map as first Hike tab', () => {
-      const hikeTabs = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(hikeTabs[0]).toBe('Trail Map');
-    });
-
-    it('should have Trail Guide as second Hike tab', () => {
-      const hikeTabs = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(hikeTabs[1]).toBe('Trail Guide');
-    });
-
-    it('should have AI as third Hike tab', () => {
-      const hikeTabs = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(hikeTabs[2]).toBe('AI');
-    });
-
-    it('should have Resources as fourth Hike tab', () => {
-      const hikeTabs = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(hikeTabs[3]).toBe('Resources');
-    });
-  });
-
-  describe('Tab icons', () => {
-    it('should have emoji tab icons for Hunt mode', () => {
-      const huntIcons = {
-        MAP: '\uD83D\uDDFA\uFE0F',
-        SCOUT: '\uD83D\uDC3E',
-        AI: '\uD83E\uDD16',
-        CAMP: '\uD83C\uDFD5\uFE0F',
-        RESOURCES: '\uD83D\uDCDA',
-      };
-
-      Object.values(huntIcons).forEach((icon) => {
-        expect(typeof icon).toBe('string');
-        expect(icon.length).toBeGreaterThan(0);
+  describe('per-mode roots', () => {
+    it('each mode has a root-Stack tabs route', () => {
+      expect(MODE_TABS_ROUTE).toEqual({
+        hunt: 'HuntTabs',
+        fish: 'FishTabs',
+        camp: 'CampTabs',
+        hike: 'HikeTabs',
       });
-      expect(Object.keys(huntIcons)).toHaveLength(5);
     });
 
-    it('should have emoji tab icons for Fish mode', () => {
-      const fishIcons = {
-        MAP: '\uD83D\uDDFA\uFE0F',
-        SPOTS: '\uD83C\uDFA3',
-        AI: '\uD83E\uDD16',
-        HONEY: '\uD83D\uDDFA\uFE0F',
-        RESOURCES: '\uD83D\uDCDA',
-      };
-
-      Object.values(fishIcons).forEach((icon) => {
-        expect(typeof icon).toBe('string');
-        expect(icon.length).toBeGreaterThan(0);
+    it('map roots keep their historical names (map screens navigate to them)', () => {
+      expect(MAP_ROOT).toEqual({
+        hunt: 'MapMain',
+        fish: 'FishMapMain',
+        camp: 'CampMapMain',
+        hike: 'HikeMapMain',
       });
-      expect(Object.keys(fishIcons)).toHaveLength(5);
     });
 
-    it('should have emoji tab icons for Camp mode', () => {
-      const campIcons = {
-        MAP: '\u26FA',
-        GEAR: '\uD83E\uDDF3',
-        AI: '\uD83E\uDD16',
-        GROUP: '\uD83D\uDC65',
-        RESOURCES: '\uD83D\uDCDA',
-      };
-
-      Object.values(campIcons).forEach((icon) => {
-        expect(typeof icon).toBe('string');
-        expect(icon.length).toBeGreaterThan(0);
-      });
-      expect(Object.keys(campIcons)).toHaveLength(5);
+    it('Plan roots: Hunt is Scout (no stack), Fish spots, Camp planner, Hike trails', () => {
+      expect(PLAN_ROOT.hunt).toBeNull();
+      expect(PLAN_ROOT.fish).toBe('FishSpotsMain');
+      expect(PLAN_ROOT.camp).toBe('CampTripPlannerMain');
+      expect(PLAN_ROOT.hike).toBe('HikeTrailsMain');
     });
 
-    it('should have emoji tab icons for Hike mode', () => {
-      const hikeIcons = {
-        MAP: '\uD83E\uDDED',
-        TRAIL: '\uD83E\uDD7E',
-        AI: '\uD83E\uDD16',
-        RESOURCES: '\uD83D\uDCDA',
-      };
+    it('trip planners keep their historical nested screen names', () => {
+      expect(PLANNER_SCREEN.camp).toBe('CampTripPlannerMain');
+      expect(PLANNER_SCREEN.hike).toBe('HikeTripPlannerMain');
+      // Camp's planner IS the Plan root; Hike's is pushed over the browser.
+      expect(PLAN_ROOT.camp).toBe(PLANNER_SCREEN.camp);
+      expect(PLAN_ROOT.hike).not.toBe(PLANNER_SCREEN.hike);
+    });
 
-      Object.values(hikeIcons).forEach((icon) => {
-        expect(typeof icon).toBe('string');
-        expect(icon.length).toBeGreaterThan(0);
+    it('mode logs: Hunt → HarvestLog, Fish → CatchLog, Camp/Hike none', () => {
+      expect(MODE_LOG_SCREEN).toEqual({
+        hunt: 'HarvestLog',
+        fish: 'CatchLog',
+        camp: null,
+        hike: null,
       });
-      expect(Object.keys(hikeIcons)).toHaveLength(4);
+    });
+
+    it('every mode is covered by every per-mode table', () => {
+      for (const m of MODES) {
+        expect(MODE_TABS_ROUTE[m]).toBeDefined();
+        expect(MAP_ROOT[m]).toBeDefined();
+        expect(m in PLAN_ROOT).toBe(true);
+        expect(m in MODE_LOG_SCREEN).toBe(true);
+      }
     });
   });
 
-  describe('Tab order consistency', () => {
-    it('Hunt mode tabs should be Map, Scout, AI, Deer Camp, Resources', () => {
-      const order = ['Map', 'Scout', 'AI', 'Deer Camp', 'Resources'];
-      expect(order).toEqual(['Map', 'Scout', 'AI', 'Deer Camp', 'Resources']);
+  describe('root-level cross-mode routes', () => {
+    it('Settings, Forum, Gear, OfflineMaps and Weather are root routes', () => {
+      expect([...ROOT_ROUTES]).toEqual(['Settings', 'Forum', 'Gear', 'OfflineMaps', 'Weather']);
     });
 
-    it('Fish mode tabs should be Fish Map, Spots, AI, Honey Hole, Resources', () => {
-      const order = ['Fish Map', 'Spots', 'AI', 'Honey Hole', 'Resources'];
-      expect(order).toEqual(['Fish Map', 'Spots', 'AI', 'Honey Hole', 'Resources']);
-    });
-
-    it('Camp mode tabs should be Camp Map, Gear, AI, Group Camp, Resources', () => {
-      const order = ['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources'];
-      expect(order).toEqual(['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources']);
-    });
-
-    it('Hike mode tabs should be Trail Map, Trail Guide, AI, Resources', () => {
-      const order = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(order).toEqual(['Trail Map', 'Trail Guide', 'AI', 'Resources']);
-    });
-  });
-
-  describe('All modes have AI tab', () => {
-    it('AI tab should be in Hunt mode', () => {
-      const huntTabs = ['Map', 'Scout', 'AI', 'Deer Camp', 'Resources'];
-      expect(huntTabs).toContain('AI');
-    });
-
-    it('AI tab should be in Fish mode', () => {
-      const fishTabs = ['Fish Map', 'Spots', 'AI', 'Honey Hole', 'Resources'];
-      expect(fishTabs).toContain('AI');
-    });
-
-    it('AI tab should be in Camp mode', () => {
-      const campTabs = ['Camp Map', 'Gear', 'AI', 'Group Camp', 'Resources'];
-      expect(campTabs).toContain('AI');
-    });
-
-    it('AI tab should be in Hike mode', () => {
-      const hikeTabs = ['Trail Map', 'Trail Guide', 'AI', 'Resources'];
-      expect(hikeTabs).toContain('AI');
-    });
-  });
-
-  describe('Fallback behavior', () => {
-    it('unknown modes should fallback to Fish tabs', () => {
-      // Crab and Boat modes default to Fish mode
-      const fallbackTabs = ['Fish Map', 'Spots', 'AI', 'Honey Hole', 'Resources'];
-      expect(fallbackTabs).toHaveLength(5);
+    it('root routes never collide with tab names', () => {
+      for (const r of ROOT_ROUTES) {
+        expect(TAB_ORDER).not.toContain(r);
+      }
     });
   });
 });

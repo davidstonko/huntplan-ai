@@ -9,6 +9,10 @@
  */
 
 import { API_BASE_URL } from './api';
+import { fetchWithTimeout } from '../config';
+
+/** Backend ceiling; past this the local model answers. */
+const SOLUNAR_REQUEST_TIMEOUT_MS = 8000;
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -18,6 +22,11 @@ export interface SolunarPeriod {
   end?: string;
   center?: string;
   duration_hours: number;
+  /**
+   * True for the local fallback's hard-coded major/minor windows, which
+   * are not computed from real moon transit times. Widgets show "approx".
+   */
+  approximate?: boolean;
 }
 
 export interface BestTimeWindow {
@@ -56,6 +65,8 @@ export interface SolunarData {
   };
   best_times: BestTimeWindow[];
   rating: ActivityRating;
+  /** 'backend' when served by the API, 'local' for the on-device model. */
+  source?: 'backend' | 'local';
 }
 
 export interface WeeklySolunarDay {
@@ -84,17 +95,22 @@ export async function getSolunarData(
     });
     if (date) params.append('date', date);
 
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${API_BASE_URL}/api/v1/integrations/solunar?${params.toString()}`,
       { headers: { 'Content-Type': 'application/json' } },
+      SOLUNAR_REQUEST_TIMEOUT_MS,
     );
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      if (data && Array.isArray(data.major_periods) && data.rating) {
+        return { ...data, source: 'backend' };
+      }
     }
-    return null;
+    // Non-OK or malformed: local calculation, same as offline.
+    return getLocalSolunarData(latitude, longitude, date);
   } catch {
-    // Offline — use local calculation
+    // Offline or timed out: local calculation
     return getLocalSolunarData(latitude, longitude, date);
   }
 }
@@ -116,9 +132,10 @@ export async function getWeeklySolunar(
     });
     if (startDate) params.append('start_date', startDate);
 
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${API_BASE_URL}/api/v1/integrations/solunar/week?${params.toString()}`,
       { headers: { 'Content-Type': 'application/json' } },
+      SOLUNAR_REQUEST_TIMEOUT_MS,
     );
 
     if (res.ok) {
@@ -269,13 +286,15 @@ export function getLocalSolunarData(
       illumination_pct: illumination,
       phase_fraction: Math.round(phaseFraction * 10000) / 10000,
     },
+    // These windows are placeholders, not real moon transit times; they
+    // are flagged so the widget can label them "approx".
     major_periods: [
-      { label: 'Major 1 (Moon Overhead)', start: formatTime(12), end: formatTime(14), duration_hours: 2 },
-      { label: 'Major 2 (Moon Underfoot)', start: formatTime(0), end: formatTime(2), duration_hours: 2 },
+      { label: 'Major 1 (Moon Overhead)', start: formatTime(12), end: formatTime(14), duration_hours: 2, approximate: true },
+      { label: 'Major 2 (Moon Underfoot)', start: formatTime(0), end: formatTime(2), duration_hours: 2, approximate: true },
     ],
     minor_periods: [
-      { label: 'Minor 1 (Moonrise)', center: formatTime(6), duration_hours: 1 },
-      { label: 'Minor 2 (Moonset)', center: formatTime(18), duration_hours: 1 },
+      { label: 'Minor 1 (Moonrise)', center: formatTime(6), duration_hours: 1, approximate: true },
+      { label: 'Minor 2 (Moonset)', center: formatTime(18), duration_hours: 1, approximate: true },
     ],
     sun: {
       sunrise: formatTime(sunrise),
@@ -297,5 +316,6 @@ export function getLocalSolunarData(
         solunar_dusk_overlap: false,
       },
     },
+    source: 'local',
   };
 }

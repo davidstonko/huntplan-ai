@@ -237,7 +237,7 @@ export class CampSyncManager {
 
     try {
       // Call sync endpoint with last_synced timestamp
-      const response = await fetch(`${Config.API_BASE_URL}/deercamp/camps/${this.campId}/sync`, {
+      const response = await fetch(`${Config.API_BASE_URL}/api/v1/deercamp/camps/${this.campId}/sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -19,7 +19,7 @@
  *     storage flag — already seen, this is a replay)
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -47,29 +47,79 @@ interface Props {
    */
   open?: boolean;
   onClose?: () => void;
+  /**
+   * Uncontrolled mode only. The auto-fired tour waits until this is true
+   * (e.g. the map has finished loading and no location prompt is pending)
+   * plus `delayMs`, so it never lands on top of a permission alert or a
+   * half-rendered map. Defaults to true.
+   */
+  ready?: boolean;
+  /** Settle delay after `ready` flips true before the tour appears. */
+  delayMs?: number;
+  /**
+   * Uncontrolled mode only. Called once the gate has finished its job:
+   * either the tour was already seen (nothing to show) or the user closed
+   * it. Screens use this to defer banners until the tour is out of the way.
+   */
+  onSettled?: () => void;
 }
 
-export default function OnboardingTourGate({ mode, open, onClose }: Props) {
+export default function OnboardingTourGate({
+  mode,
+  open,
+  onClose,
+  ready = true,
+  delayMs = 600,
+  onSettled,
+}: Props) {
   const isControlled = open !== undefined;
   const [autoVisible, setAutoVisible] = useState(false);
   const [slide, setSlide] = useState(0);
+  const [seenState, setSeenState] = useState<boolean | null>(null);
+  const settledRef = useRef(false);
+  const onSettledRef = useRef(onSettled);
+  onSettledRef.current = onSettled;
 
   const slides = TOUR_CONTENT[mode];
 
-  // Auto-fire on first mount per session if uncontrolled.
+  const settle = useCallback(() => {
+    if (settledRef.current) return;
+    settledRef.current = true;
+    onSettledRef.current?.();
+  }, []);
+
+  // Check storage once when uncontrolled.
   useEffect(() => {
     if (isControlled) return;
     let cancelled = false;
-    void hasSeenTour(mode).then((seen) => {
-      if (!cancelled && !seen) {
-        setSlide(0);
-        setAutoVisible(true);
-      }
-    });
+    void hasSeenTour(mode)
+      .then((seen) => {
+        if (!cancelled) setSeenState(seen);
+      })
+      .catch(() => {
+        // Storage unavailable: treat as seen so the app is never blocked.
+        if (!cancelled) setSeenState(true);
+      });
     return () => {
       cancelled = true;
     };
   }, [isControlled, mode]);
+
+  // Auto-fire once the host reports ready, after a short settle delay.
+  // Already-seen tours settle immediately so dependent UI can proceed.
+  useEffect(() => {
+    if (isControlled || seenState === null) return;
+    if (seenState) {
+      settle();
+      return;
+    }
+    if (!ready) return;
+    const timer = setTimeout(() => {
+      setSlide(0);
+      setAutoVisible(true);
+    }, Math.max(0, delayMs));
+    return () => clearTimeout(timer);
+  }, [isControlled, seenState, ready, delayMs, settle]);
 
   // Reset to first slide every time controlled-open flips to true.
   useEffect(() => {
@@ -87,9 +137,12 @@ export default function OnboardingTourGate({ mode, open, onClose }: Props) {
         onClose?.();
       } else {
         setAutoVisible(false);
+        // Prevent a re-fire if `ready` flips again later in the session.
+        setSeenState(true);
+        settle();
       }
     },
-    [isControlled, mode, onClose],
+    [isControlled, mode, onClose, settle],
   );
 
   const onSkip = useCallback(() => void close(true), [close]);

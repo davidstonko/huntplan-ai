@@ -26,6 +26,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashDisclaimer from './screens/SplashDisclaimer';
 import AppNavigator from './navigation/AppNavigator';
 import AnimatedSplash from './components/splash/AnimatedSplash';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ActivityModeProvider } from './context/ActivityModeContext';
 import { ScoutDataProvider } from './context/ScoutDataContext';
 import { DeerCampProvider } from './context/DeerCampContext';
@@ -42,7 +43,7 @@ import { CatchLogProvider } from './context/CatchLogContext';
 // it auto-syncs to the (Phase-3-deferred) backend on boot. Mount it when sync ships.
 import Colors from './theme/colors';
 import { initAuth } from './services/authService';
-import { initSentry } from './services/sentryClient';
+import { initSentry, captureException } from './services/sentryClient';
 import { useDeepLinks } from './services/deepLinkRouter';
 import { initMapboxToken } from './services/mapboxTokenService';
 
@@ -159,11 +160,27 @@ export default function App() {
         {/* Set up deep link router (Phase 5C: handles Camp invites, Hike trips) */}
         <DeepLinkInitializer navigationRef={navigationRef} />
 
-        {!disclaimerAccepted ? (
-          <SplashDisclaimer onAccept={handleAccept} />
-        ) : (
-          <AppNavigator />
-        )}
+        {/* Release builds show a friendly recovery card instead of a red
+            box or a dead screen; the stack is only rendered under __DEV__. */}
+        <ErrorBoundary
+          onError={(error, info) => {
+            captureException(error, { componentStack: info.componentStack });
+          }}
+          onGoBack={() => {
+            const nav = navigationRef.current;
+            if (nav?.canGoBack()) {
+              nav.goBack();
+              return true;
+            }
+            return false;
+          }}
+        >
+          {!disclaimerAccepted ? (
+            <SplashDisclaimer onAccept={handleAccept} />
+          ) : (
+            <AppNavigator />
+          )}
+        </ErrorBoundary>
       </NavigationContainer>
     </SafeAreaProvider>
     </CatchLogProvider>

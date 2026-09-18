@@ -36,7 +36,10 @@ import { useModalFocus } from '../hooks/useModalFocus';
 // instead of redeclaring the `__DEV__ ? localhost : render` pattern that
 // silently broke API calls on fresh dev machines. Same Render default
 // in dev + prod; override via EXPO_PUBLIC_API_BASE_URL.
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, fetchWithTimeout } from '../config';
+
+/** Forum request ceiling; past this the offline state shows with Retry. */
+const FORUM_REQUEST_TIMEOUT_MS = 8000;
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -110,6 +113,8 @@ export default function ForumScreen() {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  /** Set when the last fetch failed (timeout, offline, non-OK). */
+  const [fetchError, setFetchError] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showNewThread, setShowNewThread] = useState(false);
 
@@ -125,15 +130,21 @@ export default function ForumScreen() {
       const params = new URLSearchParams({ sort: 'recent', per_page: '30' });
       if (selectedCategory) params.append('category', selectedCategory);
 
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/v1/forum/threads?${params}`,
+        {},
+        FORUM_REQUEST_TIMEOUT_MS,
       );
       if (response.ok) {
         const data = await response.json();
-        setThreads(data.threads || []);
+        setThreads(Array.isArray(data?.threads) ? data.threads : []);
+        setFetchError(false);
+      } else {
+        setFetchError(true);
       }
     } catch (err) {
-      console.error('[Forum] Failed to fetch threads:', err);
+      if (__DEV__) console.warn('[Forum] Failed to fetch threads:', err);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -142,15 +153,21 @@ export default function ForumScreen() {
   const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/v1/forum/marketplace?sort=recent&per_page=30`,
+        {},
+        FORUM_REQUEST_TIMEOUT_MS,
       );
       if (response.ok) {
         const data = await response.json();
-        setListings(data.listings || []);
+        setListings(Array.isArray(data?.listings) ? data.listings : []);
+        setFetchError(false);
+      } else {
+        setFetchError(true);
       }
     } catch (err) {
-      console.error('[Forum] Failed to fetch listings:', err);
+      if (__DEV__) console.warn('[Forum] Failed to fetch listings:', err);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -341,16 +358,33 @@ export default function ForumScreen() {
           }
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>
-                {activeTab === 'discussions'
-                  ? 'No discussions yet'
-                  : 'No listings yet'}
-              </Text>
-              <Text style={styles.emptyText}>
-                Be the first to start a conversation.
-              </Text>
-            </View>
+            fetchError ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyTitle}>Community is offline right now</Text>
+                <Text style={styles.emptyText}>
+                  We could not reach the community server. Your maps, logs, and regulations still work without it.
+                </Text>
+                <TouchableOpacity
+                  style={styles.retryBtn}
+                  onPress={onRefresh}
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry loading community posts"
+                >
+                  <Text style={styles.retryBtnText}>Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyTitle}>
+                  {activeTab === 'discussions'
+                    ? 'No discussions yet'
+                    : 'No listings yet'}
+                </Text>
+                <Text style={styles.emptyText}>
+                  Be the first to start a conversation.
+                </Text>
+              </View>
+            )
           }
         />
       )}
@@ -571,6 +605,21 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     color: Colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+  },
+  retryBtn: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: Colors.moss,
+  },
+  retryBtnText: {
+    color: Colors.textOnAccent,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   fab: {
     position: 'absolute',

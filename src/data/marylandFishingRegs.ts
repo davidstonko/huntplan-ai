@@ -131,10 +131,10 @@ export const MD_FISHING_REGULATIONS: FishingRegulation[] = [
     species: 'Red Drum',
     waterType: 'tidal',
     season: 'Year-round',
-    dailyCreel: '1/day',
+    dailyCreel: '3/day',
     minSize: '18"',
-    maxSize: '27"',
-    specialNotes: 'Slot: 18-27 inches. Proposed Sept 1, 2026: 3/day, 18-26" slot',
+    maxSize: '26"',
+    specialNotes: 'Slot: 18-26 inches, 3 per person per day. Adopted as proposed, effective Aug 3, 2026 (DNR Fisheries "Changes to Fishing Regulations"). Previously 1/day, 18-27" slot.',
   },
 
   // NONTIDAL SPECIES (Freshwater streams, lakes, rivers)
@@ -498,9 +498,12 @@ export function checkFreeFishingDay(date: Date = new Date()): {
 } {
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const dateStr = `${month === 6 ? 'June' : 'July'} ${day}`;
+  // Free fishing days only ever fall in June or July; every other month must
+  // never be labelled "July N" (previous bug: e.g. Sept 4 read as "July 4").
+  const monthName = month === 6 ? 'June' : month === 7 ? 'July' : null;
+  const dateStr = monthName ? `${monthName} ${day}` : '';
 
-  const isFreeDay = MD_FREE_FISHING_DAYS_2026.includes(dateStr);
+  const isFreeDay = monthName !== null && MD_FREE_FISHING_DAYS_2026.includes(dateStr);
 
   if (isFreeDay) {
     return {

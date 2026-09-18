@@ -27,6 +27,7 @@ import notifee, {
   TimestampTrigger,
   AndroidImportance,
 } from '@notifee/react-native';
+import { MD_SEASONS, REGULATIONS_META } from '../data/marylandHuntingData';
 
 const PUSH_PREFS_KEY = '@push_preferences';
 const PERMISSION_REQUESTED_KEY = '@push_permission_requested';
@@ -49,17 +50,65 @@ const DEFAULT_PREFS: PushPreferences = {
 };
 
 /**
- * Known Maryland 2025-2026 season openings used for local alert scheduling.
- * Each entry fires at 07:00 local the morning the season opens.
- * These dates are refreshed annually — update when 2026 MD DNR regs publish.
+ * Maryland season openings used for local alert scheduling, derived from the
+ * regulations engine (MD_SEASONS) so the two can never drift. Each entry fires
+ * at 07:00 local (05:30 for turkey) the morning the season opens. The opener is
+ * the earliest startDate among matching entries.
  */
-const MD_SEASON_OPENINGS = [
-  { id: 'dove-2025', date: '2025-09-06T07:00:00', title: 'Dove Season Opens', body: 'Maryland dove season opens today. Check your regs and shell limits.' },
-  { id: 'archery-2025', date: '2025-09-13T07:00:00', title: 'Archery Deer Opens', body: 'Maryland archery deer season opens today. Safe hunting.' },
-  { id: 'muzzle-2025', date: '2025-10-04T07:00:00', title: 'Muzzleloader Opens', body: 'Maryland muzzleloader deer season opens today.' },
-  { id: 'firearm-2025', date: '2025-11-29T07:00:00', title: 'Firearms Deer Opens', body: 'Maryland firearms deer season opens today. Orange required.' },
-  { id: 'turkey-2026', date: '2026-04-18T05:30:00', title: 'Spring Turkey Opens', body: 'Maryland spring turkey season opens today.' },
-];
+interface SeasonOpening {
+  id: string;
+  date: string;
+  title: string;
+  body: string;
+}
+
+function firstOpener(
+  species: string,
+  seasonType: RegExp,
+  statewideOnly = true,
+): string | undefined {
+  const dates = MD_SEASONS.filter(
+    (s) =>
+      s.species === species &&
+      seasonType.test(s.seasonType) &&
+      (!statewideOnly || (s.countyRestrictions ?? []).length === 0),
+  )
+    .map((s) => s.startDate)
+    .sort();
+  return dates[0];
+}
+
+function buildSeasonOpenings(): SeasonOpening[] {
+  const label = REGULATIONS_META.seasonLabel;
+  const specs: Array<{
+    key: string;
+    species: string;
+    seasonType: RegExp;
+    time: string;
+    title: string;
+    body: string;
+  }> = [
+    { key: 'dove', species: 'Mourning Dove', seasonType: /Regular \(Split 1\)/, time: '07:00:00', title: 'Dove Season Opens', body: 'Maryland dove season opens today. Check your regs and shell limits.' },
+    { key: 'archery', species: 'White-tailed Deer', seasonType: /^Archery$/, time: '07:00:00', title: 'Archery Deer Opens', body: 'Maryland archery deer season opens today. Safe hunting.' },
+    { key: 'muzzle', species: 'White-tailed Deer', seasonType: /^Muzzleloader \(Early\)$/, time: '07:00:00', title: 'Muzzleloader Opens', body: 'Maryland muzzleloader deer season opens today.' },
+    { key: 'firearm', species: 'White-tailed Deer', seasonType: /^Firearms \(Regular\)$/, time: '07:00:00', title: 'Firearms Deer Opens', body: 'Maryland firearms deer season opens today. Orange required.' },
+    { key: 'turkey', species: 'Wild Turkey', seasonType: /^Spring$/, time: '05:30:00', title: 'Spring Turkey Opens', body: 'Maryland spring turkey season opens today.' },
+  ];
+  const out: SeasonOpening[] = [];
+  for (const spec of specs) {
+    const date = firstOpener(spec.species, spec.seasonType);
+    if (!date) continue;
+    out.push({
+      id: `${spec.key}-${label}`,
+      date: `${date}T${spec.time}`,
+      title: spec.title,
+      body: spec.body,
+    });
+  }
+  return out;
+}
+
+export const MD_SEASON_OPENINGS: SeasonOpening[] = buildSeasonOpenings();
 
 // ─── Permission / Channel Setup ──────────────────────────────────
 

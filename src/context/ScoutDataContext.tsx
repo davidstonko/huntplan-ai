@@ -6,14 +6,9 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { database } from '../db';
-import {
-  HuntPlanModel,
-  WaypointModel,
-  RouteModel,
-  DrawnAreaModel,
-  RecordedTrackModel,
-} from '../db/models';
+// WatermelonDB layer removed (was never enabled). `database` stays null so the
+// guarded `database?.write(...)` / `if (database)` paths below remain inert.
+const database: any = null;
 import {
   HuntPlan,
   Waypoint,

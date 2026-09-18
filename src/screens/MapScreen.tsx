@@ -50,7 +50,7 @@ import Colors from '../theme/colors';
 import { MAP_STYLE_OUTDOORS, MAP_STYLE_SATELLITE } from '../constants/mapStyles';
 import { useOfflineMaps } from '../hooks/useOfflineMaps';
 import OfflineMapsModal from '../components/map/OfflineMapsModal';
-import ParcelLayer from '../components/map/ParcelLayer';
+import ParcelLayer, { PARCEL_ZOOM_HINT } from '../components/map/ParcelLayer';
 import ParcelDetailCard from '../components/map/ParcelDetailCard';
 import {
   ParcelBounds,
@@ -193,11 +193,18 @@ export default function MapScreen() {
       navigation.navigate('MarkupEdit', { mode: 'hunt', markupId }),
     [navigation],
   );
+  // The 'Log' chip opens this mode's Log tab (route-name contract: every
+  // mode's tab navigator exposes LogTab). navigate() bubbles to the tab
+  // navigator when this screen sits inside a nested stack.
   const openPersonalHub = useCallback(
-    () => navigation.navigate('PersonalHub', { mode: 'hunt' }),
+    () => navigation.navigate('LogTab', { mode: 'hunt' }),
     [navigation],
   );
-  const { location, loading: locationLoading, error: locationError } = useLocation();
+  // Location is requested on the Locate button gesture, not on mount, so
+  // the OS permission prompt never lands on top of the first-run tour and
+  // the map renders immediately centered on Maryland.
+  const { location, loading: locationLoading, refetch: requestLocation } =
+    useLocation({ requestOnMount: false });
   const [selectedLand, setSelectedLand] = useState<MarylandPublicLand | null>(null);
   const [selectedRange, setSelectedRange] = useState<ShootingRange | null>(null);
   const [showTopo, setShowTopo] = useState(false);
@@ -248,6 +255,16 @@ export default function MapScreen() {
   // legal disclaimer is always re-presented once per session.
   const [approxBannerDismissed, setApproxBannerDismissed] = useState(false);
   const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+  // First-run choreography: the map reports ready via onDidFinishLoadingMap,
+  // the onboarding tour waits for that (plus a short settle delay), and the
+  // two bottom banners stay hidden until the tour has closed (or was
+  // already seen) so nothing lands on top of the tour sheet.
+  const [mapReady, setMapReady] = useState(false);
+  const [tourSettled, setTourSettled] = useState(false);
+  // Set on the first Locate tap. Mapbox's UserLocation component asks for
+  // the OS permission as soon as it mounts, so it is only rendered after
+  // the user has explicitly asked for their position.
+  const [locationRequested, setLocationRequested] = useState(false);
   // Legend collapses to a single pill when not needed. Prevents collision
   // with WeatherOverlay (top: 50 right: 12) — which was visually stacking on
   // top of the expanded legend before this was added.
@@ -257,6 +274,8 @@ export default function MapScreen() {
   const [offlineOpen, setOfflineOpen] = useState(false);
   const [showParcels, setShowParcels] = useState(false);
   const [parcelBounds, setParcelBounds] = useState<ParcelBounds | null>(null);
+  // True while Parcels is on but the viewport is too wide to load any.
+  const [parcelsTooFarOut, setParcelsTooFarOut] = useState(false);
   const [selectedParcel, setSelectedParcel] = useState<ParcelProperties | null>(
     null,
   );
@@ -305,20 +324,59 @@ export default function MapScreen() {
   const isInMaryland = (lng: number, lat: number): boolean =>
     lng >= -79.5 && lng <= -74.9 && lat >= 37.8 && lat <= 39.8;
 
-  const locationAlertShown = useRef(false);
+  // Once a fix arrives and it is inside Maryland, fly the camera there
+  // exactly once (mirrors FishMapScreen). Fixes outside Maryland (e.g. the
+  // iOS Simulator default in Cupertino) leave the map on Baltimore.
+  const initialCenterApplied = useRef(false);
   useEffect(() => {
-    if (locationError && !locationAlertShown.current) {
-      locationAlertShown.current = true;
-      Alert.alert(
-        'Location Services',
-        'Enable location access in Settings > Privacy > Location Services to see your position on the map.',
-        [
-          { text: 'Open Settings', onPress: () => Linking.openURL('app-settings:') },
-          { text: 'OK', style: 'cancel' },
-        ]
-      );
+    if (initialCenterApplied.current) return;
+    if (cameraRef.current && location) {
+      if (isInMaryland(location.longitude, location.latitude)) {
+        cameraRef.current.setCamera({
+          centerCoordinate: [location.longitude, location.latitude],
+          zoomLevel: 10,
+          animationDuration: 1000,
+        });
+      }
+      initialCenterApplied.current = true;
     }
-  }, [locationError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
+
+  const showLocationAlert = () =>
+    Alert.alert(
+      'Location Services',
+      'Enable location access in Settings > Privacy > Location Services to see your position on the map.',
+      [
+        { text: 'Open Settings', onPress: () => Linking.openURL('app-settings:') },
+        { text: 'OK', style: 'cancel' },
+      ]
+    );
+
+  // Locate button: request permission + a fix on the gesture, then recenter.
+  const handleLocatePress = async () => {
+    if (locationLoading) return;
+    setLocationRequested(true);
+    const loc = location ?? (await requestLocation());
+    if (!loc) {
+      showLocationAlert();
+      return;
+    }
+    if (!isInMaryland(loc.longitude, loc.latitude)) {
+      Alert.alert(
+        'Outside Maryland',
+        'Your current position is outside Maryland. The map stays centered on the state so hunting lands remain in view.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    initialCenterApplied.current = true;
+    cameraRef.current?.setCamera({
+      centerCoordinate: [loc.longitude, loc.latitude],
+      zoomLevel: 10,
+      animationDuration: 500,
+    });
+  };
 
   // ── Filter logic ──
   const hasActiveSpeciesFilter = Object.values(activeFilters.species).some(Boolean);
@@ -709,10 +767,21 @@ export default function MapScreen() {
     }
   };
 
-  const centerCoords =
-    location && isInMaryland(location.longitude, location.latitude)
-      ? [location.longitude, location.latitude]
-      : defaultCenter;
+  // The map always mounts on Maryland; a GPS fix recenters via the effect
+  // above so the first paint never blocks on location.
+  const centerCoords = defaultCenter;
+
+  // Weather is fetched for the map center (Baltimore) unless the device is
+  // actually inside Maryland. Memoized so WeatherOverlay does not refetch
+  // on every render.
+  const weatherCoords = useMemo(
+    () =>
+      location && isInMaryland(location.longitude, location.latitude)
+        ? { latitude: location.latitude, longitude: location.longitude }
+        : { latitude: defaultCenter[1], longitude: defaultCenter[0] },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [location?.latitude, location?.longitude],
+  );
 
   const mapStyleURL = showTopo ? MAP_STYLE_SATELLITE : MAP_STYLE_OUTDOORS;
 
@@ -763,13 +832,7 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      {locationLoading && !location ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.oak} />
-          <Text style={styles.loadingText}>Getting your location...</Text>
-        </View>
-      ) : (
-        <>
+      <>
           <MapboxGL.MapView
             ref={mapRef}
             style={styles.map}
@@ -784,6 +847,7 @@ export default function MapScreen() {
             }}
             onLongPress={onLongPressMap}
             onMapIdle={handleRegionChange}
+            onDidFinishLoadingMap={() => setMapReady(true)}
           >
             {/* 2026-04-26 (fork merge): switched to `defaultSettings` so the
                 camera is UNCONTROLLED. Passing centerCoordinate/zoomLevel as
@@ -796,20 +860,18 @@ export default function MapScreen() {
               ref={cameraRef}
               defaultSettings={{
                 centerCoordinate: centerCoords as [number, number],
-                zoomLevel:
-                  location && isInMaryland(location.longitude, location.latitude)
-                    ? 10
-                    : 7,
+                zoomLevel: 7,
               }}
               animationMode="moveTo"
               animationDuration={800}
             />
-            <MapboxGL.UserLocation visible={true} />
+            {locationRequested ? <MapboxGL.UserLocation visible={true} /> : null}
 
             <ParcelLayer
               enabled={showParcels}
               bounds={parcelBounds}
               onSelectParcel={setSelectedParcel}
+              onTooFarOut={setParcelsTooFarOut}
             />
 
             {/* ── 3D Terrain (DEM source + hillshade) ── */}
@@ -1480,42 +1542,40 @@ export default function MapScreen() {
               onPress={() => setShowTopo(!showTopo)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.controlButtonLabel, showTopo && styles.controlButtonLabelActive]}>
-                {showTopo ? 'MAP' : 'SAT'}
+              <Text
+                style={[styles.controlButtonWord, showTopo && styles.controlButtonLabelActive]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+              >
+                {showTopo ? 'Map' : 'Satellite'}
               </Text>
             </TouchableOpacity>
-            {/* Personal Layer Hub (waypoints, tracks, markups) */}
+            {/* Personal layer (waypoints, tracks, journal) lives on the Log tab */}
             <TouchableOpacity
               style={styles.controlButton}
               onPress={openPersonalHub}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Open your log"
             >
-              <Text style={styles.controlButtonLabel}>ME</Text>
+              <Text style={styles.controlButtonWord}>Log</Text>
             </TouchableOpacity>
             {/* GPS Button with crosshair symbol */}
             <TouchableOpacity
               style={styles.controlButton}
               onPress={() => {
-                if (location) {
-                  cameraRef.current?.setCamera({
-                    centerCoordinate: [location.longitude, location.latitude],
-                    zoomLevel: 10,
-                    animationDuration: 500,
-                  });
-                } else {
-                  Alert.alert(
-                    'Location Services',
-                    'Enable location access in Settings > Privacy > Location Services to see your position.',
-                    [
-                      { text: 'Open Settings', onPress: () => Linking.openURL('app-settings:') },
-                      { text: 'OK', style: 'cancel' },
-                    ]
-                  );
-                }
+                void handleLocatePress();
               }}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Center map on my location"
             >
-              <Text style={styles.controlButtonLabel}>⌖</Text>
+              {locationLoading ? (
+                <ActivityIndicator size="small" color={Colors.textPrimary} />
+              ) : (
+                <Text style={styles.controlButtonWord}>Locate</Text>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -1557,13 +1617,16 @@ export default function MapScreen() {
             >
               <Text
                 style={[
-                  styles.controlButtonLabel,
+                  styles.controlButtonWord,
                   offlineMaps.isOffline && !offlineMaps.hasPacks
                     ? { color: Colors.mdRed }
                     : null,
                 ]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
               >
-                {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+                {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'Offline'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -1579,14 +1642,23 @@ export default function MapScreen() {
             >
               <Text
                 style={[
-                  styles.controlButtonLabel,
+                  styles.controlButtonWord,
                   showParcels && styles.controlButtonLabelActive,
                 ]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
               >
-                PRC
+                Parcels
               </Text>
             </TouchableOpacity>
           </View>
+
+          {showParcels && parcelsTooFarOut ? (
+            <View style={styles.parcelHint} pointerEvents="none">
+              <Text style={styles.parcelHintText}>{PARCEL_ZOOM_HINT}</Text>
+            </View>
+          ) : null}
 
           {/* ── Selected land info panel ── */}
           {selectedLand && (
@@ -1684,11 +1756,14 @@ export default function MapScreen() {
             </View>
           )}
 
-          {/* ── Weather overlay (top-right) ── */}
-          {location && (
+          {/* ── Weather overlay (top-right) ──
+               Uses the GPS fix only when it is inside Maryland; otherwise
+               (no permission yet, or a reviewer in Cupertino) it reads the
+               map's default center so the badge shows Maryland weather. */}
+          {mapReady && (
             <WeatherOverlay
-              latitude={location.latitude}
-              longitude={location.longitude}
+              latitude={weatherCoords.latitude}
+              longitude={weatherCoords.longitude}
               visible={
                 !selectedLand &&
                 !selectedRange &&
@@ -1709,8 +1784,8 @@ export default function MapScreen() {
               {
                 bottom:
                   8 +
-                  (anyPinOnlyLands && !approxBannerDismissed ? 28 : 0) +
-                  (!disclaimerDismissed ? 32 : 0),
+                  (tourSettled && anyPinOnlyLands && !approxBannerDismissed ? 28 : 0) +
+                  (tourSettled && !disclaimerDismissed ? 32 : 0),
               },
             ]}
           >
@@ -1722,13 +1797,12 @@ export default function MapScreen() {
               onChangeText={setSearchQuery}
             />
           </View>
-        </>
-      )}
+      </>
 
-      {anyPinOnlyLands && !approxBannerDismissed ? (
+      {tourSettled && anyPinOnlyLands && !approxBannerDismissed ? (
         <View style={styles.approxBanner}>
           <Text style={styles.approxBannerText}>
-            Lands shown as pins have no published GIS boundary — tap the pin, then use the DNR map PDF link on the detail sheet for exact land edges before hunting.
+            Lands shown as pins have no published GIS boundary. Tap the pin, then use the DNR map PDF link on the detail sheet for exact land edges before hunting.
           </Text>
           <TouchableOpacity
             style={styles.bannerDismissBtn}
@@ -1743,11 +1817,15 @@ export default function MapScreen() {
       ) : null}
 
       <DisclaimerBanner
-        dismissed={disclaimerDismissed}
+        dismissed={disclaimerDismissed || !tourSettled}
         onDismiss={() => setDisclaimerDismissed(true)}
       />
 
-      <OnboardingTourGate mode="hunt" />
+      <OnboardingTourGate
+        mode="hunt"
+        ready={mapReady && !locationLoading}
+        onSettled={() => setTourSettled(true)}
+      />
 
       <OfflineMapsModal
         visible={offlineOpen}
@@ -1960,7 +2038,7 @@ function LandDetailPanel({
               accessibilityRole="button"
               accessibilityLabel={`Ask AI: ${query}`}
               onPress={() => {
-                navigation.navigate('ChatTab', {
+                navigation.navigate('AITab', {
                   screen: 'ChatMain',
                   params: { initialQuery: query },
                 });
@@ -2006,7 +2084,7 @@ function LandDetailPanel({
           <TouchableOpacity
             style={detailStyles.primaryButton}
             onPress={() =>
-              navigation.navigate('ResourcesTab', {
+              navigation.navigate('MoreTab', {
                 screen: 'ResourcesMain',
                 params: { initialSegment: 'regulations', landId: land.id },
               })
@@ -2440,6 +2518,15 @@ const styles = StyleSheet.create({
   controlButtonActive: { backgroundColor: Colors.moss, borderColor: Colors.lichen },
   controlButtonText: { fontSize: 22, color: Colors.textPrimary, fontWeight: '700', lineHeight: 24 },
   controlButtonLabel: { fontSize: 13, color: Colors.textPrimary, fontWeight: '800', letterSpacing: 0.5 },
+  // Word chips (Offline / Parcels / Log / Satellite / Locate) in the same
+  // 44pt circle; smaller and tighter than the two-letter codes.
+  controlButtonWord: { fontSize: 9, color: Colors.textPrimary, fontWeight: '800', letterSpacing: 0.2, textAlign: 'center', paddingHorizontal: 2 },
+  parcelHint: {
+    position: 'absolute', left: 64, bottom: 118,
+    backgroundColor: Colors.overlay, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6, maxWidth: 220,
+  },
+  parcelHintText: { fontSize: 11, color: Colors.textPrimary, fontWeight: '600' },
   controlButtonLabelActive: { color: Colors.textOnAccent },
 
   // ── Zoom Triangle Styles ──

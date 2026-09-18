@@ -10,6 +10,7 @@
 
 import {
   MD_SEASONS,
+  REGULATIONS_META,
   MD_WMAS,
   MD_COUNTIES,
   MD_BAG_LIMITS,
@@ -615,7 +616,7 @@ function handleSeasonQuery(userQuery: string): ChatResponse {
 
   return {
     text:
-      `**${species} Seasons (2025-2026 Maryland)**\n\n${seasonLines}\n\n` +
+      `**${species} Seasons (${REGULATIONS_META.seasonLabel} Maryland)**\n\n${seasonLines}\n\n` +
       'Always verify exact dates with the MD DNR Hunter\'s Guide before heading out.\n' +
       'Check the Regulations tab for detailed bag limits and county-specific rules.',
     citations: ['MD DNR Hunter\'s Guide', 'Maryland Season Calendar'],
@@ -640,7 +641,7 @@ function handleBagLimitQuery(userQuery: string): ChatResponse {
       text:
         'Bag limits vary by species. Which animal are you asking about?\n\n' +
         '• **Deer**: 2 antlered per year (plus a Bonus Antlered Deer Stamp for more). Antlerless depends on your deer region — Region A (Allegany, Garrett, western Washington) is just 2 for the year; Region B is much higher (archery 15, firearms 10, muzzleloader 10).\n' +
-        '• **Turkey**: 1 in spring, 2 in fall/winter combined\n' +
+        '• **Turkey**: 2 in spring (1 per day), 1 in fall/winter combined\n' +
         '• **Ducks**: 6 per day\n' +
         '• **Rabbits**: 4 per day\n' +
         '• **Squirrels**: 6 per day\n\n' +
@@ -674,7 +675,7 @@ function handleBagLimitQuery(userQuery: string): ChatResponse {
 
   return {
     text:
-      `**${species} Bag Limits (Maryland 2025-2026)**\n\n${limitLines}\n\n` +
+      `**${species} Bag Limits (Maryland ${REGULATIONS_META.seasonLabel})**\n\n${limitLines}\n\n` +
       'Check the Regulations tab for county-specific variations and any recent updates.',
     citations: ['MD DNR Bag Limits'],
     followUpSuggestions: [
@@ -1113,7 +1114,7 @@ function handleHarvestDataQuery(userQuery: string): ChatResponse {
 function handleLicenseFeeQuery(userQuery: string): ChatResponse {
   return {
     text:
-      '**Maryland Hunting License Fees (2025-2026)**\n\n' +
+      `**Maryland Hunting License Fees (${REGULATIONS_META.seasonLabel})**\n\n` +
       '**Base License:**\n' +
       '• Resident: $35/year\n' +
       '• Senior (65+): $5/year\n' +
@@ -1152,11 +1153,12 @@ function handleBearHuntingQuery(userQuery: string): ChatResponse {
       '**Eligible Zones:**\n' +
       '• **Zone 1:** Allegany, Frederick, Garrett, Washington counties\n' +
       '• **Zone 2:** Frederick, Washington counties\n\n' +
-      '**Bag Limit:** 1 bear per permit holder per season\n\n' +
+      '**2026 Season:** October 26–31, 2026 (six days; not a quota hunt)\n\n' +
+      '**Bag Limit:** 1 bear per permittee/sub-permittee hunting team per season\n\n' +
       '**Allowed Methods:**\n' +
-      '• Firearms\n' +
-      '• Archery\n\n' +
-      '**Lottery Period:** July 12 – August 31 (annual application deadline)\n\n' +
+      '• Rifle, shotgun (solid projectile), handgun, muzzleloader\n' +
+      '• Vertical bow, crossbow, air gun (.40+)\n\n' +
+      '**Lottery Period:** July 15 – August 31, 2026 ($15 nonrefundable application fee)\n\n' +
       '**Apply:** compass.dnr.maryland.gov\n\n' +
       'Black bear hunting is a special privilege with limited permits. Start planning in summer to apply for the next season!',
     citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/bearhunting.aspx'],
@@ -1243,12 +1245,12 @@ function handleFederalLandsQuery(userQuery: string): ChatResponse {
       '• Archery: 12+ weeks (extended opportunity vs. state seasons)\n' +
       '• Permits via Recreation.gov; $6 reservation fee\n' +
       '• Early teal season participates (Sept)\n' +
-      '• **NEW Sept 1, 2026:** Non-lead/non-toxic ammunition REQUIRED for all hunting (deer included). Pre-order copper or other non-lead ahead of season.\n' +
+      '• **Effective Sept 1, 2026:** Non-lead/non-toxic ammunition REQUIRED for all hunting (deer included). Bring copper or other non-lead.\n' +
       '• Straight-wall cartridges allowed during shotgun seasons\n\n' +
       '**Eastern Neck National Wildlife Refuge** — Kent County\n' +
       '• 2,285 acres on Chesapeake Bay\n' +
       '• Youth mentored spring turkey hunt (ages 12–16) — partnership with NWTF\n' +
-      '• Non-lead ammo requirement also applies starting Sept 1, 2026\n' +
+      '• Non-lead ammo requirement also in effect since Sept 1, 2026\n' +
       '• Quality hunt — application via Recreation.gov\n\n' +
       '**Patuxent Research Refuge** — Anne Arundel/Prince George\'s Counties\n' +
       '• Limited seasonal deer hunting (lottery-style draws)\n' +
@@ -1270,7 +1272,7 @@ function handleFederalLandsQuery(userQuery: string): ChatResponse {
     ],
     followUpSuggestions: [
       'How do I make a Blackwater reservation on Recreation.gov?',
-      'What non-lead ammo do I need for Sept 2026?',
+      'What non-lead ammo do I need on federal refuges?',
       'Tell me about Eastern Neck youth turkey hunts',
       'Can I camp along the C&O Canal?',
     ],
@@ -1344,8 +1346,8 @@ function handleWaterfowlQuery(userQuery: string): ChatResponse {
       '• Diving Ducks: 239,100\n\n' +
       '**Strong Population = Excellent Hunting!**\n\n' +
       '**Required Licenses & Stamps:**\n' +
-      '• Maryland Duck Stamp: $9\n' +
-      '• Federal Duck Stamp: $25\n' +
+      '• Maryland Migratory Game Bird Stamp: $15\n' +
+      '• Federal Duck Stamp: $29 via MD DNR ($27 at U.S. Post Offices / duckstamp.com)\n' +
       '• HIP Registration: FREE (Harvest Information Program)\n\n' +
       '**Blind Reservations:**\n' +
       '• Call up to 4 days prior (max 2 sites per call)\n' +
@@ -1659,11 +1661,11 @@ function handleSmallGameQuery(userQuery: string): ChatResponse {
     text:
       '**Small Game & Pheasant Hunting in Maryland**\n\n' +
       '**Rabbits**\n' +
-      '• Season: September 1 – February 28\n' +
-      '• Year-round opportunity across state\n\n' +
+      '• Season: November 7, 2026 – February 28, 2027\n' +
+      '• Daily Bag Limit: 4 per day, 8 in possession\n\n' +
       '**Squirrels**\n' +
-      '• Season: September 6 – February 28\n' +
-      '• Daily Bag Limit: 6 per day\n' +
+      '• Season: September 5, 2026 – February 28, 2027\n' +
+      '• Daily Bag Limit: 6 per day, 12 in possession\n' +
       '• ⚠️ Delmarva Fox Squirrel: PROTECTED (not legal to harvest)\n\n' +
       '**Pheasant Stocking (FREE Hunting!)**\n' +
       '• Stocking Dates: November 22–23, 2025\n' +
@@ -1671,12 +1673,12 @@ function handleSmallGameQuery(userQuery: string): ChatResponse {
       '• NO stamp required — completely FREE\n' +
       '• Excellent opportunity for pheasant hunting\n\n' +
       '**Dove**\n' +
-      '• Season: September 1 – January 31\n' +
-      '• Daily Bag Limit: 15 birds per day\n' +
+      '• Season: Sept 1 – Oct 17, Oct 24 – Nov 27, and Dec 19, 2026 – Jan 9, 2027\n' +
+      '• Daily Bag Limit: 15 birds per day, 45 in possession\n' +
       '• Popular early-season hunting\n\n' +
       '**Quail**\n' +
-      '• Season: November – February\n' +
-      '• Daily Bag Limit: 4 birds per day\n' +
+      '• Season: November 7, 2026 – January 15, 2027 (closed in Allegany & Garrett and on DNR lands east of the Susquehanna)\n' +
+      '• Daily Bag Limit: 6 birds per day, 12 in possession\n' +
       '• ⚠️ Note: Declining population statewide\n\n' +
       'Check the Regulations tab for specific county dates and additional small game species.',
     citations: ['https://dnr.maryland.gov/wildlife/Pages/hunt_trap/smallgame.aspx'],
@@ -1708,8 +1710,13 @@ function handleSikaDeerQuery(userQuery: string): ChatResponse {
       '**Taylor\'s Island Wildlife Management Area**\n' +
       '• Size: 1,120 acres\n' +
       '• Eastern Shore prime habitat\n\n' +
+      '**2026-2027 Seasons (statewide where found):**\n' +
+      '• Archery: Sept 11 – Oct 21, Oct 25 – Nov 27, Dec 14 – 18, Jan 3 – 7, Jan 11 – 31\n' +
+      '• Muzzleloader: Oct 22 – 24 and Dec 19 – Jan 2 (Oct 26 – 31 antlerless only, Region B)\n' +
+      '• Firearms: Nov 28 – Dec 12 and Jan 8 – 10\n' +
+      '• Bag limit: 3 sika per season, no more than 1 antlered\n\n' +
       '**Stamp Requirement:**\n' +
-      '• $10 Sika Deer Stamp: Required for all sika hunters\n\n' +
+      '• Sika Deer Stamp: $10 resident / $200 nonresident, required for all sika hunters\n\n' +
       '**Hunting Tips:**\n' +
       '• Best hunted from marshland edges\n' +
       '• Listen for bugling calls during rut (September–October)\n' +
@@ -1745,10 +1752,10 @@ function handleTrappingQuery(_userQuery: string): ChatResponse {
       '• Bobcat is protected — no open season\n\n' +
       '**Licenses & Permits:**\n' +
       '• Resident Furtaker (trapping) license: $30.50\n' +
-      '• Nonresident Furtaker license: $250\n' +
+      '• Nonresident Trapping license: $50\n' +
       '• Trapper Education course required for first-time license holders\n' +
       '• Trapping on someone else\'s property requires written permission\n\n' +
-      '**Season Highlights (2025-2026):**\n' +
+      `**Season Highlights (${REGULATIONS_META.seasonLabel}):**\n` +
       '• Most furbearer trapping seasons run roughly Nov–Feb\n' +
       '• Sunday furbearer HUNTING (not trapping) is allowed in ' +
       'specific WMAs in Allegany, Cecil, Garrett, St. Mary\'s, ' +
@@ -1990,7 +1997,7 @@ function formatDate(dateStr: string): string {
  * Format month and day to a readable format (e.g., "Oct 20").
  */
 function formatDateShort(month: number, day: number): string {
-  const date = new Date(2025, month - 1, day);
+  const date = new Date(2026, month - 1, day);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

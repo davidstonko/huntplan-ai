@@ -79,15 +79,22 @@ export default function HikeMapScreen() {
       navigation.navigate('MarkupEdit', { mode: 'hike', markupId }),
     [navigation],
   );
+  // The 'Log' chip opens this mode's Log tab (route-name contract: every
+  // mode's tab navigator exposes LogTab). navigate() bubbles to the tab
+  // navigator when this screen sits inside a nested stack.
   const openPersonalHub = useCallback(
-    () => navigation.navigate('PersonalHub', { mode: 'hike' }),
+    () => navigation.navigate('LogTab', { mode: 'hike' }),
     [navigation],
   );
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const offlineMaps = useOfflineMaps();
   const [offlineOpen, setOfflineOpen] = useState(false);
-  const { location, loading: locationLoading } = useLocation();
+  // Location is requested on the Locate button gesture, not on mount, so
+  // the OS permission prompt never lands on top of the first-run tour and
+  // the map renders immediately centered on Maryland.
+  const { location, loading: locationLoading, refetch: requestLocation } =
+    useLocation({ requestOnMount: false });
 
   const [selected, setSelected] = useState<SelectedFeature | null>(null);
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all');
@@ -96,6 +103,10 @@ export default function HikeMapScreen() {
   // vertical space. Both come back on next cold start.
   const [approxBannerDismissed, setApproxBannerDismissed] = useState(false);
   const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+  // First-run choreography: the tour waits for the map to finish loading
+  // and the disclaimer banner stays hidden until the tour has settled.
+  const [mapReady, setMapReady] = useState(false);
+  const [tourSettled, setTourSettled] = useState(false);
   // 2026-04-27: Local-pros layer (REI / Charm City Run / Bike Doctor / etc.)
   const [showHikePros, setShowHikePros] = useState(true);
   const [selectedHikeProId, setSelectedHikeProId] = useState<string | null>(null);
@@ -409,10 +420,12 @@ export default function HikeMapScreen() {
     }
   }, []);
 
-  const centerOnLocation = useCallback(() => {
-    if (location && cameraRef.current) {
+  const centerOnLocation = useCallback(async () => {
+    if (locationLoading) return;
+    const loc = location ?? (await requestLocation());
+    if (loc && cameraRef.current) {
       cameraRef.current.setCamera({
-        centerCoordinate: [location.longitude, location.latitude],
+        centerCoordinate: [loc.longitude, loc.latitude],
         zoomLevel: 12,
         animationDuration: 800,
       });
@@ -423,7 +436,7 @@ export default function HikeMapScreen() {
         [{ text: 'OK', style: 'cancel' }],
       );
     }
-  }, [location]);
+  }, [location, locationLoading, requestLocation]);
 
   const zoomIn = useCallback(() => {
     cameraRef.current?.zoomTo(Math.min(currentZoom + 1, 18), 300);
@@ -479,6 +492,7 @@ export default function HikeMapScreen() {
         onPress={handleMapPress}
         onLongPress={onLongPressMap}
         onCameraChanged={handleCameraChanged}
+        onDidFinishLoadingMap={() => setMapReady(true)}
       >
         <MapboxGL.Camera
           ref={cameraRef}
@@ -732,13 +746,19 @@ export default function HikeMapScreen() {
           style={styles.controlBtn}
           onPress={() => setMapStyle((s) => (s === 'topo' ? 'satellite' : 'topo'))}
         >
-          <Text style={styles.controlText}>{mapStyle === 'topo' ? 'SAT' : 'MAP'}</Text>
+          <Text style={styles.controlWord} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+            {mapStyle === 'topo' ? 'Satellite' : 'Map'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlBtn} onPress={openPersonalHub}>
-          <Text style={styles.controlText}>ME</Text>
+          <Text style={styles.controlWord}>Log</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlBtn} onPress={centerOnLocation}>
-          <Text style={styles.controlCrosshair}>{'\u2316'}</Text>
+        <TouchableOpacity style={styles.controlBtn} onPress={() => { void centerOnLocation(); }}>
+          {locationLoading ? (
+            <ActivityIndicator size="small" color={Colors.lichen} />
+          ) : (
+            <Text style={[styles.controlWord, { color: Colors.lichen }]}>Locate</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.controlBtn}
@@ -748,13 +768,16 @@ export default function HikeMapScreen() {
         >
           <Text
             style={[
-              styles.controlText,
+              styles.controlWord,
               offlineMaps.isOffline && !offlineMaps.hasPacks
                 ? { color: Colors.mdRed }
                 : null,
             ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
           >
-            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'Offline'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -845,7 +868,7 @@ export default function HikeMapScreen() {
                 insets.bottom +
                 12 +
                 (!approxBannerDismissed ? 32 : 0) +
-                (!disclaimerDismissed ? 32 : 0),
+                (tourSettled && !disclaimerDismissed ? 32 : 0),
             },
           ]}
         >
@@ -938,7 +961,7 @@ export default function HikeMapScreen() {
                   // 2026-04-29: Hike mode's AI tab is registered as
                   // `HikeAITab` in AppNavigator (not `ChatTab` — that's
                   // the Hunt tab name). Adversarial audit caught this.
-                  navigation.navigate('HikeAITab', {
+                  navigation.navigate('AITab', {
                     screen: 'ChatMain',
                     params: { initialQuery: query },
                   });
@@ -996,11 +1019,15 @@ export default function HikeMapScreen() {
       ) : null}
 
       <DisclaimerBanner
-        dismissed={disclaimerDismissed}
+        dismissed={disclaimerDismissed || !tourSettled}
         onDismiss={() => setDisclaimerDismissed(true)}
       />
 
-      <OnboardingTourGate mode="hike" />
+      <OnboardingTourGate
+        mode="hike"
+        ready={mapReady && !locationLoading}
+        onSettled={() => setTourSettled(true)}
+      />
 
       <OfflineMapsModal
         visible={offlineOpen}
@@ -1111,6 +1138,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.mud,
   },
   controlText: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  // Word chips (Satellite / Log / Locate / Offline / Gauges) in the 40pt circle.
+  controlWord: { fontSize: 9, fontWeight: '800', color: Colors.textPrimary, letterSpacing: 0.2, textAlign: 'center', paddingHorizontal: 2 },
   controlCrosshair: { fontSize: 20, color: Colors.lichen },
   detailPanel: {
     position: 'absolute',

@@ -13,6 +13,11 @@
  * landing page (the "ME" button on each MapScreen). Keeps the existing
  * modular feel: each child screen still owns its own behavior; this is
  * pure routing.
+ *
+ * 2026-09-18 (five-tab restructure): this screen is now the ROOT of the
+ * Log tab in every mode, so `mode` falls back to the active mode when no
+ * route param is seeded. Rows are grouped into three sections —
+ * Today / My layer / Look back — with Backup & Import at the bottom.
  */
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
@@ -47,6 +52,9 @@ import {
 import { entriesWithWeatherCount } from '../services/comparableConditionsService';
 import { onThisDayCount } from '../services/onThisDayService';
 import { useFavorites } from '../context/FavoritesContext';
+import { useActivityMode } from '../context/ActivityModeContext';
+import { useCatchLog } from '../context/CatchLogContext';
+import { MODE_LOG_SCREEN } from '../navigation/routes';
 import { liveFavoriteCount } from '../services/favoritesAggregatorService';
 import { dailyBriefingHighlightCount } from '../services/dailyBriefingService';
 import { computeYearInReview } from '../services/yearInReviewService';
@@ -59,6 +67,7 @@ import type { Goal, GoalProgress, PaceStatus } from '../types/goal';
 import type { WaypointMode } from '../types/userWaypoint';
 import type { CampTrip } from '../types/camp';
 import type { HikeTrip } from '../types/hike';
+import SampleDataBanner from '../components/common/SampleDataBanner';
 import {
   upcomingTripsCount,
   pickFeaturedTrip,
@@ -89,13 +98,19 @@ interface RowProps {
   code: string;
   title: string;
   subtitle: string;
-  count: number;
+  /** Badge count. Omit for rows that navigate away from the layer (e.g. Gear). */
+  count?: number;
   onPress: () => void;
 }
 
 function HubRow({ code, title, subtitle, count, onPress }: RowProps) {
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.row}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
       <View style={styles.codeChip}>
         <Text style={styles.codeChipText}>{code}</Text>
       </View>
@@ -104,11 +119,16 @@ function HubRow({ code, title, subtitle, count, onPress }: RowProps) {
         <Text style={styles.rowSubtitle}>{subtitle}</Text>
       </View>
       <View style={styles.rowMeta}>
-        <Text style={styles.rowCount}>{count}</Text>
+        {count !== undefined ? <Text style={styles.rowCount}>{count}</Text> : null}
         <Text style={styles.rowChev}>{'\u203A'}</Text>
       </View>
     </TouchableOpacity>
   );
+}
+
+/** Section header — "TODAY", "MY LAYER", "LOOK BACK". */
+function SectionHeader({ title }: { title: string }) {
+  return <Text style={styles.sectionHeader}>{title.toUpperCase()}</Text>;
 }
 
 // ────────────────────────── Phase A.30 helpers ──────────────────────────
@@ -267,7 +287,11 @@ function TripCountdownCard({ row, onPress }: TripCountdownCardProps) {
 export default function PersonalHubScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<PersonalHubParams, 'PersonalHub'>>();
-  const mode: WaypointMode = route.params?.mode ?? 'hunt';
+  const { activeMode } = useActivityMode();
+  // Seeded by the navigating screen when pushed; falls back to the active
+  // mode now that this screen is the Log tab's root.
+  const mode: WaypointMode = route.params?.mode ?? activeMode;
+  const { totalCatches } = useCatchLog();
 
   const { waypointsForMode, allWaypoints } = useUserWaypoints();
   const { markupsForMode, allMarkups } = useUserMarkups();
@@ -403,6 +427,15 @@ export default function PersonalHubScreen() {
   const onImport = () => navigation.navigate('ImportPicker', { mode });
   const onGoals = () => navigation.navigate('Goals');
   const onUpcomingTrips = () => navigation.navigate('UpcomingTrips');
+  // Mode-specific log (Hunt → Harvest Log, Fish → Catch Log). Both are
+  // registered in LogStack; Camp/Hike have none.
+  const modeLogScreen = MODE_LOG_SCREEN[mode];
+  const onModeLog = () => {
+    if (modeLogScreen) navigation.navigate(modeLogScreen);
+  };
+  // Gear lives on the More tab but is registered at the root Stack, so a
+  // plain navigate resolves from here.
+  const onGear = () => navigation.navigate('Gear');
 
   // ── Goals badge (current calendar year, cross-mode) ──────────────
   // Goals live in their own AsyncStorage key (`user_goals_v1`) and don't
@@ -427,6 +460,32 @@ export default function PersonalHubScreen() {
     };
   }, [navigation]);
   const goalCount = goalsForYear.length;
+
+  // ── Harvest Log badge (Hunt) ─────────────────────────────────────
+  // HarvestLogScreen persists to `@harvest_log` with no context provider;
+  // read it on mount + focus so the badge tracks edits made there.
+  const [harvestCount, setHarvestCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const reload = async () => {
+      try {
+        const raw = await AsyncStorage.getItem('@harvest_log');
+        if (cancelled) return;
+        const rows = raw ? JSON.parse(raw) : [];
+        setHarvestCount(Array.isArray(rows) ? rows.length : 0);
+      } catch {
+        // safe default — 0 on any read error
+      }
+    };
+    void reload();
+    const unsub = navigation.addListener('focus', () => {
+      void reload();
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [navigation]);
 
   // ── Upcoming Trips badge (Phase A.41 — cross-planner) ────────────
   // Camp + Hike trips live in their own AsyncStorage keys (no React
@@ -605,13 +664,7 @@ export default function PersonalHubScreen() {
         <FeaturedGoalCard progress={featuredGoal} onPress={onGoals} />
       ) : null}
 
-      <HubRow
-        code="TD"
-        title="Today's Briefing"
-        subtitle="Memories, upcoming trips, your streak — what's worth opening the app for today."
-        count={briefingCount}
-        onPress={onDailyBriefing}
-      />
+      {totalRows === 0 ? <SampleDataBanner /> : null}
 
       <TouchableOpacity style={styles.searchRow} onPress={onSearch}>
         <View style={styles.searchIcon}>
@@ -625,6 +678,36 @@ export default function PersonalHubScreen() {
         </View>
         <Text style={styles.rowChev}>{'\u203A'}</Text>
       </TouchableOpacity>
+
+      {/* ── Today ── */}
+      <SectionHeader title="Today" />
+
+      <HubRow
+        code="TD"
+        title="Today's Briefing"
+        subtitle="Memories, upcoming trips, your streak — what's worth opening the app for today."
+        count={briefingCount}
+        onPress={onDailyBriefing}
+      />
+
+      <HubRow
+        code="UT"
+        title="Upcoming Trips"
+        subtitle="Every saved Camp + Hike trip in chronological order. See what's next, tap to open the planner."
+        count={upcomingCount}
+        onPress={onUpcomingTrips}
+      />
+
+      <HubRow
+        code="GO"
+        title="Annual Goals"
+        subtitle="Set yearly targets — miles hiked, journal entries, days afield. Live progress + on-pace verdict."
+        count={goalCount}
+        onPress={onGoals}
+      />
+
+      {/* ── My layer ── */}
+      <SectionHeader title="My layer" />
 
       <HubRow
         code="WP"
@@ -659,14 +742,6 @@ export default function PersonalHubScreen() {
       />
 
       <HubRow
-        code="TG"
-        title="Journal Tags"
-        subtitle="Browse the tags you've used — tap one to find every entry."
-        count={counts.tags}
-        onPress={onTags}
-      />
-
-      <HubRow
         code="GC"
         title="Gear Checklists"
         subtitle="Pre-trip pack list per trip type. Build once, carry forward."
@@ -682,6 +757,36 @@ export default function PersonalHubScreen() {
         onPress={onPhotos}
       />
 
+      {mode === 'hunt' ? (
+        <HubRow
+          code="HL"
+          title="Harvest Log"
+          subtitle="Deer, turkey, and small game you've tagged — species, date, county, weapon."
+          count={harvestCount}
+          onPress={onModeLog}
+        />
+      ) : null}
+
+      {mode === 'fish' ? (
+        <HubRow
+          code="CT"
+          title="Catch Log"
+          subtitle="Every fish you've landed — species, length, water, and personal bests."
+          count={totalCatches}
+          onPress={onModeLog}
+        />
+      ) : null}
+
+      <HubRow
+        code="GR"
+        title="Gear"
+        subtitle={`Curated ${modeLabel(mode)} kit — what to bring and where to get it.`}
+        onPress={onGear}
+      />
+
+      {/* ── Look back ── */}
+      <SectionHeader title="Look back" />
+
       <HubRow
         code="CL"
         title="Activity Calendar"
@@ -693,7 +798,7 @@ export default function PersonalHubScreen() {
       <HubRow
         code="CC"
         title="Comparable Conditions"
-        subtitle="Type today&#39;s weather; rank past trips by similarity. Find what worked the last time it looked like this."
+        subtitle="Type today's weather; rank past trips by similarity. Find what worked the last time it looked like this."
         count={counts.weatherEntries}
         onPress={onComparableConditions}
       />
@@ -715,19 +820,11 @@ export default function PersonalHubScreen() {
       />
 
       <HubRow
-        code="UT"
-        title="Upcoming Trips"
-        subtitle="Every saved Camp + Hike trip in chronological order. See what's next, tap to open the planner."
-        count={upcomingCount}
-        onPress={onUpcomingTrips}
-      />
-
-      <HubRow
-        code="GO"
-        title="Annual Goals"
-        subtitle="Set yearly targets — miles hiked, journal entries, days afield. Live progress + on-pace verdict."
-        count={goalCount}
-        onPress={onGoals}
+        code="TG"
+        title="Journal Tags"
+        subtitle="Browse the tags you've used — tap one to find every entry."
+        count={counts.tags}
+        onPress={onTags}
       />
 
       <HubRow
@@ -745,6 +842,9 @@ export default function PersonalHubScreen() {
         count={counts.waypoints + counts.tracks + counts.markups}
         onPress={onStats}
       />
+
+      {/* ── Backup / Import ── */}
+      <SectionHeader title="Backup & import" />
 
       <HubRow
         code="EX"
@@ -889,6 +989,15 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 16,
+  },
+  sectionHeader: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: Colors.textMuted,
+    marginTop: 14,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   headerTitle: {
     fontSize: 20,

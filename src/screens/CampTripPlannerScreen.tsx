@@ -31,6 +31,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Colors from '../theme/colors';
+import { TAB } from '../navigation/routes';
 import FilterPicker from '../components/common/FilterPicker';
 import { MARYLAND_CAMPGROUNDS } from '../data/marylandCampgrounds';
 import type { CampTrip } from '../types/camp';
@@ -140,7 +141,7 @@ export default function CampTripPlannerScreen() {
    */
   const viewTripOnMap = useCallback(
     (campgroundId: string) => {
-      navigation.navigate('CampMapTab', {
+      navigation.navigate(TAB.MAP, {
         screen: 'CampMapMain',
         params: { focusCampgroundId: campgroundId },
       });
@@ -266,18 +267,26 @@ export default function CampTripPlannerScreen() {
    * Reverse handoff — seed a new journal entry from a saved trip. Phase A.27:
    * eliminates the "blank journal screen" friction by pre-filling
    * mode/date/title/body/tags/locationLabel from the trip plan. JournalEdit
-   * is mounted in the same tab stack via PersonalLayerScreens(), so this is
-   * a same-stack push.
+   * is registered once, in the Log tab's stack, so this is a cross-tab
+   * navigate addressed with the nested { screen, params } shape.
    */
   const logTripJournal = useCallback(
     (trip: CampTrip) => {
-      navigation.navigate('JournalEdit', {
-        mode: 'camp',
-        seed: seedFromCampTrip(trip),
+      navigation.navigate(TAB.LOG, {
+        screen: 'JournalEdit',
+        params: {
+          mode: 'camp',
+          seed: seedFromCampTrip(trip),
+        },
       });
     },
     [navigation],
   );
+
+  /** Gear lives on the More tab; the root-Stack 'Gear' route resolves from here. */
+  const openGear = useCallback(() => {
+    navigation.navigate('Gear');
+  }, [navigation]);
 
   /**
    * Phase A.40 — clone a saved trip into a fresh "Copy of …" entry,
@@ -376,6 +385,21 @@ export default function CampTripPlannerScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>Trip Planner</Text>
+
+      {/* Gear for this trip — curated camping kit lives on the More tab. */}
+      <TouchableOpacity
+        style={styles.gearRow}
+        onPress={openGear}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Gear for this trip"
+      >
+        <View style={styles.gearRowBody}>
+          <Text style={styles.gearRowTitle}>Gear for this trip</Text>
+          <Text style={styles.gearRowSub}>Curated camping kit — shelter, sleep, kitchen, safety.</Text>
+        </View>
+        <Text style={styles.gearRowChev}>{'\u203A'}</Text>
+      </TouchableOpacity>
 
       {/* Trip Name */}
       <View style={styles.section}>
@@ -538,6 +562,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16, paddingBottom: 32 },
   heading: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
+  gearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 20,
+  },
+  gearRowBody: { flex: 1 },
+  gearRowTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  gearRowSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  gearRowChev: { fontSize: 22, color: Colors.textMuted, marginLeft: 8 },
   section: { marginBottom: 20 },
   sectionLabel: {
     fontSize: 12,

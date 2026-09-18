@@ -105,13 +105,20 @@ export default function CampMapScreen() {
       navigation.navigate('MarkupEdit', { mode: 'camp', markupId }),
     [navigation],
   );
+  // The 'Log' chip opens this mode's Log tab (route-name contract: every
+  // mode's tab navigator exposes LogTab). navigate() bubbles to the tab
+  // navigator when this screen sits inside a nested stack.
   const openPersonalHub = useCallback(
-    () => navigation.navigate('PersonalHub', { mode: 'camp' }),
+    () => navigation.navigate('LogTab', { mode: 'camp' }),
     [navigation],
   );
   const route = useRoute<RouteProp<Record<string, CampMapRouteParams>, string>>();
   const focusCampgroundId = route.params?.focusCampgroundId;
-  const { location, loading: locationLoading } = useLocation();
+  // Location is requested on the Locate button gesture, not on mount, so
+  // the OS permission prompt never lands on top of the first-run tour and
+  // the map renders immediately centered on Maryland.
+  const { location, loading: locationLoading, refetch: requestLocation } =
+    useLocation({ requestOnMount: false });
 
   const [selected, setSelected] = useState<SelectedCampground | null>(null);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
@@ -125,6 +132,10 @@ export default function CampMapScreen() {
   // Per-session dismissal of the DNR disclaimer — user can reclaim vertical
   // space at the bottom of the map. Re-shown on next cold start.
   const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+  // First-run choreography: the tour waits for the map to finish loading
+  // and the disclaimer banner stays hidden until the tour has settled.
+  const [mapReady, setMapReady] = useState(false);
+  const [tourSettled, setTourSettled] = useState(false);
 
   // Current camera zoom — kept in sync via onCameraChanged so the +/- buttons
   // can apply a correct delta from wherever the user currently is. Previous
@@ -244,13 +255,21 @@ export default function CampMapScreen() {
     }
   }, []);
 
-  const centerOnLocation = useCallback(() => {
-    if (location && cameraRef.current && isInMaryland(location.longitude, location.latitude)) {
+  const centerOnLocation = useCallback(async () => {
+    if (locationLoading) return;
+    const loc = location ?? (await requestLocation());
+    if (loc && cameraRef.current && isInMaryland(loc.longitude, loc.latitude)) {
       cameraRef.current.setCamera({
-        centerCoordinate: [location.longitude, location.latitude],
+        centerCoordinate: [loc.longitude, loc.latitude],
         zoomLevel: 12,
         animationDuration: 800,
       });
+    } else if (loc) {
+      Alert.alert(
+        'Outside Maryland',
+        'Your current position is outside Maryland. The map stays centered on the state so Maryland sites remain in view.',
+        [{ text: 'OK' }],
+      );
     } else {
       Alert.alert(
         'Location Services',
@@ -258,7 +277,7 @@ export default function CampMapScreen() {
         [{ text: 'OK', style: 'cancel' }],
       );
     }
-  }, [location]);
+  }, [location, locationLoading, requestLocation]);
 
   const zoomIn = useCallback(() => {
     cameraRef.current?.zoomTo(Math.min(currentZoom + 1, 18), 300);
@@ -287,7 +306,7 @@ export default function CampMapScreen() {
    */
   const planTripFromSelected = useCallback(() => {
     if (!selected) return;
-    navigation.navigate('CampTripPlannerTab', {
+    navigation.navigate('PlanTab', {
       screen: 'CampTripPlannerMain',
       params: { campgroundId: selected.id },
     });
@@ -307,6 +326,7 @@ export default function CampMapScreen() {
         onPress={handleMapPress}
         onLongPress={onLongPressMap}
         onCameraChanged={handleCameraChanged}
+        onDidFinishLoadingMap={() => setMapReady(true)}
       >
         <MapboxGL.Camera
           ref={cameraRef}
@@ -418,13 +438,19 @@ export default function CampMapScreen() {
           style={styles.controlBtn}
           onPress={() => setMapStyle((s) => (s === 'topo' ? 'satellite' : 'topo'))}
         >
-          <Text style={styles.controlText}>{mapStyle === 'topo' ? 'SAT' : 'MAP'}</Text>
+          <Text style={styles.controlWord} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+            {mapStyle === 'topo' ? 'Satellite' : 'Map'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlBtn} onPress={openPersonalHub}>
-          <Text style={styles.controlText}>ME</Text>
+          <Text style={styles.controlWord}>Log</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlBtn} onPress={centerOnLocation}>
-          <Text style={styles.controlCrosshair}>{'\u2316'}</Text>
+        <TouchableOpacity style={styles.controlBtn} onPress={() => { void centerOnLocation(); }}>
+          {locationLoading ? (
+            <ActivityIndicator size="small" color={Colors.lichen} />
+          ) : (
+            <Text style={[styles.controlWord, { color: Colors.lichen }]}>Locate</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.controlBtn}
@@ -434,13 +460,16 @@ export default function CampMapScreen() {
         >
           <Text
             style={[
-              styles.controlText,
+              styles.controlWord,
               offlineMaps.isOffline && !offlineMaps.hasPacks
                 ? { color: Colors.mdRed }
                 : null,
             ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
           >
-            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'Offline'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -536,7 +565,7 @@ export default function CampMapScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Ask AI: ${query}`}
                 onPress={() => {
-                  navigation.navigate('CampAITab', {
+                  navigation.navigate('AITab', {
                     screen: 'ChatMain',
                     params: { initialQuery: query },
                   });
@@ -602,11 +631,15 @@ export default function CampMapScreen() {
       ) : null}
 
       <DisclaimerBanner
-        dismissed={disclaimerDismissed}
+        dismissed={disclaimerDismissed || !tourSettled}
         onDismiss={() => setDisclaimerDismissed(true)}
       />
 
-      <OnboardingTourGate mode="camp" />
+      <OnboardingTourGate
+        mode="camp"
+        ready={mapReady && !locationLoading}
+        onSettled={() => setTourSettled(true)}
+      />
 
       <OfflineMapsModal
         visible={offlineOpen}
@@ -677,6 +710,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.mud,
   },
   controlText: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  // Word chips (Satellite / Log / Locate / Offline / Gauges) in the 40pt circle.
+  controlWord: { fontSize: 9, fontWeight: '800', color: Colors.textPrimary, letterSpacing: 0.2, textAlign: 'center', paddingHorizontal: 2 },
   controlCrosshair: { fontSize: 20, color: Colors.lichen },
   detailPanel: {
     position: 'absolute',

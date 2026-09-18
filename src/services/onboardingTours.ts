@@ -34,7 +34,7 @@ const HUNT: TourSlide[] = [
     chipColor: Colors.mdRed,
     chipTextColor: Colors.textOnAccent,
     title: 'Welcome to Hunt mode',
-    body: 'Public hunting lands, ranges, blinds, regulations — every layer you need to plan a Maryland deer, turkey, or waterfowl hunt. Filter by land type or season from the chips along the left edge of the map.',
+    body: 'Public hunting lands, ranges, blinds, regulations: every layer you need to plan a Maryland deer, turkey, or waterfowl hunt. Filter by land type or season from the chips along the left edge of the map.',
   },
   {
     code: 'WP',
@@ -48,14 +48,14 @@ const HUNT: TourSlide[] = [
     chipColor: Colors.moss,
     chipTextColor: Colors.textOnAccent,
     title: 'Record your scouts and sits',
-    body: 'Tap RECORD on the map controls to log a GPS track of your scout walk or stand approach. Tracks save to My Tracks with distance, time, and elevation — review them later, or seed a journal entry from any one of them.',
+    body: 'Tap Log on the map, then Record a new track, to log GPS while you scout or walk in to a stand. Tracks save to My Tracks with distance, time, and elevation. Review them later, or seed a journal entry from any one of them.',
   },
   {
     code: 'AI',
     chipColor: Colors.mdGold,
     chipTextColor: Colors.mdBlack,
     title: 'AI hunt planning + your field journal',
-    body: 'The AI tab generates a hunt plan from a location and conditions. The Resources tab has regulations and your gear lists. Tap ME on the map for your full personal layer — waypoints, tracks, journal, photos, goals.',
+    body: 'The AI tab generates a hunt plan from a location and conditions. The Resources tab has regulations and your gear lists. Tap Log on the map for your full personal layer: waypoints, tracks, journal, photos, goals.',
   },
 ];
 
@@ -65,28 +65,28 @@ const FISH: TourSlide[] = [
     chipColor: '#0277BD',
     chipTextColor: Colors.textOnAccent,
     title: 'Welcome to Fish mode',
-    body: 'Public access sites, boat ramps, water trails, crab pots, oyster sanctuaries, NOAA tide stations, USGS gauges — Maryland fishing infrastructure on one map. Toggle layers from the legend.',
+    body: 'Public access sites, boat ramps, water trails, crab pots, oyster sanctuaries, NOAA tide stations, USGS gauges. Maryland fishing infrastructure on one map. Toggle layers from the legend.',
   },
   {
     code: 'WP',
     chipColor: '#1565C0',
     chipTextColor: Colors.textOnAccent,
     title: 'Mark your honey holes',
-    body: 'Long-press the map to drop a hole, ramp, put-in, take-out, snag, or structure pin. Photos and notes attach to each one. Private to you — no community sharing of fishing spots.',
+    body: 'Long-press the map to drop a hole, ramp, put-in, take-out, snag, or structure pin. Photos and notes attach to each one. Private to you, with no community sharing of fishing spots.',
   },
   {
     code: 'TR',
     chipColor: '#00838F',
     chipTextColor: Colors.textOnAccent,
     title: 'Track your drifts and walks',
-    body: 'Tap RECORD to log GPS while you drift a creek or walk the bank. Saved tracks show distance and time so you can revisit a productive run next time.',
+    body: 'Tap Log on the map, then Record a new track, to log GPS while you drift a creek or walk the bank. Saved tracks show distance and time so you can revisit a productive run next time.',
   },
   {
     code: 'AI',
     chipColor: Colors.mdGold,
     chipTextColor: Colors.mdBlack,
     title: 'Plan with AI + log every trip',
-    body: 'AI tab plans a trip from your target species and conditions. Resources has regulations and tide info. Tap ME on the map for your fish journal, photos, tags, goals, and "what worked the last time it looked like this" search.',
+    body: 'AI tab plans a trip from your target species and conditions. Resources has regulations and tide info. Tap Log on the map for your fish journal, photos, tags, goals, and "what worked the last time it looked like this" search.',
   },
 ];
 
@@ -96,7 +96,7 @@ const CAMP: TourSlide[] = [
     chipColor: '#6D4C41',
     chipTextColor: Colors.textOnAccent,
     title: 'Welcome to Camp mode',
-    body: 'Verified Maryland campgrounds, AT shelters, and your own Deer Camp areas — all on one map. Tap any pin for amenities, reservation links, and directions.',
+    body: 'Verified Maryland campgrounds, AT shelters, and your own Deer Camp areas, all on one map. Tap any pin for amenities, reservation links, and directions.',
   },
   {
     code: 'TP',
@@ -110,14 +110,14 @@ const CAMP: TourSlide[] = [
     chipColor: Colors.moss,
     chipTextColor: Colors.textOnAccent,
     title: 'Pre-trip gear checklists',
-    body: 'The Gear tab generates a starter pack list per trip type (car camp, backcountry, family). Build once, edit per trip — your kit is always a tap away.',
+    body: 'The Gear tab generates a starter pack list per trip type (car camp, backcountry, family). Build once, edit per trip. Your kit is always a tap away.',
   },
   {
     code: 'DC',
     chipColor: Colors.bark,
     chipTextColor: Colors.textOnAccent,
     title: 'Group Camps + your personal layer',
-    body: 'Deer Camp lets you draw a camp boundary, share a join link, and post group notes. Tap ME for your camp journal, photos, gear lists, and tracks.',
+    body: 'Deer Camp lets you draw a camp boundary, share a join link, and post group notes. Tap Log for your camp journal, photos, gear lists, and tracks.',
   },
 ];
 
@@ -127,7 +127,7 @@ const HIKE: TourSlide[] = [
     chipColor: Colors.moss,
     chipTextColor: Colors.textOnAccent,
     title: 'Welcome to Hike mode',
-    body: 'The Appalachian Trail through Maryland plus 79+ state-park trails — with shelters, trailheads, parking, and view points. Tap any pin for distance, elevation, and access notes.',
+    body: 'The Appalachian Trail through Maryland plus 79+ state-park trails, with shelters, trailheads, parking, and view points. Tap any pin for distance, elevation, and access notes.',
   },
   {
     code: 'TR',
@@ -148,7 +148,7 @@ const HIKE: TourSlide[] = [
     chipColor: Colors.amber,
     chipTextColor: Colors.textOnAccent,
     title: 'Journal every hike, hit your goals',
-    body: 'After the hike, tap ME to write a journal entry. Set yearly mileage or active-day goals and watch the progress bar fill up — On This Day reminds you what you did a year ago.',
+    body: 'After the hike, tap Log to write a journal entry. Set yearly mileage or active-day goals and watch the progress bar fill up. On This Day reminds you what you did a year ago.',
   },
 ];
 

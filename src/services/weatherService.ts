@@ -109,6 +109,16 @@ export interface HuntingWeather {
 }
 
 const WEATHER_API = 'https://api.weather.gov';
+/** Hard ceiling for any backend call so a cold dyno never blocks the UI. */
+const BACKEND_TIMEOUT_MS = 8000;
+
+/** Shape returned by getBackendWeather / getBackendEnrichment. */
+export interface BackendWeatherResult {
+  forecast: WeatherForecast[];
+  huntingConditions: HuntingConditions;
+  current: Record<string, any> | null;
+  location: Record<string, any> | null;
+}
 
 /**
  * WeatherService — Hunting Weather Analysis
@@ -143,7 +153,7 @@ class WeatherService {
         `${WEATHER_API}/gridpoints/${grid.gridId}/${grid.gridX},${grid.gridY}/forecast`,
         {
           headers: { 'User-Agent': 'MDHuntFishOutdoors/2.0 (contact@outdoorsmaryland.com)' },
-          timeout: 10000,
+          timeout: BACKEND_TIMEOUT_MS,
         }
       );
       // Map response to WeatherForecast interface
@@ -184,8 +194,8 @@ class WeatherService {
 
     // Attempt to get current pressure and dew point from backend weather endpoint
     try {
-      const result = await this.getBackendWeather(lat, lon);
-      if (result.current) {
+      const result = await this.getBackendEnrichment(lat, lon);
+      if (result && result.current) {
         if (result.current.barometric_pressure_mb) {
           pressureValue = result.current.barometric_pressure_mb;
           if (pressureValue !== null) {
@@ -259,7 +269,7 @@ class WeatherService {
     // Query weather.gov points endpoint to get grid coordinates
     const res = await axios.get(`${WEATHER_API}/points/${lat},${lon}`, {
       headers: { 'User-Agent': 'MDHuntFishOutdoors/2.0 (contact@outdoorsmaryland.com)' },
-      timeout: 10000,
+      timeout: BACKEND_TIMEOUT_MS,
     });
 
     // Extract grid info from response
@@ -469,22 +479,18 @@ class WeatherService {
   }
 
   /**
-   * Get enhanced weather from backend API (includes hunting condition analysis).
-   * Falls back to direct Weather.gov if backend is unavailable.
+   * Fetch the backend's enriched weather (hunting condition analysis,
+   * current observations). Bounded to 8 s so a cold Render dyno can never
+   * hold up the UI; resolves null on any failure or non-ok payload.
    */
-  async getBackendWeather(lat: number, lon: number): Promise<{
-    forecast: WeatherForecast[];
-    huntingConditions: HuntingConditions;
-    current: Record<string, any> | null;
-    location: Record<string, any> | null;
-  }> {
+  async getBackendEnrichment(lat: number, lon: number): Promise<BackendWeatherResult | null> {
     try {
       const res = await axios.get(`${Config.API_BASE_URL}/api/v1/integrations/weather`, {
         params: { latitude: lat, longitude: lon },
-        timeout: 15000,
+        timeout: BACKEND_TIMEOUT_MS,
       });
 
-      if (res.data.status === 'ok') {
+      if (res.data && res.data.status === 'ok') {
         // Map backend forecast format to our WeatherForecast interface
         const forecasts: WeatherForecast[] = (res.data.forecast || []).map((p: any) => ({
           name: p.name || '',
@@ -508,11 +514,52 @@ class WeatherService {
     } catch (error) {
       if (__DEV__) console.warn('[Weather] Backend unavailable, using direct API');
     }
+    return null;
+  }
 
-    // Fallback: direct Weather.gov + local analysis
+  /**
+   * Get weather for a point, weather.gov first.
+   *
+   * Resolves as soon as the direct weather.gov forecast is in (typically
+   * 1-2 s) so the overlay never waits on the backend. The backend's
+   * enrichment (hunting conditions, current obs) is fetched in parallel
+   * and delivered through `onEnrich` when and if it arrives. If weather.gov
+   * itself fails, the backend result (bounded to 8 s) is used as the
+   * fallback; if both fail the forecast is empty.
+   */
+  async getBackendWeather(
+    lat: number,
+    lon: number,
+    onEnrich?: (enriched: BackendWeatherResult) => void,
+  ): Promise<BackendWeatherResult> {
+    const backendPromise = this.getBackendEnrichment(lat, lon);
     const forecasts = await this.getForecast(lat, lon);
+
+    if (forecasts.length > 0) {
+      const base: BackendWeatherResult = {
+        forecast: forecasts,
+        huntingConditions: {},
+        current: null,
+        location: null,
+      };
+      if (onEnrich) {
+        void backendPromise.then((enriched) => {
+          if (enriched) {
+            onEnrich({
+              ...enriched,
+              // Keep the weather.gov periods if the backend sent none.
+              forecast: enriched.forecast.length > 0 ? enriched.forecast : forecasts,
+            });
+          }
+        });
+      }
+      return base;
+    }
+
+    const enriched = await backendPromise;
+    if (enriched) return enriched;
     return {
-      forecast: forecasts,
+      forecast: [],
       huntingConditions: {},
       current: null,
       location: null,

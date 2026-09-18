@@ -6,8 +6,9 @@
  *   - Filter chips: difficulty, length range, elevation gain, dog-friendly
  *   - Sort: distance-to-user, alphabetical
  *   - Tap row → detail with description, "Directions" button, "Plan Trip" button
- *   - "Plan Trip" hands the selected trail off to the Hike Trip Planner tab
- *     via route params, pre-selecting it there.
+ *   - "Plan Trip" hands the selected trail off to the AT Trip Planner
+ *     (pushed in the same Plan-tab stack) via route params, pre-selecting
+ *     it there. A header "Plan a trip" button opens the planner blank.
  */
 
 import React, { useMemo, useState, useCallback } from 'react';
@@ -27,6 +28,7 @@ import Colors from '../theme/colors';
 import FilterPicker from '../components/common/FilterPicker';
 import { MARYLAND_STATE_PARK_TRAILS } from '../data/marylandStateParkTrails';
 import type { Trail, TrailDifficulty } from '../types/hike';
+import { PLANNER_SCREEN } from '../navigation/routes';
 
 type SortOption = 'name' | 'distance' | 'difficulty';
 
@@ -120,13 +122,14 @@ export default function HikeTrailBrowserScreen() {
 
   const planTripFromTrail = useCallback(
     (trail: Trail) => {
-      navigation.navigate('HikeTripPlannerTab', {
-        screen: 'HikeTripPlannerMain',
-        params: { trailId: trail.id },
-      });
+      navigation.navigate(PLANNER_SCREEN.hike, { trailId: trail.id });
     },
     [navigation],
   );
+
+  const planTrip = useCallback(() => {
+    navigation.navigate(PLANNER_SCREEN.hike);
+  }, [navigation]);
 
   const renderTrailRow = ({ item }: { item: Trail }) => (
     <TouchableOpacity
@@ -162,7 +165,18 @@ export default function HikeTrailBrowserScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Trails</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>Trails</Text>
+          <TouchableOpacity
+            style={styles.planTripBtn}
+            onPress={planTrip}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Plan a trip"
+          >
+            <Text style={styles.planTripBtnText}>Plan a trip</Text>
+          </TouchableOpacity>
+        </View>
         <TextInput
           style={styles.searchInput}
           placeholder="Search trails..."
@@ -381,7 +395,10 @@ export default function HikeTrailBrowserScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: Colors.surface },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 10 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  planTripBtn: { backgroundColor: Colors.mdGold, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16 },
+  planTripBtnText: { color: Colors.mdBlack, fontSize: 13, fontWeight: '700' },
   searchInput: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: 8,

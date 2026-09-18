@@ -28,7 +28,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import Colors from '../theme/colors';
 import RegulationsScreen from './RegulationsScreen';
 import FishRegulationsScreen from './FishRegulationsScreen';
@@ -42,12 +42,10 @@ type Segment = 'regulations' | 'links';
 
 /**
  * ResourcesHubScreen component — Segmented wrapper for Regulations and Resources.
- * Includes quick-access toolbar for Harvest Log and Settings sub-screens.
  *
  * @returns {JSX.Element} Container with segmented control and either RegulationsScreen or ResourcesScreen
  */
 export default function ResourcesHubScreen() {
-  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { activeMode } = useActivityMode();
   // Honor deep-link / cross-tab params so 1-tap shortcuts from the map land on
@@ -81,35 +79,12 @@ export default function ResourcesHubScreen() {
         outreach quality stays consistent.
       */}
 
-      {/* ── Quick-Access Toolbar ── */}
-      {/* Icon style matches TabIcon geometry (View-shape, not emoji) for a
-          consistent visual language across the nav surfaces. See audit §16.3. */}
-      <View style={styles.quickBar}>
-        <TouchableOpacity
-          style={styles.quickButton}
-          onPress={() => navigation.navigate('HarvestLog')}
-          activeOpacity={0.7}
-        >
-          <HarvestLogGlyph />
-          <Text style={styles.quickLabel}>Harvest Log</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.quickButton}
-          onPress={() => navigation.navigate('Forum')}
-          activeOpacity={0.7}
-        >
-          <ForumGlyph />
-          <Text style={styles.quickLabel}>Forum</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.quickButton}
-          onPress={() => navigation.navigate('Settings')}
-          activeOpacity={0.7}
-        >
-          <SettingsGlyph />
-          <Text style={styles.quickLabel}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+      {/*
+        2026-09-18 (five-tab restructure): the Harvest Log / Forum /
+        Settings quick bar that used to sit here was removed — every one
+        of those is now a row on the More tab, which is the only screen
+        that pushes this hub. Harvest Log moved to the Log tab.
+      */}
 
       {/* ── "Take the tour again" — Phase A.26 onboarding replay entry ── */}
       <TouchableOpacity
@@ -198,150 +173,6 @@ export default function ResourcesHubScreen() {
   );
 }
 
-/* ── View-shape glyphs for the quick-access toolbar ──
- * These replace the prior emoji icons (🦌💬⚙️) so the quick bar matches the
- * tab-bar visual language (see AppNavigator TabIcon). Kept deliberately small
- * and abstract — not literal art. */
-
-function HarvestLogGlyph() {
-  // Stylized antler/tag: two stacked short bars on a disc.
-  return (
-    <View style={glyphStyles.wrap}>
-      <View style={[glyphStyles.disc, { backgroundColor: Colors.moss }]} />
-      <View style={[glyphStyles.bar, { width: 10, top: 3 }]} />
-      <View style={[glyphStyles.bar, { width: 6, top: 8 }]} />
-    </View>
-  );
-}
-
-function ForumGlyph() {
-  // Two overlapping rounded rectangles — a conversation bubble stack.
-  return (
-    <View style={glyphStyles.wrap}>
-      <View
-        style={{
-          width: 11,
-          height: 9,
-          borderRadius: 2,
-          borderWidth: 1.5,
-          borderColor: Colors.textPrimary,
-          position: 'absolute',
-          top: 1,
-          left: 0,
-        }}
-      />
-      <View
-        style={{
-          width: 11,
-          height: 9,
-          borderRadius: 2,
-          backgroundColor: Colors.moss,
-          position: 'absolute',
-          top: 5,
-          left: 4,
-        }}
-      />
-    </View>
-  );
-}
-
-function SettingsGlyph() {
-  // Concentric rings — gear-like without drawing teeth.
-  return (
-    <View style={glyphStyles.wrap}>
-      <View
-        style={{
-          width: 15,
-          height: 15,
-          borderRadius: 8,
-          borderWidth: 1.5,
-          borderColor: Colors.textPrimary,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          width: 6,
-          height: 6,
-          borderRadius: 3,
-          backgroundColor: Colors.moss,
-        }}
-      />
-    </View>
-  );
-}
-
-const glyphStyles = StyleSheet.create({
-  wrap: {
-    width: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  disc: {
-    position: 'absolute',
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    opacity: 0.35,
-  },
-  bar: {
-    position: 'absolute',
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: '#F3E3A1',
-  },
-});
-
-// 2026-04-26: Contact-David banner styles. Green moss accent with white
-// pill so the email is the visual hook. Uses textOnAccent for AA contrast.
-const contactStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.moss,
-    marginHorizontal: 12,
-    marginTop: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  pill: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  pillEmoji: { fontSize: 14 },
-  pillText: {
-    color: Colors.moss,
-    fontWeight: '800',
-    fontSize: 13,
-    letterSpacing: 0.4,
-  },
-  textWrap: { flex: 1 },
-  title: { color: Colors.textOnAccent, fontSize: 13, fontWeight: '600' },
-  email: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
-    marginTop: 2,
-    letterSpacing: 0.3,
-  },
-  subtitle: {
-    color: Colors.textOnAccent,
-    fontSize: 11,
-    marginTop: 4,
-    opacity: 0.85,
-    lineHeight: 14,
-  },
-});
-
 /* contactFabStyles removed 2026-05-01 — ContactFab moved to
    src/components/common/ContactFab.tsx. The styles now live with
    the component so other Resources screens (Fish/Camp/Hike) can
@@ -382,30 +213,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  quickBar: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 2,
-  },
-  quickButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.mud,
-    gap: 6,
-  },
-  quickLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.textPrimary,
   },
   tourReplayRow: {
     flexDirection: 'row',

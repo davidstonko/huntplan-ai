@@ -24,6 +24,11 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
 import { API_BASE_URL } from '../services/api';
+import { fetchWithTimeout } from '../config';
+import { buildOfflineHuntPlan } from '../services/offlineHuntPlanService';
+
+/** Backend planner ceiling; past this the bundled-data plan is shown. */
+const PLAN_REQUEST_TIMEOUT_MS = 8000;
 
 // Species picker: letter-code chip replaces earlier decorative emoji
 // icons per the Build 9 professionalism pass. Hunt abbreviations follow
@@ -70,40 +75,66 @@ export default function HuntPlanScreen() {
   const [plan, setPlan] = useState<string | null>(null);
   const [sources, setSources] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  /** True when the shown plan came from bundled data, not the backend. */
+  const [isOfflinePlan, setIsOfflinePlan] = useState(false);
+
+  const showOfflinePlan = () => {
+    const offline = buildOfflineHuntPlan({
+      species,
+      weapon,
+      huntDate,
+      county: county || undefined,
+      landName: landName || undefined,
+    });
+    setIsOfflinePlan(true);
+    setPlan(offline.plan);
+    setSources(offline.sources);
+  };
 
   const generatePlan = async () => {
     setLoading(true);
     setPlan(null);
     setError(null);
+    setIsOfflinePlan(false);
 
     try {
-      const token = await AsyncStorage.getItem('@auth_access_token');
-      const res = await fetch(`${API_BASE_URL}/api/v1/planner/ai/hunt-plan`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      const token = await AsyncStorage.getItem('@auth_access_token').catch(() => null);
+      // 8 s ceiling: a cold or down backend falls back to the bundled-data
+      // plan instead of leaving the user on a spinner.
+      const res = await fetchWithTimeout(
+        `${API_BASE_URL}/api/v1/planner/ai/hunt-plan`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            species,
+            weapon,
+            hunt_date: huntDate,
+            county: county || undefined,
+            land_name: landName || undefined,
+            state: 'MD',
+          }),
         },
-        body: JSON.stringify({
-          species,
-          weapon,
-          hunt_date: huntDate,
-          county: county || undefined,
-          land_name: landName || undefined,
-          state: 'MD',
-        }),
-      });
+        PLAN_REQUEST_TIMEOUT_MS,
+      );
 
       if (res.ok) {
         const data = await res.json();
-        setPlan(data.plan);
-        setSources(data.sources || []);
-      } else {
-        const errData = await res.json().catch(() => null);
-        throw new Error(errData?.detail || 'Failed to generate plan');
+        if (typeof data?.plan === 'string' && data.plan.trim()) {
+          setIsOfflinePlan(false);
+          setPlan(data.plan);
+          setSources(Array.isArray(data.sources) ? data.sources : []);
+          return;
+        }
       }
-    } catch (e: any) {
-      setError(e.message || 'Could not generate hunt plan. Check your connection.');
+      // Non-OK or empty payload: use the bundled-data plan.
+      showOfflinePlan();
+    } catch (_e) {
+      // Timeout, offline, or parse failure: use the bundled-data plan.
+      showOfflinePlan();
     } finally {
       setLoading(false);
     }
@@ -246,6 +277,24 @@ export default function HuntPlanScreen() {
               <Text style={styles.planTitle}>Your Hunt Plan</Text>
             </View>
 
+            {isOfflinePlan && (
+              <View style={styles.offlineBadge}>
+                <Text style={styles.offlineBadgeTitle}>Offline plan</Text>
+                <Text style={styles.offlineBadgeText}>
+                  The AI planner could not be reached, so this plan was built from the app's bundled Maryland data. Tap Retry with AI when you are back online.
+                </Text>
+                <TouchableOpacity
+                  style={styles.offlineRetryBtn}
+                  onPress={generatePlan}
+                  disabled={loading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry with AI"
+                >
+                  <Text style={styles.offlineRetryText}>{loading ? 'Retrying...' : 'Retry with AI'}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             <View style={styles.planCard}>
               <Text style={styles.planText}>{plan}</Text>
             </View>
@@ -358,6 +407,25 @@ const styles = StyleSheet.create({
   generateBtnDisabled: { opacity: 0.6 },
   generateBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  offlineBadge: {
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.mdGold,
+    padding: 12,
+    marginBottom: 12,
+  },
+  offlineBadgeTitle: { fontSize: 13, fontWeight: '800', color: Colors.mdGold, letterSpacing: 0.6, marginBottom: 4 },
+  offlineBadgeText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18 },
+  offlineRetryBtn: {
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: Colors.mdGold,
+  },
+  offlineRetryText: { fontSize: 12, fontWeight: '800', color: Colors.mdBlack, letterSpacing: 0.5 },
   errorCard: {
     backgroundColor: Colors.rust + '20', borderRadius: 8, padding: 12, marginTop: 12,
   },

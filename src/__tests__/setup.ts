@@ -124,16 +124,6 @@ jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(() => jest.fn()),
 }), { virtual: true });
 
-// ─── Mock Background Geolocation ──────────────────────────────
-
-jest.mock('react-native-background-geolocation', () => ({
-  ready: jest.fn(),
-  start: jest.fn(),
-  stop: jest.fn(),
-  getCurrentPosition: jest.fn(),
-  onLocation: jest.fn(),
-}), { virtual: true });
-
 // ─── Mock Vector Icons ──────────────────────────────────────────
 
 jest.mock('react-native-vector-icons/Feather', () => 'FeatherIcon', { virtual: true });

@@ -25,8 +25,8 @@
 
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import Colors from '../theme/colors';
+import { useOpenPlanner } from '../navigation/useOpenPlanner';
 import type { BriefingTripDrought } from '../services/briefingTripDroughtService';
 
 interface BriefingTripDroughtCardProps {
@@ -36,21 +36,12 @@ interface BriefingTripDroughtCardProps {
 export default function BriefingTripDroughtCard({
   drought,
 }: BriefingTripDroughtCardProps): JSX.Element | null {
-  const navigation = useNavigation<any>();
+  const openPlanner = useOpenPlanner();
   if (!drought) return null;
 
   const kindLabel = drought.lastTripKind === 'camp' ? 'camp' : 'hike';
-  const onPlan = () => {
-    if (drought.lastTripKind === 'camp') {
-      navigation.navigate('CampTripPlannerTab', {
-        screen: 'CampTripPlannerMain',
-      });
-    } else {
-      navigation.navigate('HikeTripPlannerTab', {
-        screen: 'HikeTripPlannerMain',
-      });
-    }
-  };
+  // Cross-mode: switches to Camp/Hike if needed, then opens the planner.
+  const onPlan = () => openPlanner(kindLabel);
 
   return (
     <View style={styles.section}>

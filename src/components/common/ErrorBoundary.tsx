@@ -15,6 +15,13 @@ import Colors from '../../theme/colors';
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
+  /**
+   * Optional "Go back" action (e.g. pop the navigator). Shown as a second
+   * button when provided; the boundary resets itself after calling it.
+   */
+  onGoBack?: () => boolean | void;
+  /** Report hook (Sentry etc.). Never throws into the boundary. */
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -36,10 +43,24 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
     if (__DEV__) console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    try {
+      this.props.onError?.(error, errorInfo);
+    } catch {
+      // Reporting must never take the recovery screen down with it.
+    }
   }
 
   handleReset = (): void => {
     this.setState({ hasError: false, error: null, errorInfo: null });
+  };
+
+  handleGoBack = (): void => {
+    try {
+      this.props.onGoBack?.();
+    } catch {
+      // Fall through to a plain reset.
+    }
+    this.handleReset();
   };
 
   render(): ReactNode {
@@ -51,10 +72,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <View style={styles.container}>
           <View style={styles.card}>
-            <Text style={styles.icon}>⚠️</Text>
             <Text style={styles.title}>Something went wrong</Text>
             <Text style={styles.message}>
-              The app encountered an unexpected error. You can try again or restart the app.
+              This screen hit an unexpected error. Your maps, logs, and saved data are not affected. Restart the screen or go back to continue.
             </Text>
             {__DEV__ && this.state.error && (
               <ScrollView style={styles.debugScroll}>
@@ -68,11 +88,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <TouchableOpacity
               style={styles.button}
               onPress={this.handleReset}
-              accessibilityLabel="Try again"
+              accessibilityLabel="Restart this screen"
               accessibilityRole="button"
             >
-              <Text style={styles.buttonText}>Try Again</Text>
+              <Text style={styles.buttonText}>Restart</Text>
             </TouchableOpacity>
+            {this.props.onGoBack ? (
+              <TouchableOpacity
+                style={[styles.button, styles.secondaryButton]}
+                onPress={this.handleGoBack}
+                accessibilityLabel="Go back"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.buttonText, styles.secondaryButtonText]}>Go back</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
       );
@@ -98,10 +128,6 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     maxHeight: '90%',
-  },
-  icon: {
-    fontSize: 48,
-    marginBottom: 16,
   },
   title: {
     fontSize: 20,
@@ -145,4 +171,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.textOnAccent,
   },
+  secondaryButton: {
+    marginTop: 10,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+  },
+  secondaryButtonText: {
+    color: Colors.textPrimary,
+  },
 });
+
+export default ErrorBoundary;

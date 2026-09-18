@@ -24,6 +24,12 @@ interface ParcelLayerProps {
   /** Current map viewport; null until the map reports its first bounds. */
   bounds: ParcelBounds | null;
   onSelectParcel: (parcel: ParcelProperties) => void;
+  /**
+   * Reports whether the current viewport is too wide for parcels to load
+   * (true) or narrow enough (false). Host screens show the
+   * "Zoom in to street level" hint from this.
+   */
+  onTooFarOut?: (tooFarOut: boolean) => void;
 }
 
 const EMPTY: ParcelFeatureCollection = { type: 'FeatureCollection', features: [] };
@@ -34,12 +40,26 @@ const EMPTY: ParcelFeatureCollection = { type: 'FeatureCollection', features: []
  * tracked zoom only updates on the +/- buttons, not on pinch/double-tap — so a
  * zoom-number gate silently blocked fetches after a gesture zoom.
  */
-const PARCEL_MAX_SPAN_DEG = 0.12;
+export const PARCEL_MAX_SPAN_DEG = 0.12;
+
+/** Copy for the host screen's hint chip when parcels cannot load yet. */
+export const PARCEL_ZOOM_HINT = 'Zoom in to street level to see parcels';
+
+/** True when the viewport is wider than the parcel loader allows. */
+export function isParcelViewportTooWide(bounds: ParcelBounds | null): boolean {
+  if (!bounds) return true;
+  const span = Math.max(
+    bounds.maxLng - bounds.minLng,
+    bounds.maxLat - bounds.minLat,
+  );
+  return span > PARCEL_MAX_SPAN_DEG;
+}
 
 export default function ParcelLayer({
   enabled,
   bounds,
   onSelectParcel,
+  onTooFarOut,
 }: ParcelLayerProps) {
   const [fc, setFc] = useState<ParcelFeatureCollection>(EMPTY);
 
@@ -47,22 +67,22 @@ export default function ParcelLayer({
     let cancelled = false;
     if (!enabled || !bounds) {
       setFc(EMPTY);
+      if (enabled) onTooFarOut?.(true);
       return;
     }
-    const span = Math.max(
-      bounds.maxLng - bounds.minLng,
-      bounds.maxLat - bounds.minLat,
-    );
-    if (span > PARCEL_MAX_SPAN_DEG) {
-      setFc(EMPTY); // too zoomed out — avoid pulling thousands of parcels
+    if (isParcelViewportTooWide(bounds)) {
+      setFc(EMPTY); // too zoomed out: avoid pulling thousands of parcels
+      onTooFarOut?.(true);
       return;
     }
+    onTooFarOut?.(false);
     fetchParcelsInBounds(bounds).then((result) => {
       if (!cancelled) setFc(result);
     });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, bounds]);
 
   if (!enabled || fc.features.length === 0) return null;

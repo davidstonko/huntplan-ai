@@ -21,7 +21,10 @@ import { useActivityMode, ActivityMode } from '../context/ActivityModeContext';
 // 2026-05-01 (V2.4 audit, iter 7): pull API_BASE_URL from src/config.ts
 // instead of redeclaring `__DEV__ ? localhost : render` (which silently
 // broke chat on every fresh dev machine without a local FastAPI).
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, fetchWithTimeout } from '../config';
+
+/** Backend AI ceiling; past this the local knowledge base answers. */
+const AI_REQUEST_TIMEOUT_MS = 8000;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Per-mode chat configuration
@@ -239,20 +242,29 @@ export default function ChatScreen() {
     try {
       // Try backend AI (Claude + RAG)
       const token = await AsyncStorage.getItem('auth_token');
-      const response = await fetch(`${API_BASE_URL}/api/v1/planner/ai/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // Hard 8 s cap: a cold or down backend must never leave the spinner
+      // running. On timeout we fall through to the local knowledge base.
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/api/v1/planner/ai/query`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            query,
+            state: 'MD',
+          }),
         },
-        body: JSON.stringify({
-          query,
-          state: 'MD',
-        }),
-      });
+        AI_REQUEST_TIMEOUT_MS,
+      );
 
       if (response.ok) {
         const data = await response.json();
+        if (typeof data?.answer !== 'string' || !data.answer.trim()) {
+          throw new Error('Empty AI answer');
+        }
         addMessage(
           data.answer,
           false,

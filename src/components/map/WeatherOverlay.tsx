@@ -8,7 +8,7 @@
  * @version 3.0.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -77,26 +77,54 @@ export default function WeatherOverlay({ latitude, longitude, visible = true }: 
     error: false,
   });
 
+  // Guards against a stale fetch (or its late backend enrichment) writing
+  // state after the coordinates changed or the overlay unmounted.
+  const requestIdRef = useRef(0);
+
   const fetchWeather = useCallback(async () => {
     if (!latitude || !longitude) return;
+    const requestId = ++requestIdRef.current;
+    const isCurrent = () => requestId === requestIdRef.current;
 
     setWeather(prev => ({ ...prev, loading: true, error: false }));
     try {
-      const result = await weatherService.getBackendWeather(latitude, longitude);
+      // weather.gov resolves first; the backend's hunting-condition
+      // enrichment lands later via the callback without blocking the badge.
+      const result = await weatherService.getBackendWeather(
+        latitude,
+        longitude,
+        (enriched) => {
+          if (!isCurrent()) return;
+          setWeather(prev => ({
+            ...prev,
+            loading: false,
+            forecast: enriched.forecast.length > 0 ? enriched.forecast : prev.forecast,
+            huntingConditions: enriched.huntingConditions,
+            current: enriched.current,
+            error: false,
+          }));
+        },
+      );
+      if (!isCurrent()) return;
       setWeather({
         loading: false,
         forecast: result.forecast,
         huntingConditions: result.huntingConditions,
         current: result.current,
-        error: false,
+        error: result.forecast.length === 0,
       });
     } catch {
+      if (!isCurrent()) return;
       setWeather(prev => ({ ...prev, loading: false, error: true }));
     }
   }, [latitude, longitude]);
 
   useEffect(() => {
     fetchWeather();
+    return () => {
+      // Invalidate in-flight work for the previous coordinates.
+      requestIdRef.current += 1;
+    };
   }, [fetchWeather]);
 
   if (!visible) return null;

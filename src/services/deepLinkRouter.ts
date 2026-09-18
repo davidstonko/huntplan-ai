@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Linking, AppState } from 'react-native';
 import { useActivityMode, ActivityMode } from '../context/ActivityModeContext';
+import { TAB, PLANNER_SCREEN } from '../navigation/routes';
 
 // 2026-04-27 (cold-start race fix): module-scoped ref holding the most
 // recent unhandled initial URL. If iOS suspends the app before the
@@ -17,7 +18,7 @@ let pendingInitialURL: string | null = null;
  * (universal link) URLs to the correct screen and params.
  *
  * Supported routes:
- *   - mdhuntfish://camp/invite/{code}          → Hunt mode → DeerCampTab + inviteCode
+ *   - mdhuntfish://camp/invite/{code}          → Hunt mode → MoreTab > DeerCampMain + inviteCode
  *   - https://mdhuntfishoutdoors.com/i/{code}  → Hunt mode → DeerCampTab + inviteCode
  *
  * V2.2.0 notes:
@@ -45,23 +46,38 @@ let pendingInitialURL: string | null = null;
  * navigation needs `{ screen, params }` addressed to the parent route.
  */
 export interface DeepLinkRoute {
+  /** Tab inside `parent` (e.g. 'MoreTab'). */
   screen: string;
+  /**
+   * Stack screen inside that tab (e.g. 'DeerCampMain'). Since the
+   * 2026-09-18 five-tab restructure every deep-link target is a tab that
+   * owns a nested Stack, so `params` are delivered to this screen via the
+   * nested `{ screen: nestedScreen, params }` shape.
+   */
+  nestedScreen?: string;
+  /** Leaf params delivered to `nestedScreen` (or `screen` when there is none). */
   params: Record<string, string>;
   mode?: ActivityMode;
   parent?: 'HuntTabs' | 'FishTabs' | 'CampTabs' | 'HikeTabs';
 }
 
-/** Tab name inside HuntTabs that owns the Deer Camp social surface. */
-const DEER_CAMP_TAB = 'DeerCampTab';
+/**
+ * 2026-09-18 (five-tab restructure): Deer Camp moved from its own Hunt
+ * tab to the More tab's stack (`MoreTab` → `DeerCampMain`).
+ */
+const DEER_CAMP_TAB = TAB.MORE;
+const DEER_CAMP_SCREEN = 'DeerCampMain';
 
 /**
- * Tab name inside CampTabs that owns the Camp Trip Planner / saved
- * trips list. 2026-04-30 (V2.4 step 1): added so trip-invite Universal
- * Links land on the planner where the joinByInviteCode UI lives.
+ * Camp Trip Planner now lives under the Camp mode's Plan tab
+ * (`PlanTab` → `CampTripPlannerMain`). 2026-04-30 (V2.4 step 1): added
+ * so trip-invite Universal Links land on the planner where the
+ * joinByInviteCode UI lives.
  *
  * Trip invite URL: /huntmaryland-site/trip/{code}.
  */
-const CAMP_TRIP_PLANNER_TAB = 'CampTripPlannerTab';
+const CAMP_TRIP_PLANNER_TAB = TAB.PLAN;
+const CAMP_TRIP_PLANNER_SCREEN = PLANNER_SCREEN.camp;
 
 /**
  * Parse a deep link URL into a screen name and params.
@@ -71,9 +87,8 @@ const CAMP_TRIP_PLANNER_TAB = 'CampTripPlannerTab';
  *
  * Examples:
  *   parseLink('mdhuntfish://camp/invite/abc123')
- *     → { screen: 'DeerCampTab', params: { inviteCode: 'abc123' }, mode: 'hunt', parent: 'HuntTabs' }
- *   parseLink('https://mdhuntfishoutdoors.com/i/abc123')
- *     → { screen: 'DeerCampTab', params: { inviteCode: 'abc123' }, mode: 'hunt', parent: 'HuntTabs' }
+ *     → { screen: 'MoreTab', nestedScreen: 'DeerCampMain', params: { inviteCode: 'abc123' },
+ *         mode: 'hunt', parent: 'HuntTabs' }
  */
 export function parseLink(url: string): DeepLinkRoute | null {
   if (!url) return null;
@@ -92,6 +107,7 @@ export function parseLink(url: string): DeepLinkRoute | null {
         if (resource === 'camp' && action === 'invite' && id) {
           return {
             screen: DEER_CAMP_TAB,
+            nestedScreen: DEER_CAMP_SCREEN,
             params: { inviteCode: id },
             mode: 'hunt',
             parent: 'HuntTabs',
@@ -130,6 +146,7 @@ export function parseLink(url: string): DeepLinkRoute | null {
       if (tripMatch && tripMatch[1]) {
         return {
           screen: CAMP_TRIP_PLANNER_TAB,
+          nestedScreen: CAMP_TRIP_PLANNER_SCREEN,
           params: { inviteCode: tripMatch[1] },
           mode: 'camp',
           parent: 'CampTabs',
@@ -139,6 +156,7 @@ export function parseLink(url: string): DeepLinkRoute | null {
       if (m && m[1]) {
         return {
           screen: DEER_CAMP_TAB,
+          nestedScreen: DEER_CAMP_SCREEN,
           params: { inviteCode: m[1] },
           mode: 'hunt',
           parent: 'HuntTabs',
@@ -222,15 +240,20 @@ export function useDeepLinks(
       // destination mode's tabs before we try to navigate into them.
       setTimeout(() => {
         if (!navigationRef.current) return;
+        // Tabs own a nested Stack: deliver the leaf params to the stack
+        // screen via the { screen, params } shape.
+        const tabParams = route.nestedScreen
+          ? { screen: route.nestedScreen, params: route.params }
+          : route.params;
         if (route.parent) {
           // Nested navigation: address the root-Stack parent route and pass
           // the tab name + params via the { screen, params } shape.
           navigationRef.current.navigate(route.parent, {
             screen: route.screen,
-            params: route.params,
+            params: tabParams,
           });
         } else {
-          navigationRef.current.navigate(route.screen, route.params);
+          navigationRef.current.navigate(route.screen, tabParams);
         }
         // 2026-04-27: clear the pending initial URL ref so the AppState
         // resume path doesn't re-fire on subsequent foreground events.

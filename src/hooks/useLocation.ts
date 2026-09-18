@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   getCurrentLocation,
   startTracking,
@@ -10,37 +10,73 @@ interface UseLocationResult {
   location: Location | null;
   error: string | null;
   loading: boolean;
-  refetch: () => void;
+  /**
+   * Request a fresh one-shot fix. Resolves with the location (or null on
+   * failure) so callers can chain a camera move without waiting on a
+   * re-render. Also triggers the OS permission prompt on first use.
+   */
+  refetch: () => Promise<Location | null>;
+}
+
+export interface UseLocationOptions {
+  /** Keep a watchPosition subscription alive while mounted. */
+  trackContinuous?: boolean;
+  /**
+   * Fetch a fix (and therefore trigger the OS permission prompt) as soon as
+   * the hook mounts. Defaults to true for backwards compatibility. Map
+   * screens pass `false` so the permission prompt is tied to the Locate
+   * button gesture instead of landing on top of the first-run UI.
+   */
+  requestOnMount?: boolean;
 }
 
 /**
- * Hook that provides current location and tracking
+ * Hook that provides current location and tracking.
+ *
+ * Accepts either the legacy boolean (`trackContinuous`) or an options object.
  */
-export function useLocation(trackContinuous = false): UseLocationResult {
+export function useLocation(
+  arg: boolean | UseLocationOptions = false,
+): UseLocationResult {
+  const options: UseLocationOptions =
+    typeof arg === 'boolean' ? { trackContinuous: arg } : arg;
+  const trackContinuous = !!options.trackContinuous;
+  const requestOnMount = options.requestOnMount !== false;
+
   const [location, setLocation] = useState<Location | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(requestOnMount);
   const watchIdRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
 
-  const fetchLocation = async () => {
+  const fetchLocation = useCallback(async (): Promise<Location | null> => {
     try {
-      setLoading(true);
+      if (mountedRef.current) setLoading(true);
       const loc = await getCurrentLocation();
-      setLocation(loc);
-      setError(null);
+      if (mountedRef.current) {
+        setLocation(loc);
+        setError(null);
+      }
+      return loc;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to get location';
-      setError(errorMessage);
-      setLocation(null);
+      if (mountedRef.current) {
+        setError(errorMessage);
+        setLocation(null);
+      }
+      return null;
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // Get initial location
-    fetchLocation();
+    mountedRef.current = true;
+    // Get initial location only when the caller wants it on mount.
+    if (requestOnMount) {
+      void fetchLocation();
+    }
 
     // Setup continuous tracking if requested
     if (trackContinuous) {
@@ -60,11 +96,14 @@ export function useLocation(trackContinuous = false): UseLocationResult {
 
     // Cleanup
     return () => {
+      mountedRef.current = false;
       if (watchIdRef.current !== null) {
         stopTracking(watchIdRef.current);
+        watchIdRef.current = null;
       }
     };
-  }, [trackContinuous]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackContinuous, requestOnMount]);
 
   return {
     location,

@@ -28,6 +28,30 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../theme/colors';
 import { useModalFocus } from '../hooks/useModalFocus';
 import { API_BASE_URL } from '../services/api';
+import { REGULATIONS_META } from '../data/marylandHuntingData';
+import { fetchWithTimeout } from '../config';
+
+/** Harvest API ceiling; past this the local log is shown with Retry. */
+const HARVEST_REQUEST_TIMEOUT_MS = 8000;
+const LOCAL_LOG_KEY = '@harvest_log';
+
+/** Read the on-device log, tolerating a missing or corrupt value. */
+async function readLocalLog(): Promise<HarvestEntry[]> {
+  try {
+    const raw = await AsyncStorage.getItem(LOCAL_LOG_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((h) => h && typeof h.id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Server entries first, then local-only entries not already on the server. */
+function mergeHarvests(server: HarvestEntry[], local: HarvestEntry[]): HarvestEntry[] {
+  const seen = new Set(server.map((h) => h.id));
+  return [...server, ...local.filter((h) => !seen.has(h.id))];
+}
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -71,6 +95,8 @@ export default function HarvestLogScreen() {
   const [harvests, setHarvests] = useState<HarvestEntry[]>([]);
   const [summary, setSummary] = useState<SeasonSummary | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  /** Set when the server could not be reached; the local log is shown. */
+  const [fetchError, setFetchError] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [view, setView] = useState<'list' | 'summary'>('list');
 
@@ -92,30 +118,38 @@ export default function HarvestLogScreen() {
   const [formShared, setFormShared] = useState(false);
 
   const fetchData = useCallback(async () => {
+    // Local entries always show, whether or not the server answers.
+    const local = await readLocalLog();
+    setHarvests((prev) => (prev.length === 0 ? local : mergeHarvests(prev, local)));
     try {
-      const token = await AsyncStorage.getItem('@auth_access_token');
+      const token = await AsyncStorage.getItem('@auth_access_token').catch(() => null);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
+      // Bound every request in this block to 8 s (shadowing global fetch
+      // keeps the endpoint lines below untouched).
+      const fetch = (url: string, init?: RequestInit) =>
+        fetchWithTimeout(url, init, HARVEST_REQUEST_TIMEOUT_MS);
 
       // Fetch harvests
-      const listRes = await fetch(`${API_BASE_URL}/api/v1/harvest/list?season_year=2025-2026`, { headers });
+      const listRes = await fetch(`${API_BASE_URL}/api/v1/harvest/list?season_year=${REGULATIONS_META.seasonLabel}`, { headers });
       if (listRes.ok) {
         const data = await listRes.json();
-        setHarvests(data.harvests || []);
+        const server: HarvestEntry[] = Array.isArray(data?.harvests) ? data.harvests : [];
+        setHarvests(mergeHarvests(server, local));
+        setFetchError(false);
+      } else {
+        setFetchError(true);
       }
 
       // Fetch summary
-      const sumRes = await fetch(`${API_BASE_URL}/api/v1/harvest/summary?season_year=2025-2026`, { headers });
+      const sumRes = await fetch(`${API_BASE_URL}/api/v1/harvest/summary?season_year=${REGULATIONS_META.seasonLabel}`, { headers });
       if (sumRes.ok) {
         const data = await sumRes.json();
         setSummary(data);
       }
     } catch (e) {
-      // Offline — use local data
-      const local = await AsyncStorage.getItem('@harvest_log');
-      if (local) {
-        setHarvests(JSON.parse(local));
-      }
+      // Offline, timeout, or bad payload: keep showing the local log.
+      setFetchError(true);
     }
   }, []);
 
@@ -146,19 +180,19 @@ export default function HarvestLogScreen() {
       game_check_completed: formGameCheckDone,
       notes: formNotes || undefined,
       is_shared: formShared,
-      season_year: '2025-2026',
+      season_year: REGULATIONS_META.seasonLabel,
     };
 
     try {
       const token = await AsyncStorage.getItem('@auth_access_token');
-      const res = await fetch(`${API_BASE_URL}/api/v1/harvest/log`, {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/harvest/log`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(entry),
-      });
+      }, HARVEST_REQUEST_TIMEOUT_MS);
 
       if (res.ok) {
         setShowForm(false);
@@ -169,11 +203,14 @@ export default function HarvestLogScreen() {
       }
     } catch {
       // Save locally for offline
-      const local = await AsyncStorage.getItem('@harvest_log');
-      const list = local ? JSON.parse(local) : [];
+      const list = await readLocalLog();
       list.unshift({ ...entry, id: `local_${Date.now()}`, created_at: new Date().toISOString() });
-      await AsyncStorage.setItem('@harvest_log', JSON.stringify(list));
-      setHarvests(list);
+      try {
+        await AsyncStorage.setItem(LOCAL_LOG_KEY, JSON.stringify(list));
+      } catch {
+        // Storage write failed; the entry still shows for this session.
+      }
+      setHarvests((prev) => mergeHarvests(prev.filter((h) => !h.id.startsWith('local_')), list));
       setShowForm(false);
       resetForm();
       Alert.alert('Saved Locally', 'Harvest saved to your device. It will sync when you have connection.');
@@ -234,6 +271,22 @@ export default function HarvestLogScreen() {
       >
         {view === 'list' ? (
           <>
+            {fetchError && (
+              <View style={styles.offlineNotice}>
+                <Text style={styles.offlineNoticeTitle}>Showing your local log</Text>
+                <Text style={styles.offlineNoticeText}>
+                  The harvest server could not be reached. Entries saved on this device are shown and new ones will sync later.
+                </Text>
+                <TouchableOpacity
+                  style={styles.retryBtn}
+                  onPress={onRefresh}
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry loading harvests"
+                >
+                  <Text style={styles.retryBtnText}>Retry</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             {harvests.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyTitle}>No Harvests Yet</Text>
@@ -295,7 +348,7 @@ export default function HarvestLogScreen() {
                 <View style={styles.summaryCard}>
                   <Text style={styles.summaryLabel}>Total Harvests</Text>
                   <Text style={styles.summaryBig}>{summary.total_harvests}</Text>
-                  <Text style={styles.summarySubtext}>2025-2026 Season</Text>
+                  <Text style={styles.summarySubtext}>{`${REGULATIONS_META.seasonLabel} Season`}</Text>
                 </View>
 
                 {Object.entries(summary?.by_species || {}).map(([sp, count]) => (
@@ -518,6 +571,25 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: '#fff' },
   scrollContent: { padding: 16, paddingBottom: 40 },
   emptyState: { alignItems: 'center', paddingTop: 60 },
+  offlineNotice: {
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.mdGold,
+    padding: 12,
+    marginBottom: 12,
+  },
+  offlineNoticeTitle: { fontSize: 13, fontWeight: '800', color: Colors.mdGold, letterSpacing: 0.5, marginBottom: 4 },
+  offlineNoticeText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18 },
+  retryBtn: {
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: Colors.moss,
+  },
+  retryBtnText: { color: Colors.textOnAccent, fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 8 },
   emptyText: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', lineHeight: 20, paddingHorizontal: 32 },
   harvestCard: {

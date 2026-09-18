@@ -108,6 +108,11 @@ interface TrackRecorderContextValue {
   ) => Promise<RecordedTrack | null>;
   /** Delete a saved track. */
   deleteTrack: (id: string) => Promise<boolean>;
+  /**
+   * Insert an already-complete track (import, sample data). Bypasses the
+   * GPS recorder; the track is persisted with state 'saved'.
+   */
+  importTrack: (track: RecordedTrack) => Promise<RecordedTrack>;
   /** Drop every saved track. For Settings reset; UI must confirm. */
   clearAllTracks: () => Promise<void>;
 }
@@ -424,6 +429,21 @@ export function TrackRecorderProvider({ children }: Props) {
     setAllTracks([]);
   }, []);
 
+  const importTrack = useCallback(
+    async (track: RecordedTrack): Promise<RecordedTrack> => {
+      const saved: RecordedTrack = { ...track, state: 'saved' };
+      const next = [
+        saved,
+        ...allTracksRef.current.filter((t) => t.id !== saved.id),
+      ];
+      allTracksRef.current = next;
+      setAllTracks(next);
+      await storageSaveAll(next);
+      return saved;
+    },
+    [],
+  );
+
   // Tear down GPS watcher on unmount so a navigation-level remount
   // doesn't leak watchers.
   useEffect(() => {
@@ -450,6 +470,7 @@ export function TrackRecorderProvider({ children }: Props) {
       getTrack,
       updateTrack,
       deleteTrack,
+      importTrack,
       clearAllTracks,
     }),
     [
@@ -469,6 +490,7 @@ export function TrackRecorderProvider({ children }: Props) {
       getTrack,
       updateTrack,
       deleteTrack,
+      importTrack,
       clearAllTracks,
     ],
   );

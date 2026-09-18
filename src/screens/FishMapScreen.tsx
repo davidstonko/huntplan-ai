@@ -146,8 +146,11 @@ export default function FishMapScreen() {
       navigation.navigate('MarkupEdit', { mode: 'fish', markupId }),
     [navigation],
   );
+  // The 'Log' chip opens this mode's Log tab (route-name contract: every
+  // mode's tab navigator exposes LogTab). navigate() bubbles to the tab
+  // navigator when this screen sits inside a nested stack.
   const openPersonalHub = useCallback(
-    () => navigation.navigate('PersonalHub', { mode: 'fish' }),
+    () => navigation.navigate('LogTab', { mode: 'fish' }),
     [navigation],
   );
   const insets = useSafeAreaInsets();
@@ -156,7 +159,11 @@ export default function FishMapScreen() {
   const [offlineOpen, setOfflineOpen] = useState(false);
   const [showGauges, setShowGauges] = useState(false);
   const [selectedGauge, setSelectedGauge] = useState<StreamGauge | null>(null);
-  const { location, loading: locationLoading } = useLocation();
+  // Location is requested on the Locate button gesture, not on mount, so
+  // the OS permission prompt never lands on top of the first-run tour and
+  // the map renders immediately centered on Maryland.
+  const { location, loading: locationLoading, refetch: requestLocation } =
+    useLocation({ requestOnMount: false });
   const [selected, setSelected] = useState<AnglerAccessSite | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<CategoryKey>>(
     new Set(['ramp', 'soft', 'shore', 'trout', 'putTake']),
@@ -171,6 +178,10 @@ export default function FishMapScreen() {
   // Per-session dismissal of the DNR disclaimer banner — frees up vertical
   // space at the bottom of the map. Re-presents on next cold start.
   const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+  // First-run choreography: the tour waits for the map to finish loading
+  // and the disclaimer banner stays hidden until the tour has settled.
+  const [mapReady, setMapReady] = useState(false);
+  const [tourSettled, setTourSettled] = useState(false);
   // Toggle for Maryland rivers overlay (currently empty until Overpass API
   // becomes available; see src/data/marylandRivers.ts for ingest status).
   const [showRivers, setShowRivers] = useState(false);
@@ -407,13 +418,21 @@ export default function FishMapScreen() {
     }
   }, []);
 
-  const centerOnLocation = useCallback(() => {
-    if (location && cameraRef.current && isInMaryland(location.longitude, location.latitude)) {
+  const centerOnLocation = useCallback(async () => {
+    if (locationLoading) return;
+    const loc = location ?? (await requestLocation());
+    if (loc && cameraRef.current && isInMaryland(loc.longitude, loc.latitude)) {
       cameraRef.current.setCamera({
-        centerCoordinate: [location.longitude, location.latitude],
+        centerCoordinate: [loc.longitude, loc.latitude],
         zoomLevel: 12,
         animationDuration: 800,
       });
+    } else if (loc) {
+      Alert.alert(
+        'Outside Maryland',
+        'Your current position is outside Maryland. The map stays centered on the state so Maryland sites remain in view.',
+        [{ text: 'OK' }],
+      );
     } else {
       Alert.alert(
         'Location Services',
@@ -424,7 +443,7 @@ export default function FishMapScreen() {
         ],
       );
     }
-  }, [location]);
+  }, [location, locationLoading, requestLocation]);
 
   // Track current zoom via onCameraChanged so +/- buttons apply a delta to the
   // actual current camera zoom. Previous impl read `_centerCoordinate[2]`
@@ -474,6 +493,7 @@ export default function FishMapScreen() {
         onPress={handleMapPress}
         onLongPress={onLongPressMap}
         onCameraChanged={handleCameraChanged}
+        onDidFinishLoadingMap={() => setMapReady(true)}
       >
         <MapboxGL.Camera
           ref={cameraRef}
@@ -771,13 +791,19 @@ export default function FishMapScreen() {
           style={styles.controlBtn}
           onPress={() => setMapStyle((s) => (s === 'topo' ? 'satellite' : 'topo'))}
         >
-          <Text style={styles.controlText}>{mapStyle === 'topo' ? 'SAT' : 'MAP'}</Text>
+          <Text style={styles.controlWord} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+            {mapStyle === 'topo' ? 'Satellite' : 'Map'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlBtn} onPress={openPersonalHub}>
-          <Text style={styles.controlText}>ME</Text>
+          <Text style={styles.controlWord}>Log</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlBtn} onPress={centerOnLocation}>
-          <Text style={styles.controlCrosshair}>{'\u2316'}</Text>
+        <TouchableOpacity style={styles.controlBtn} onPress={() => { void centerOnLocation(); }}>
+          {locationLoading ? (
+            <ActivityIndicator size="small" color={Colors.lichen} />
+          ) : (
+            <Text style={[styles.controlWord, { color: Colors.lichen }]}>Locate</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.controlBtn}
@@ -787,13 +813,16 @@ export default function FishMapScreen() {
         >
           <Text
             style={[
-              styles.controlText,
+              styles.controlWord,
               offlineMaps.isOffline && !offlineMaps.hasPacks
                 ? { color: Colors.mdRed }
                 : null,
             ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
           >
-            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'DL'}
+            {offlineMaps.isOffline && !offlineMaps.hasPacks ? '!' : 'Offline'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -807,12 +836,14 @@ export default function FishMapScreen() {
         >
           <Text
             style={[
-              styles.controlText,
-              { fontSize: 12 },
+              styles.controlWord,
               showGauges ? { color: '#42A5F5' } : null,
             ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
           >
-            USGS
+            Gauges
           </Text>
         </TouchableOpacity>
       </View>
@@ -886,7 +917,7 @@ export default function FishMapScreen() {
               bottom:
                 insets.bottom +
                 12 +
-                (!disclaimerDismissed ? 32 : 0),
+                (tourSettled && !disclaimerDismissed ? 32 : 0),
             },
           ]}
         >
@@ -992,7 +1023,7 @@ export default function FishMapScreen() {
               bottom:
                 insets.bottom +
                 12 +
-                (!disclaimerDismissed ? 32 : 0),
+                (tourSettled && !disclaimerDismissed ? 32 : 0),
             },
           ]}
         >
@@ -1070,7 +1101,7 @@ export default function FishMapScreen() {
                 // Routing to the wrong tab name silently no-ops within
                 // FishTabs since `ChatTab` doesn't exist there. Adversarial
                 // audit caught this.
-                navigation.navigate('FishAITab', {
+                navigation.navigate('AITab', {
                   screen: 'ChatMain',
                   params: { initialQuery: selectedHotspot.gearAskAi },
                 });
@@ -1149,7 +1180,7 @@ export default function FishMapScreen() {
               bottom:
                 insets.bottom +
                 8 +
-                (!disclaimerDismissed ? 32 : 0),
+                (tourSettled && !disclaimerDismissed ? 32 : 0),
             },
           ]}
         >
@@ -1167,11 +1198,15 @@ export default function FishMapScreen() {
       ) : null}
 
       <DisclaimerBanner
-        dismissed={disclaimerDismissed}
+        dismissed={disclaimerDismissed || !tourSettled}
         onDismiss={() => setDisclaimerDismissed(true)}
       />
 
-      <OnboardingTourGate mode="fish" />
+      <OnboardingTourGate
+        mode="fish"
+        ready={mapReady && !locationLoading}
+        onSettled={() => setTourSettled(true)}
+      />
 
       <OfflineMapsModal
         visible={offlineOpen}
@@ -1281,6 +1316,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   controlText: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  // Word chips (Satellite / Log / Locate / Offline / Gauges) in the 40pt circle.
+  controlWord: { fontSize: 9, fontWeight: '800', color: Colors.textPrimary, letterSpacing: 0.2, textAlign: 'center', paddingHorizontal: 2 },
   controlCrosshair: { fontSize: 20, color: Colors.lichen },
   legendToggle: {
     position: 'absolute',

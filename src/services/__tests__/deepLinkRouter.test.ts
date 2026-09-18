@@ -9,20 +9,26 @@
  * return null rather than advertising broken targets.
  *
  * 2026-04-20: After the Deer Camp area-redesign, invite codes belong to the
- * Hunt-mode DeerCampTab (the shared-map social surface), not the Camp-mode
- * GroupCampTab. Router targets updated accordingly.
+ * Hunt-mode Deer Camp surface, not the Camp-mode Group Camp. Router targets
+ * updated accordingly.
+ *
+ * 2026-09-18 (five-tab restructure): Deer Camp lives under Hunt's More tab
+ * (MoreTab > DeerCampMain); trip invites under Camp's Plan tab
+ * (PlanTab > CampTripPlannerMain). `nestedScreen` names the stack screen
+ * inside the tab; `params` stay the flat leaf params.
  */
 
 import { parseLink } from '../deepLinkRouter';
 
 describe('deepLinkRouter', () => {
   describe('parseLink()', () => {
-    // Custom scheme: camp invite routes to the Hunt-mode DeerCampTab and asks
+    // Custom scheme: camp invite routes to Hunt's More tab > Deer Camp and asks
     // the app to switch into Hunt mode so the tab exists in the navigator.
     it('should parse mdhuntfish://camp/invite/{code}', () => {
       const result = parseLink('mdhuntfish://camp/invite/ABC123');
       expect(result).toEqual({
-        screen: 'DeerCampTab',
+        screen: 'MoreTab',
+        nestedScreen: 'DeerCampMain',
         params: { inviteCode: 'ABC123' },
         mode: 'hunt',
         parent: 'HuntTabs',
@@ -97,7 +103,8 @@ describe('deepLinkRouter', () => {
     it('should handle multi-segment IDs in custom scheme', () => {
       const result = parseLink('mdhuntfish://camp/invite/nested/id/value');
       expect(result).toEqual({
-        screen: 'DeerCampTab',
+        screen: 'MoreTab',
+        nestedScreen: 'DeerCampMain',
         params: { inviteCode: 'nested/id/value' },
         mode: 'hunt',
         parent: 'HuntTabs',
@@ -113,7 +120,8 @@ describe('deepLinkRouter', () => {
         'https://davidstonko.github.io/huntmaryland-site/join/ABC123?foo=bar',
       );
       expect(result).toEqual({
-        screen: 'DeerCampTab',
+        screen: 'MoreTab',
+        nestedScreen: 'DeerCampMain',
         params: { inviteCode: 'ABC123' },
         mode: 'hunt',
         parent: 'HuntTabs',
@@ -136,7 +144,8 @@ describe('deepLinkRouter', () => {
         'https://davidstonko.github.io/huntmaryland-site/join/SHARE123',
       );
       expect(result).toEqual({
-        screen: 'DeerCampTab',
+        screen: 'MoreTab',
+        nestedScreen: 'DeerCampMain',
         params: { inviteCode: 'SHARE123' },
         mode: 'hunt',
         parent: 'HuntTabs',
@@ -148,7 +157,8 @@ describe('deepLinkRouter', () => {
         'http://davidstonko.github.io/huntmaryland-site/join/HTTP456',
       );
       expect(result).toEqual({
-        screen: 'DeerCampTab',
+        screen: 'MoreTab',
+        nestedScreen: 'DeerCampMain',
         params: { inviteCode: 'HTTP456' },
         mode: 'hunt',
         parent: 'HuntTabs',

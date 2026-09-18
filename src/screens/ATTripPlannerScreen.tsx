@@ -29,6 +29,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Colors from '../theme/colors';
+import { TAB } from '../navigation/routes';
 import { MARYLAND_STATE_PARK_TRAILS } from '../data/marylandStateParkTrails';
 import { MARYLAND_APPALACHIAN_TRAIL } from '../data/marylandATTrail';
 import { HIKE_GEAR_BUNDLES, nightsToTier } from '../data/hikeGearBundles';
@@ -262,19 +263,28 @@ export default function ATTripPlannerScreen() {
   }, [selectedTrailId, tripName, nights, tier, selectedTrail, relevantShelters]);
 
   /**
-   * Phase A.27 trip→journal handoff. JournalEdit lives inside this stack
-   * via PersonalLayerScreens(), so we can push directly. The seed adapter
-   * pre-fills mode/date/title/body/tags from the saved trip.
+   * Phase A.27 trip→journal handoff. JournalEdit is registered once, in
+   * the Log tab's stack, so this is a cross-tab navigate addressed with
+   * the nested { screen, params } shape. The seed adapter pre-fills
+   * mode/date/title/body/tags from the saved trip.
    */
   const logTripJournal = useCallback(
     (trip: HikeTrip) => {
-      navigation.navigate('JournalEdit', {
-        mode: 'hike',
-        seed: seedFromHikeTrip(trip),
+      navigation.navigate(TAB.LOG, {
+        screen: 'JournalEdit',
+        params: {
+          mode: 'hike',
+          seed: seedFromHikeTrip(trip),
+        },
       });
     },
     [navigation],
   );
+
+  /** Gear lives on the More tab; the root-Stack 'Gear' route resolves from here. */
+  const openGear = useCallback(() => {
+    navigation.navigate('Gear');
+  }, [navigation]);
 
   /**
    * Phase A.40 — clone a saved hike trip into a fresh "Copy of …"
@@ -375,6 +385,21 @@ export default function ATTripPlannerScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>Trip Planner</Text>
+
+      {/* Gear for this trip — curated hiking kit lives on the More tab. */}
+      <TouchableOpacity
+        style={styles.gearRow}
+        onPress={openGear}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Gear for this trip"
+      >
+        <View style={styles.gearRowBody}>
+          <Text style={styles.gearRowTitle}>Gear for this trip</Text>
+          <Text style={styles.gearRowSub}>Curated hiking kit — day hike, backpacking, winter, rain.</Text>
+        </View>
+        <Text style={styles.gearRowChev}>{'\u203A'}</Text>
+      </TouchableOpacity>
 
       {/* Trip Name */}
       <View style={styles.section}>
@@ -550,6 +575,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16, paddingBottom: 32 },
   heading: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
+  gearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.mud,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 20,
+  },
+  gearRowBody: { flex: 1 },
+  gearRowTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  gearRowSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  gearRowChev: { fontSize: 22, color: Colors.textMuted, marginLeft: 8 },
   section: { marginBottom: 20 },
   sectionLabel: {
     fontSize: 12,
