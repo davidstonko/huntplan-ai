@@ -92,18 +92,6 @@ jest.mock('@rnmapbox/maps', () => ({
   setAccessToken: jest.fn(),
 }));
 
-// ─── Mock RevenueCat SDK ───────────────────────────────────────────
-
-jest.mock('react-native-purchases', () => ({
-  default: {
-    configure: jest.fn(() => Promise.resolve()),
-    getCustomerInfo: jest.fn(),
-    getOfferings: jest.fn(),
-    purchasePackage: jest.fn(),
-    restoreTransactions: jest.fn(),
-  },
-}), { virtual: true });
-
 // ─── Mock Sentry SDK ───────────────────────────────────────────────
 
 jest.mock('@sentry/react-native', () => ({

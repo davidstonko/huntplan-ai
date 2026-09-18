@@ -471,7 +471,12 @@ describe('wiring integrity — every UI surface reaches its data layer', () => {
       'ProfileScreen.tsx',          // V3+ — user profiles need backend auth not yet shipped
       'SocialScreen.tsx',           // V3+ — community features
       'StatePackScreen.tsx',        // Phase 6 — multi-state expansion (VA/PA packs)
-      'SubscriptionScreen.tsx',     // Phase 5C — RevenueCat tier mgmt; deferred until paid tiers go live
+      // 2026-09-18 App Review 5.6 cleanup — these were registered as routes
+      // with NO entry point in the UI, which App Review reads as "hidden
+      // features". Unregistered until they get a visible ResourcesHub row.
+      'HuntingVideosScreen.tsx',
+      'GuideDirectoryScreen.tsx',
+      'GearGuideScreen.tsx',
     ]);
 
     // Build a corpus of every file under src/navigation + src/screens

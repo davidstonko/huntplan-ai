@@ -17,7 +17,7 @@
 //   - APP_BUILD_NUMBER must match CFBundleVersion
 //
 export const APP_MARKETING_VERSION = '2.5.0';
-export const APP_BUILD_NUMBER = '3';
+export const APP_BUILD_NUMBER = '4';
 export const APP_VERSION = `${APP_MARKETING_VERSION}+${APP_BUILD_NUMBER}`;
 
 // ── App identity ─────────────────────────────────────────────────
@@ -60,7 +60,6 @@ import { MAPBOX_ACCESS_TOKEN as ENV_MAPBOX_ACCESS_TOKEN } from '@env';
 export const MAPBOX_ACCESS_TOKEN: string = ENV_MAPBOX_ACCESS_TOKEN;
 
 // ── Subscriptions, crash reporting, affiliate ───────────────────
-export const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY || '';
 export const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN || '';
 export const AMAZON_AFFILIATE_TAG = 'mdoutdoors1-20';
 
@@ -100,7 +99,6 @@ export const Config = {
 
   // Tokens / DSNs
   MAPBOX_ACCESS_TOKEN,
-  REVENUECAT_API_KEY,
   SENTRY_DSN,
   AMAZON_AFFILIATE_TAG,
 

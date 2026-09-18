@@ -48,18 +48,6 @@ describe('Config', () => {
     });
   });
 
-  describe('RevenueCat Configuration', () => {
-    it('should export REVENUECAT_API_KEY', () => {
-      expect(Config.REVENUECAT_API_KEY).toBeDefined();
-      expect(typeof Config.REVENUECAT_API_KEY).toBe('string');
-    });
-
-    it('should export empty REVENUECAT_API_KEY (optional)', () => {
-      // API key is optional and can be empty in dev
-      expect(Config.REVENUECAT_API_KEY).toBe('');
-    });
-  });
-
   describe('Sentry Configuration', () => {
     it('should export SENTRY_DSN', () => {
       expect(Config.SENTRY_DSN).toBeDefined();
@@ -188,7 +176,6 @@ describe('Config', () => {
         'API_BASE_URL',
         'WS_BASE_URL',
         'MAPBOX_ACCESS_TOKEN',
-        'REVENUECAT_API_KEY',
         'SENTRY_DSN',
         'AMAZON_AFFILIATE_TAG',
         'FEATURES',

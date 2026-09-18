@@ -18,7 +18,7 @@
  *   Hike tabs (6, post 2026-04-28 audit-of-audit): Hike Map, Trails, Trip,
  *     AI, Gear, Resources — AI added 2026-04-28 same reason as Camp
  *   Weather accessible via stack push from Map/FishMap/Spots/CampMap/HikeMap panels
- *   ResourcesStack exposes StarterGear, HuntingVideos, GuideDirectory, GearGuide
+ *   ResourcesStack exposes StarterGear
  */
 
 import React from 'react';
@@ -48,13 +48,9 @@ import SettingsScreen from '../screens/SettingsScreen';
 import HarvestLogScreen from '../screens/HarvestLogScreen';
 import HuntPlanScreen from '../screens/HuntPlanScreen';
 import OfflineMapsScreen from '../screens/OfflineMapsScreen';
-import WindWidgetPlayground from '../screens/WindWidgetPlayground';
 import ForumScreen from '../screens/ForumScreen';
 import WeatherScreen from '../screens/WeatherScreen';
 import StarterGearScreen from '../screens/StarterGearScreen';
-import HuntingVideosScreen from '../screens/HuntingVideosScreen';
-import GuideDirectoryScreen from '../screens/GuideDirectoryScreen';
-import GearGuideScreen from '../screens/GearGuideScreen';
 
 // ── Fish screens ──
 import FishMapScreen from '../screens/FishMapScreen';
@@ -150,14 +146,6 @@ function MapStack() {
         name="Weather"
         component={WeatherScreen}
         options={{ headerShown: true, title: 'Weather & Safety' }}
-      />
-      {/* 2026-04-26 (fork merge): dev playground for redesigning the
-          Hunt wind widget. Reachable via Settings → "Wind widget playground"
-          (when wired) or by typing the deep link huntmaryland://playground/wind. */}
-      <Stack.Screen
-        name="WindWidgetPlayground"
-        component={WindWidgetPlayground}
-        options={{ headerShown: true, title: 'Wind widget playground' }}
       />
       {PersonalLayerScreens()}
     </Stack.Navigator>
@@ -449,8 +437,7 @@ function AIStack() {
   );
 }
 
-/** Hunt-mode Gear tab stack — landing page is the curated Starter-gear list,
- *  with a deeper-read Gear Guide pushable on top. Added 2026-04-26
+/** Hunt-mode Gear tab stack — landing page is the curated Starter-gear list. Added 2026-04-26
  *  (fork merge) per user directive: gear was previously buried under
  *  Resources/Info and needed a top-level entry. */
 function GearStack() {
@@ -461,16 +448,11 @@ function GearStack() {
         component={StarterGearScreen}
         options={{ headerShown: true, title: 'Gear' }}
       />
-      <Stack.Screen
-        name="GearGuide"
-        component={GearGuideScreen}
-        options={{ headerShown: true, title: 'Gear Guide' }}
-      />
     </Stack.Navigator>
   );
 }
 
-/** Resources tab stack: ResourcesHub → HarvestLog, Settings, Forum, StarterGear, HuntingVideos, GuideDirectory, GearGuide */
+/** Resources tab stack: ResourcesHub → HarvestLog, Settings, Forum, StarterGear, ... */
 function ResourcesStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -494,21 +476,6 @@ function ResourcesStack() {
         name="StarterGear"
         component={StarterGearScreen}
         options={{ headerShown: true, title: 'Starter Gear' }}
-      />
-      <Stack.Screen
-        name="HuntingVideos"
-        component={HuntingVideosScreen}
-        options={{ headerShown: true, title: 'Videos & Channels' }}
-      />
-      <Stack.Screen
-        name="GuideDirectory"
-        component={GuideDirectoryScreen}
-        options={{ headerShown: true, title: 'Licensed Guides' }}
-      />
-      <Stack.Screen
-        name="GearGuide"
-        component={GearGuideScreen}
-        options={{ headerShown: true, title: "Buyer's Guides" }}
       />
       <Stack.Screen
         name="Weather"
