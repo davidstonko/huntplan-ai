@@ -19,13 +19,67 @@ engine = create_async_engine(
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
+# ── Database availability flag ───────────────────────────────────
+# 2026-09: production went down when Render deleted the expired free-tier
+# Postgres. Startup used to hard-fail on init_db(); now the app boots in
+# "degraded" mode and this flag tells dependencies/health what happened.
+# Module-level (not app.state) so get_db() can read it without a Request.
+# Optimistic default: True. Only the lifespan flips it to False after a
+# real connection failure, so tests (which never run the lifespan) and
+# the SQLite fixture are unaffected.
+db_status: dict = {"ok": True, "error": None}
+
+
+def mark_db_ok() -> None:
+    db_status["ok"] = True
+    db_status["error"] = None
+
+
+def mark_db_down(error: Exception | str) -> None:
+    db_status["ok"] = False
+    db_status["error"] = str(error)[:500]
+
+
+DB_UNAVAILABLE_DETAIL = (
+    "Database unavailable — the API is running in degraded mode. "
+    "Check GET /health for details; retry shortly."
+)
+
+
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy models."""
     pass
 
 
 async def get_db() -> AsyncSession:
-    """FastAPI dependency: yields an async database session."""
+    """FastAPI dependency: yields an async database session.
+
+    Raises 503 immediately when the startup DB check failed, instead of
+    letting each request hang on a connect timeout and surface as a 500.
+    """
+    if not db_status["ok"]:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail=DB_UNAVAILABLE_DETAIL)
+    async with async_session() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
+
+
+async def get_db_optional():
+    """FastAPI dependency for routes that can degrade without a database
+    (e.g. the AI planner, which can still answer from the LLM alone).
+
+    Yields ``None`` instead of raising 503 when the DB is marked down.
+    """
+    if not db_status["ok"]:
+        yield None
+        return
     async with async_session() as session:
         try:
             yield session

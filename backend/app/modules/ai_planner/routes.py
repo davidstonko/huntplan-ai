@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db, engine, async_session, Base
+from app.db.database import get_db, get_db_optional, engine, async_session, Base
 from app.modules.ai_planner.service import generate_ai_response, generate_hunt_plan
 
 router = APIRouter(
@@ -40,7 +40,9 @@ class QueryResponse(BaseModel):
 @router.post("/query", response_model=QueryResponse)
 async def query_ai_planner(
     request: QueryRequest,
-    db: AsyncSession = Depends(get_db),
+    # get_db_optional yields None (instead of 503) when the DB is down so
+    # the planner can still answer LLM-only; see generate_ai_response.
+    db: Optional[AsyncSession] = Depends(get_db_optional),
 ):
     """
     Submit a natural language query to the AI hunting assistant.

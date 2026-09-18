@@ -1,11 +1,20 @@
 # Render Blueprint — Infrastructure-as-Code deployment
 # Deploy with: https://render.com/deploy → connect this repo
 # Or create services manually matching this spec
+#
+# 2026-09 OUTAGE NOTE: production went down because Render *deletes* free-tier
+# Postgres instances 90 days after creation (not just suspends them). The API
+# then failed init_db() on boot and uvicorn exited with status 3. Both plans
+# below are now paid tiers; see backend/RUNBOOK_RENDER.md for the recovery
+# steps (the plan changes must also be applied in the Render dashboard).
 
 databases:
   - name: huntplan-db
     databaseName: huntplan
-    plan: free  # 256 MB, auto-suspend after 90 days inactivity
+    # Was `free`: free Postgres expires and is DELETED after 90 days, taking
+    # all data (users, regulation_chunks, camps) with it. basic-256mb is the
+    # cheapest persistent tier (256 MB RAM, 1 GB storage, daily backups).
+    plan: basic-256mb
     postgresMajorVersion: "16"
     ipAllowList: []  # Only allow Render internal access
 
@@ -15,15 +24,20 @@ services:
     runtime: docker
     dockerfilePath: backend/Dockerfile
     dockerContext: backend
-    plan: free  # 512 MB RAM, auto-suspend after 15 min inactivity
-    healthCheckPath: /health
+    # Was `free`: free web services spin down after 15 min idle, so the first
+    # request from the phone app waited ~30-60 s for a cold start (and every
+    # cold start re-runs init_db). starter keeps the instance warm.
+    plan: starter
+    healthCheckPath: /health  # always 200; body reports db "ok"|"unavailable"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: huntplan-db
           property: connectionString
-        # Render provides postgres:// — we need postgresql+asyncpg://
-        # Override in Render dashboard or use the transform below
+        # Render provides postgres:// — app/config.py rewrites it to
+        # postgresql+asyncpg:// at startup, so no manual transform needed.
+        # If you create the DB by hand instead of via this blueprint, paste
+        # the Internal Database URL here (either scheme works).
       - key: SECRET_KEY
         generateValue: true
       - key: ANTHROPIC_API_KEY
@@ -33,4 +47,4 @@ services:
       - key: DEBUG
         value: "false"
       - key: REDIS_URL
-        value: "redis://localhost:6379/0"  # Redis not included in free tier
+        value: "redis://localhost:6379/0"  # Redis not provisioned; Celery unused in prod

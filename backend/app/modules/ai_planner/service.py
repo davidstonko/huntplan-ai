@@ -195,8 +195,19 @@ async def fallback_search(
     ]
 
 
+RETRIEVAL_UNAVAILABLE_NOTE = (
+    "Note: regulation retrieval was unavailable (database offline), so this "
+    "answer was generated from general knowledge only. Verify with MD DNR "
+    "at dnr.maryland.gov before hunting."
+)
+
+
+def _llm_configured() -> bool:
+    return bool(settings.anthropic_api_key or settings.gemini_api_key)
+
+
 async def generate_ai_response(
-    db: AsyncSession,
+    db: Optional[AsyncSession],
     query: str,
     state: str = "MD",
     category: Optional[str] = None,
@@ -208,11 +219,29 @@ async def generate_ai_response(
 
     Tries Claude first (if ANTHROPIC_API_KEY set), falls back to Gemini,
     then falls back to template-based response.
-    """
-    chunks = await search_regulation_chunks(db, query, state, category, species)
 
-    if not chunks:
-        chunks = await fallback_search(db, query, state)
+    Degraded mode (2026-09): ``db`` may be ``None`` (see get_db_optional) or
+    the search may raise if Postgres is unreachable. In that case we skip
+    retrieval, answer from the LLM alone, and prepend an explicit note.
+    With no LLM configured either, raise ValueError -> route returns 503.
+    """
+    chunks: list[dict] = []
+    retrieval_unavailable = db is None
+    if db is not None:
+        try:
+            chunks = await search_regulation_chunks(db, query, state, category, species)
+            if not chunks:
+                chunks = await fallback_search(db, query, state)
+        except Exception as e:  # connection refused / table missing / etc.
+            logger.warning("Regulation retrieval failed, degrading to LLM-only: %s", e)
+            retrieval_unavailable = True
+            chunks = []
+
+    if retrieval_unavailable and not _llm_configured():
+        raise ValueError(
+            "Database unavailable and no LLM API key configured — "
+            "cannot answer regulation queries right now."
+        )
 
     if chunks:
         context_parts = []
@@ -223,6 +252,13 @@ async def generate_ai_response(
                 sources.add(chunk["source"])
         context_text = "\n\n---\n\n".join(context_parts)
         sources_list = list(sources)
+    elif retrieval_unavailable:
+        context_text = (
+            "REGULATION DATABASE UNAVAILABLE. Answer from general knowledge of "
+            "Maryland hunting regulations, clearly flag uncertainty, and tell "
+            "the user to verify with MD DNR."
+        )
+        sources_list = []
     else:
         context_text = "No specific regulation data found for this query."
         sources_list = []
@@ -276,6 +312,10 @@ USER QUESTION: {query}"""
                 "dnr.maryland.gov for the latest information."
             )
         sources_list = []
+
+    if retrieval_unavailable:
+        # Same response schema; the note lives inside `answer`.
+        answer_text = f"{RETRIEVAL_UNAVAILABLE_NOTE}\n\n{answer_text}"
 
     follow_ups = _generate_follow_ups(query, chunks)
 

@@ -5,6 +5,8 @@ Standalone AI-powered hunting planning app.
 iPhone-first with offline GIS data. Maryland pilot state.
 """
 
+import asyncio
+import logging
 import os
 from pathlib import Path
 
@@ -15,7 +17,7 @@ from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 
 from app.config import settings
-from app.db.database import init_db
+from app.db.database import init_db, db_status, mark_db_ok, mark_db_down
 from app.modules.regulations.routes import router as regulations_router
 from app.modules.lands.routes import router as lands_router
 from app.modules.ai_planner.routes import router as ai_planner_router
@@ -99,12 +101,65 @@ async def auto_ingest_if_empty():
         logging.getLogger(__name__).warning(f"Auto-ingestion skipped: {e}")
 
 
+# ── Startup resilience ──────────────────────────────────────────
+# 2026-09 incident: Render deletes free-tier Postgres after 90 days. The
+# old lifespan awaited init_db() unguarded, so an unreachable DB made
+# uvicorn exit with status 3 and took the whole API down (including
+# endpoints that don't need the DB). Now: log, flag, keep serving, and
+# retry in the background so a DB that comes back is picked up without
+# a redeploy.
+DB_RETRY_INTERVAL_SECONDS = 60
+DB_RETRY_MAX_ATTEMPTS = 30  # ~30 minutes, then give up until next deploy
+
+_logger = logging.getLogger(__name__)
+
+
+async def _try_init_db(app) -> bool:
+    """Run init_db + auto-ingest; update flags. Returns True on success."""
+    try:
+        await init_db()
+        mark_db_ok()
+        app.state.db_ok = True
+        app.state.db_error = None
+        _logger.info("Database initialized")
+        # auto_ingest_if_empty swallows its own errors; run it only once
+        # the schema is known-good so a fresh DB gets seeded.
+        await auto_ingest_if_empty()
+        return True
+    except Exception as e:  # asyncpg/OSError/timeout — anything
+        mark_db_down(e)
+        app.state.db_ok = False
+        app.state.db_error = str(e)[:500]
+        _logger.error("Database init failed — serving in degraded mode: %s", e)
+        return False
+
+
+async def _db_retry_loop(app):
+    """Background task: re-attempt init_db every N seconds, bounded."""
+    for attempt in range(1, DB_RETRY_MAX_ATTEMPTS + 1):
+        await asyncio.sleep(DB_RETRY_INTERVAL_SECONDS)
+        _logger.info("DB retry %d/%d", attempt, DB_RETRY_MAX_ATTEMPTS)
+        if await _try_init_db(app):
+            _logger.info("Database recovered on retry %d", attempt)
+            return
+    _logger.error("Database still unavailable after %d retries; giving up", DB_RETRY_MAX_ATTEMPTS)
+
+
 @asynccontextmanager
 async def lifespan(app):
-    """Initialize database tables and seed data on startup."""
-    await init_db()
-    await auto_ingest_if_empty()
+    """Initialize database tables and seed data on startup.
+
+    Never raises: a DB failure sets app.state.db_ok=False and starts a
+    background retry loop instead of crashing the process.
+    """
+    app.state.db_ok = True
+    app.state.db_error = None
+    retry_task = None
+    if not await _try_init_db(app):
+        retry_task = asyncio.create_task(_db_retry_loop(app))
     yield
+    if retry_task and not retry_task.done():
+        retry_task.cancel()
 
 
 app = FastAPI(
@@ -132,8 +187,14 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_check():
+    """Always 200 so Render's health check keeps the instance up; the body
+    says whether the DB is reachable. Existing fields (status/app/version)
+    are unchanged; "db" and "db_error" are additive."""
+    db_ok = db_status["ok"]
     return {
-        "status": "ok",
+        "status": "ok" if db_ok else "degraded",
+        "db": "ok" if db_ok else "unavailable",
+        "db_error": db_status["error"],
         "app": settings.app_name,
         "version": settings.app_version,
     }
