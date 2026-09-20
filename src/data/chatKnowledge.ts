@@ -279,6 +279,13 @@ function getSmartResponseRaw(userQuery: string): ChatResponse {
     return handleFieldTaggingQuery(userQuery);
   }
 
+  // "Can I hunt X today?" is a season question wearing different words;
+  // route it before the weapon intent, which would otherwise grab it on
+  // "bow"/"rifle".
+  if (isCanIHuntQuery(q)) {
+    return handleSeasonQuery(userQuery);
+  }
+
   // Detect intent and route to appropriate handler
   if (isSeasonQuery(q)) {
     return handleSeasonQuery(userQuery);
@@ -408,6 +415,28 @@ function getSmartResponseRaw(userQuery: string): ChatResponse {
 // ─────────────────────────────────────────────────────────────────────────────
 // INTENT DETECTION
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * "Can I hunt deer with a bow today?" — by far the most natural way to
+ * ask a season question, and it contains none of the season keywords
+ * ("season", "when", "dates"), so before this it fell through to the
+ * weapon glossary on the word "bow" and answered with a description of
+ * archery equipment. Must run BEFORE isWeaponQuery.
+ *
+ * Deliberately narrow: it wants an explicit permission phrasing or an
+ * explicit "open/in season" question, not the bare word "today", which
+ * shows up in plenty of unrelated queries.
+ */
+function isCanIHuntQuery(q: string): boolean {
+  // "How many deer can I take?" is a bag-limit question that happens to
+  // contain "can i take" — hand it back to the bag-limit handler.
+  if (/how many|bag limit/.test(q)) {
+    return false;
+  }
+  return /\b(can|may|could) i (hunt|shoot|take|harvest)\b|\bam i allowed to (hunt|shoot)\b|\b(is|are) it legal to (hunt|shoot)\b|\b(is|are)\b[^?]{0,30}\b(in season|open right now|open today)\b|\bhunting (today|tomorrow)\b/.test(
+    q,
+  );
+}
 
 function isSeasonQuery(q: string): boolean {
   return /season|when|dates|open|close|start|end/.test(q);

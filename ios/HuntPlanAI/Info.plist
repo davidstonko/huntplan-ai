@@ -53,8 +53,6 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>MDHuntFishOutdoors uses your camera so you can attach geotagged photos to Deer Camp and Group Camp posts — e.g., a trail-cam setup, a fish caught, or a campsite layout.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>MDHuntFishOutdoors uses your local network so offline Mapbox tile caches can be prepared and reused on your device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MDHuntFishOutdoors uses your location to show nearby public hunting lands, water access sites, and trailheads, and to center the map on where you are.</string>
 	<key>NSMotionUsageDescription</key>
