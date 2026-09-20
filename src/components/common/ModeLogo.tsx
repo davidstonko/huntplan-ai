@@ -74,162 +74,164 @@ export default function ModeLogo({ mode, size = 'md', accent }: ModeLogoProps) {
 const WHITE = '#FFFFFF';
 
 /**
- * Hunt glyph — whitetail antler silhouette.
+ * Hunt glyph — whitetail rack silhouette.
  *
- * 2026-04-30 (fourth pass): user shared a clean reference image of
- * deer antlers and said "we want our Hunt symbol to look like that".
- * The previous version (six rotated rectangles per side trying to
- * mimic main beam + 3 tines) read as spider legs at 22px. This pass
- * goes simpler — fewer pieces, cleaner shapes, more recognizable at
- * small sizes:
+ * 2026-09-20 (seventh pass), drawn against a reference photo of a real
+ * whitetail rack. Earlier attempts and why they failed:
+ *   • straight rotated rectangles   -> read as a wishbone
+ *   • two mirrored border arcs      -> the arcs closed into a ring and
+ *                                      read as a helmet
+ *   • short tines on a curved beam  -> read as a horseshoe
  *
- *   • ONE long curved beam per side (a single rotated rounded
- *     rectangle, ~55° outward from vertical), forming the C-shape
- *     spread of the rack
- *   • THREE short straight tines per side, all pointing UP off the
- *     beam at a slight outward lean (the way real antlers grow)
- *   • All white on the moss-green chip
+ * What actually makes a rack read as a rack: the main beam sweeps WIDE
+ * out from the skull, rises, and curls back inward at the tip; the
+ * tines are LONG (half the height or more), rise off the inner edge of
+ * that beam and fan toward center; and every stroke TAPERS from a thick
+ * base to a fine point.
  *
- * Total per side: 4 pieces (1 beam + 3 tines), down from 6. Reads
- * cleanly at 22px, still looks intentional at 56px. Pure View
- * primitives — no SVG dep, no asset files.
+ * React Native has no path primitive (react-native-svg is not a
+ * dependency), so each stroke is a polyline of rounded rectangles. Each
+ * segment is drawn `width` longer than its span so the round caps
+ * overlap at the joints and the polyline reads as one continuous curve,
+ * and each segment takes its own interpolated width, which is what
+ * produces the taper.
+ *
+ * Geometry is normalized 0..1 and describes the LEFT antler only; the
+ * right one is the same layer mirrored with scaleX, so the pair can
+ * never drift out of symmetry.
  */
-function HuntGlyph({ size }: { size: number }) {
-  // Stroke widths scale with the chip size. Min 2px so we never
-  // disappear at the small (sm: 14px) glyph size.
-  const beamW = Math.max(2, Math.round(size * 0.10));
-  const tineW = Math.max(2, Math.round(size * 0.075));
 
-  // Beam: a single long rounded rectangle, rotated ~55° from vertical
-  // so it sweeps from low-center upward-and-outward like a buck's
-  // main beam. Length is most of the glyph height.
-  const beamH = Math.round(size * 0.62);
+/** A normalized polyline plus the widths of its thick and fine ends. */
+interface RackStroke {
+  points: ReadonlyArray<readonly [number, number]>;
+  /** Width at the base, as a fraction of the glyph size. */
+  from: number;
+  /** Width at the tip, as a fraction of the glyph size. */
+  to: number;
+}
 
-  // Tines all start from the beam and point upward. Three per side
-  // gives the silhouette "real antler" weight without crowding.
-  // Heights tuned so the middle tine is tallest (G2 is always the
-  // longest tine on a real rack).
-  const browH = Math.round(size * 0.20);
-  const g2H = Math.round(size * 0.30);
-  const g3H = Math.round(size * 0.22);
+/** Main beam: skull, out wide, up, then curling back toward center. */
+const BEAM: RackStroke = {
+  points: [
+    [0.455, 0.94],
+    [0.33, 0.87],
+    [0.19, 0.74],
+    [0.1, 0.53],
+    [0.085, 0.33],
+    [0.145, 0.17],
+    [0.225, 0.09],
+  ],
+  from: 0.105,
+  to: 0.026,
+};
 
+/** G1 brow tine — the short one low on the beam. */
+const G1: RackStroke = {
+  points: [
+    [0.275, 0.8],
+    [0.325, 0.7],
+    [0.355, 0.605],
+  ],
+  from: 0.062,
+  to: 0.02,
+};
+
+/** G2 — the longest tine, off the widest point of the beam. */
+const G2: RackStroke = {
+  points: [
+    [0.135, 0.615],
+    [0.215, 0.42],
+    [0.3, 0.21],
+  ],
+  from: 0.075,
+  to: 0.022,
+};
+
+/** G3 — high on the beam, leaning in to close the fan. */
+const G3: RackStroke = {
+  points: [
+    [0.093, 0.43],
+    [0.175, 0.28],
+    [0.255, 0.125],
+  ],
+  from: 0.07,
+  to: 0.02,
+};
+
+const RACK_FULL: readonly RackStroke[] = [BEAM, G1, G2, G3];
+// At the 14px (sm) glyph the brow tine is barely a pixel and only
+// muddies the silhouette, so small sizes drop it and run heavier.
+const RACK_SMALL: readonly RackStroke[] = [
+  { ...BEAM, from: 0.125, to: 0.04 },
+  { ...G2, from: 0.095, to: 0.035 },
+  { ...G3, from: 0.09, to: 0.035 },
+];
+
+/** One tapering polyline, drawn as overlapping round-capped segments. */
+function Stroke({ stroke, size }: { stroke: RackStroke; size: number }) {
+  const { points, from, to } = stroke;
+  const segments = [];
+
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const [x1, y1] = points[i];
+    const [x2, y2] = points[i + 1];
+    const dx = (x2 - x1) * size;
+    const dy = (y2 - y1) * size;
+    const span = Math.hypot(dx, dy);
+
+    // Width interpolated at this segment's midpoint along the stroke.
+    const t = (i + 0.5) / (points.length - 1);
+    const width = Math.max(1.5, size * (from + (to - from) * t));
+
+    // Rectangles are vertical by default, so subtract 90deg to turn the
+    // segment's angle into a rotation.
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI - 90;
+
+    segments.push(
+      <View
+        key={i}
+        style={{
+          position: 'absolute',
+          left: ((x1 + x2) / 2) * size - width / 2,
+          // Overlength by `width` so the round caps close the joints.
+          top: ((y1 + y2) / 2) * size - (span + width) / 2,
+          width,
+          height: span + width,
+          borderRadius: width,
+          backgroundColor: WHITE,
+          transform: [{ rotate: `${angle}deg` }],
+        }}
+      />,
+    );
+  }
+
+  return <>{segments}</>;
+}
+
+/** The left antler. Mirrored by the caller to make the right one. */
+function HalfRack({ size, mirrored }: { size: number; mirrored?: boolean }) {
+  const rack = size < 24 ? RACK_SMALL : RACK_FULL;
   return (
     <View
       style={{
+        position: 'absolute',
         width: size,
         height: size,
-        alignItems: 'center',
-        justifyContent: 'center',
+        transform: mirrored ? [{ scaleX: -1 }] : undefined,
       }}
     >
-      {/* ─── LEFT antler ─────────────────────────────────────── */}
+      {rack.map((stroke, i) => (
+        <Stroke key={i} stroke={stroke} size={size} />
+      ))}
+    </View>
+  );
+}
 
-      {/* Main beam — single long stroke arcing up and out. */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.08,
-          left: size * 0.36,
-          width: beamW,
-          height: beamH,
-          backgroundColor: WHITE,
-          borderRadius: beamW,
-          transform: [{ rotate: '-30deg' }],
-        }}
-      />
-
-      {/* G1 brow tine — short, points up near the base of the beam. */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.36,
-          left: size * 0.28,
-          width: tineW,
-          height: browH,
-          backgroundColor: WHITE,
-          borderRadius: tineW,
-          transform: [{ rotate: '-12deg' }],
-        }}
-      />
-      {/* G2 — longest tine, mid-beam, points straight up with a small
-          outward lean. */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.42,
-          left: size * 0.18,
-          width: tineW,
-          height: g2H,
-          backgroundColor: WHITE,
-          borderRadius: tineW,
-          transform: [{ rotate: '-6deg' }],
-        }}
-      />
-      {/* G3 — near the tip of the beam, slightly inward to give the
-          rack its closed-top whitetail shape. */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.50,
-          left: size * 0.12,
-          width: tineW,
-          height: g3H,
-          backgroundColor: WHITE,
-          borderRadius: tineW,
-          transform: [{ rotate: '0deg' }],
-        }}
-      />
-
-      {/* ─── RIGHT antler (mirror) ───────────────────────────── */}
-
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.08,
-          right: size * 0.36,
-          width: beamW,
-          height: beamH,
-          backgroundColor: WHITE,
-          borderRadius: beamW,
-          transform: [{ rotate: '30deg' }],
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.36,
-          right: size * 0.28,
-          width: tineW,
-          height: browH,
-          backgroundColor: WHITE,
-          borderRadius: tineW,
-          transform: [{ rotate: '12deg' }],
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.42,
-          right: size * 0.18,
-          width: tineW,
-          height: g2H,
-          backgroundColor: WHITE,
-          borderRadius: tineW,
-          transform: [{ rotate: '6deg' }],
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          bottom: size * 0.50,
-          right: size * 0.12,
-          width: tineW,
-          height: g3H,
-          backgroundColor: WHITE,
-          borderRadius: tineW,
-          transform: [{ rotate: '0deg' }],
-        }}
-      />
+function HuntGlyph({ size }: { size: number }) {
+  return (
+    <View style={{ width: size, height: size }}>
+      <HalfRack size={size} />
+      <HalfRack size={size} mirrored />
     </View>
   );
 }
