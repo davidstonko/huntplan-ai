@@ -61,7 +61,7 @@ export default function ContactFab({ bottom = 24 }: ContactFabProps) {
       accessibilityLabel="Contact MDHuntFishOutdoors"
       accessibilityHint={`Opens an email to ${FEEDBACK_EMAIL} about adding a business, partnership, or feedback`}
     >
-      <Text style={styles.icon}>{'✉'}</Text>
+      <Text style={styles.icon}>{'\u2709\uFE0E'}</Text>
       <Text style={styles.label}>Contact</Text>
     </TouchableOpacity>
   );

@@ -505,7 +505,7 @@ export default function RegulationsScreen() {
         activeOpacity={0.8}
         onPress={() => setShowFeedbackModal(true)}
       >
-        <Text style={styles.fabIcon}>{'\u26A0\uFE0F'}</Text>
+        <Text style={styles.fabIcon}>{'\u26A0\uFE0E'}</Text>
         <Text style={styles.fabLabel}>Report</Text>
       </TouchableOpacity>
 
@@ -649,6 +649,11 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 16,
+    // Clears the floating Contact (bottom: 96) + Report (bottom: 16)
+    // stack on the right. Without this the last fields of the
+    // "Can I Hunt?" form sit under the FABs and a tap on the right
+    // half of the county selector hits Report instead of the picker.
+    paddingBottom: 148,
   },
   sectionTitle: {
     fontSize: 12,

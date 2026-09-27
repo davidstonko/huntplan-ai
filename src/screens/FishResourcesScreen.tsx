@@ -198,7 +198,7 @@ const FISH_RESOURCES: FishResourceCategory[] = [
         title: 'Invasive Species Report',
         description: 'Report invasive fish species and help protect Maryland waters',
         url: 'https://dnr.maryland.gov/fisheries/pages/invasiveSpecies.aspx',
-        icon: '⚠️',
+        icon: '\u26A0\uFE0E',
       },
     ],
   },
