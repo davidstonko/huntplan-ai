@@ -167,11 +167,31 @@ export default function OnboardingTourGate({
       animationType="fade"
       onRequestClose={onDismiss}
     >
-      <Pressable style={styles.backdrop} onPress={onDismiss}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      {/* 2026-09-27: these controls were bare Pressables with no
+          accessibilityRole, so VoiceOver saw generic elements and a
+          screen-reader user could not dismiss the tour at all — the
+          modal trapped them on first launch. accessibilityViewIsModal
+          keeps focus inside the sheet while it is open. */}
+      <Pressable
+        style={styles.backdrop}
+        onPress={onDismiss}
+        accessibilityRole="button"
+        accessibilityLabel="Close the tour"
+      >
+        <Pressable
+          style={styles.sheet}
+          onPress={() => {}}
+          accessible={false}
+          accessibilityViewIsModal
+        >
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>{tourTitleFor(mode)}</Text>
-            <Pressable hitSlop={12} onPress={onSkip}>
+            <Pressable
+              hitSlop={12}
+              onPress={onSkip}
+              accessibilityRole="button"
+              accessibilityLabel="Skip the tour"
+            >
               <Text style={styles.skipText}>SKIP</Text>
             </Pressable>
           </View>
@@ -207,6 +227,9 @@ export default function OnboardingTourGate({
               style={[styles.backBtn, isFirst && styles.btnDisabled]}
               onPress={isFirst ? undefined : onBack}
               disabled={isFirst}
+              accessibilityRole="button"
+              accessibilityLabel="Previous step"
+              accessibilityState={{ disabled: isFirst }}
             >
               <Text
                 style={[
@@ -217,7 +240,12 @@ export default function OnboardingTourGate({
                 BACK
               </Text>
             </Pressable>
-            <Pressable style={styles.nextBtn} onPress={onNext}>
+            <Pressable
+              style={styles.nextBtn}
+              onPress={onNext}
+              accessibilityRole="button"
+              accessibilityLabel={isLast ? 'Finish the tour' : 'Next step'}
+            >
               <Text style={styles.nextBtnText}>
                 {isLast ? "LET'S GO" : 'NEXT'}
               </Text>
