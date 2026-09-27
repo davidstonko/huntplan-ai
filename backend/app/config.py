@@ -75,9 +75,43 @@ class Settings(BaseSettings):
             self.database_url = self.database_url.replace(
                 "postgresql://", "postgresql+asyncpg://", 1
             )
-        # Also build the sync URL
+        # Also build the sync URL, before the libpq-only query parameters are
+        # stripped: psycopg understands sslmode, asyncpg does not.
         if "asyncpg" in self.database_url:
             self.database_url_sync = self.database_url.replace("+asyncpg", "")
+
+        # Hosted Postgres providers hand out libpq connection strings. Neon's
+        # looks like
+        #   postgresql://u:p@ep-x.us-east-2.aws.neon.tech/db
+        #       ?sslmode=require&channel_binding=require
+        # and asyncpg raises
+        #   TypeError: connect() got an unexpected keyword argument 'sslmode'
+        # because those parameters belong to libpq, not to asyncpg. Translate
+        # them instead of making whoever configures the service hand-edit the
+        # URL: sslmode -> asyncpg's own `ssl`, and drop the rest.
+        if "+asyncpg" in self.database_url and "?" in self.database_url:
+            base, _, query = self.database_url.partition("?")
+            keep: list[str] = []
+            wants_tls = False
+            for param in query.split("&"):
+                if not param:
+                    continue
+                name, _, value = param.partition("=")
+                name = name.lower()
+                if name == "sslmode":
+                    # disable/allow/prefer are the only values that do not
+                    # require TLS; everything else does.
+                    wants_tls = value.lower() not in ("disable", "allow", "prefer")
+                elif name in ("channel_binding", "options", "application_name",
+                              "connect_timeout", "target_session_attrs",
+                              "gssencmode", "sslrootcert", "sslcert", "sslkey"):
+                    # libpq-only, or asyncpg wants it as a connect_args kwarg.
+                    continue
+                else:
+                    keep.append(param)
+            if wants_tls:
+                keep.append("ssl=require")
+            self.database_url = base + ("?" + "&".join(keep) if keep else "")
 
 
 settings = Settings()

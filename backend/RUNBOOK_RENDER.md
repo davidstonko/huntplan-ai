@@ -17,21 +17,59 @@ planner `/query` route still answers LLM-only with an explicit note.
 The data in the old database is gone. Regulation chunks re-seed
 automatically; user accounts/camps do not.
 
+## What it costs, and what we chose
+
+Verified against Render's pricing page, September 2026:
+
+| | Free | Cheapest paid |
+| --- | --- | --- |
+| Web service | $0, 512 MB, **spins down after 15 min idle** (~31 s cold start, measured) | Starter **$7/mo**, 0.5 CPU / 512 MB, never spins down |
+| Postgres | $0, 256 MB, **suspended when the trial ends, then deleted** | Basic 256 MB **$6/mo** |
+
+Render's free Postgres is not a tier, it is a trial — that is what took
+production down in July, and it would do it again. The database therefore
+moved to **Neon**, whose free tier does not expire (it scales to zero after
+about 5 minutes of inactivity and wakes in roughly a second). So:
+
+- **$0** — Neon free + Render free web. Survivable now that the API boots in
+  degraded mode instead of exiting, but a first request after 15 idle minutes
+  waits ~31 s. An App Review reviewer would hit exactly that on the AI tab.
+- **$7/mo** — Neon free + Render Starter. **This is the recommendation**: the
+  only thing being bought is the elimination of the cold start, which is the
+  one failure a reviewer sees.
+- **$13/mo** — all Render (Starter web + Basic Postgres). Buys one vendor
+  instead of two. It does not buy reliability Neon's free tier lacks.
+
+Nothing in the app's offline behaviour — maps, offline packs, GPS tracks, the
+regulations knowledge base, legal shooting hours, solunar — depends on the
+backend at all. The backend serves the AI planner's RAG answers, the forum,
+and camp sync. That is why $0 is a legitimate choice here and why the App
+Review walkthrough does not depend on this decision.
+
 ## Dashboard steps (one-time)
 
-1. **Create a paid Postgres**: Render dashboard → New → PostgreSQL.
-   Name `huntplan-db`, database `huntplan`, Postgres 16, plan **Basic 256 MB**
-   (matches `render.yaml`). Free plan will expire again in 90 days.
-2. **Point the API at it**: `huntplan-api` → Environment → `DATABASE_URL`.
-   Paste the new DB's *Internal Database URL*. Either
-   `postgres://...` or `postgresql+asyncpg://...` works — `app/config.py`
-   rewrites the scheme to `postgresql+asyncpg://` at startup. Save; Render
-   redeploys.
-3. **Upgrade the web service plan** to **Starter** (`huntplan-api` →
-   Settings → Instance Type) so it stops spinning down after 15 min idle.
+1. **Create the database on Neon**: neon.tech → new project, Postgres 16,
+   region US East (Ohio) to sit near Render's Virginia region. Copy the
+   connection string it offers.
+2. **Point the API at it**: `huntplan-api` → Environment → `DATABASE_URL` →
+   paste the Neon string **verbatim**, including
+   `?sslmode=require&channel_binding=require`. `app/config.py` rewrites the
+   scheme to `postgresql+asyncpg://` and translates those two parameters
+   (asyncpg rejects both by name — it wants `ssl=require` — while Alembic's
+   sync URL keeps the libpq spelling). Save; Render redeploys.
+   Covered by `backend/tests/test_database_url_normalization.py`.
+3. **Instance type**: `huntplan-api` → Settings → Instance Type → **Starter**
+   for the $7 option, or leave it on Free for the $0 option.
+4. **Build filter** (stops the noise): `huntplan-api` → Settings → Build
+   Filters → Included Paths `backend/**` and `render.yaml`. Without this,
+   every React Native commit rebuilds the API and mails a
+   "deploy failed for huntplan-api" notice for a change the image never
+   contained — which is what the 2026-09-18 and 2026-09-27 emails were.
 
-If you deploy via Blueprint instead, `render.yaml` already reflects steps
-1 and 3 and wires `DATABASE_URL` from the database.
+If the services were created from the Blueprint, `render.yaml` already carries
+steps 3 and 4 and leaves `DATABASE_URL` as `sync: false` for step 2. If they
+were created by hand in the dashboard, `render.yaml` is documentation only and
+all four steps must be done there.
 
 ## Verify
 

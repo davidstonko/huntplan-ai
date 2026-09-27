@@ -2,21 +2,34 @@
 # Deploy with: https://render.com/deploy → connect this repo
 # Or create services manually matching this spec
 #
-# 2026-09 OUTAGE NOTE: production went down because Render *deletes* free-tier
-# Postgres instances 90 days after creation (not just suspends them). The API
-# then failed init_db() on boot and uvicorn exited with status 3. Both plans
-# below are now paid tiers; see backend/RUNBOOK_RENDER.md for the recovery
-# steps (the plan changes must also be applied in the Render dashboard).
+# 2026-09 OUTAGE NOTE: production went down because Render suspends free-tier
+# Postgres when the trial ends and then deletes it. The API failed init_db() on
+# boot and uvicorn exited with status 3. Two changes came out of that: the API
+# now boots in degraded mode instead of exiting when the database is
+# unreachable, and Postgres moved off Render entirely (see below).
+#
+# If this service was created by hand in the dashboard rather than from this
+# blueprint, editing this file changes nothing on Render. The two settings that
+# matter — the build filter and DATABASE_URL — must then be set in the
+# dashboard as well. backend/RUNBOOK_RENDER.md has both paths.
 
-databases:
-  - name: huntplan-db
-    databaseName: huntplan
-    # Was `free`: free Postgres expires and is DELETED after 90 days, taking
-    # all data (users, regulation_chunks, camps) with it. basic-256mb is the
-    # cheapest persistent tier (256 MB RAM, 1 GB storage, daily backups).
-    plan: basic-256mb
-    postgresMajorVersion: "16"
-    ipAllowList: []  # Only allow Render internal access
+# Postgres lives OUTSIDE Render. The free Render Postgres that used to back
+# this service (huntplan-db) was suspended 2026-07-11 and then deleted, which
+# is what took production down: DATABASE_URL kept pointing at a hostname that
+# no longer resolves ("Name or service not known"). Render's free Postgres
+# always ends this way, so the replacement is a provider whose free tier does
+# not expire — Neon. Set DATABASE_URL manually in the Render dashboard to the
+# Neon connection string (see backend/RUNBOOK_RENDER.md).
+#
+# To go all-Render on a paid database instead, uncomment this block, change
+# DATABASE_URL below back to `fromDatabase`, and expect ~$6/mo:
+#
+# databases:
+#   - name: huntplan-db
+#     databaseName: huntplan
+#     plan: basic-256mb        # cheapest persistent tier; free is deleted
+#     postgresMajorVersion: "16"
+#     ipAllowList: []          # Render-internal access only
 
 services:
   - type: web
@@ -29,15 +42,24 @@ services:
     # cold start re-runs init_db). starter keeps the instance warm.
     plan: starter
     healthCheckPath: /health  # always 200; body reports db "ok"|"unavailable"
+    # 2026-09 NOTE: without this filter Render rebuilt the API on every push,
+    # including React-Native-only commits that touch nothing the image
+    # contains. Each of those rebuilds produced a "deploy failed for
+    # huntplan-api" email for a change that was never deployable. Only paths
+    # that actually end up in the Docker context should trigger a deploy.
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: huntplan-db
-          property: connectionString
-        # Render provides postgres:// — app/config.py rewrites it to
-        # postgresql+asyncpg:// at startup, so no manual transform needed.
-        # If you create the DB by hand instead of via this blueprint, paste
-        # the Internal Database URL here (either scheme works).
+        sync: false  # Paste the Neon connection string in the dashboard.
+        # Either scheme works: app/config.py rewrites postgres:// to
+        # postgresql+asyncpg:// at startup. Neon requires TLS, so keep the
+        # ?sslmode=require that Neon's string already carries.
+        # Until this is set the API still boots and serves 200s with
+        # "db":"unavailable" (degraded mode) — the app's offline features and
+        # the App Review walkthrough do not depend on it.
       - key: SECRET_KEY
         generateValue: true
       - key: ANTHROPIC_API_KEY
