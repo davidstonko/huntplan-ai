@@ -1,0 +1,1242 @@
+{
+  "_generated_by": "scripts/export_regulations_json.js",
+  "_source": "src/data/marylandHuntingData.ts",
+  "_do_not_edit": "Regenerate with: node scripts/export_regulations_json.js",
+  "meta": {
+    "seasonLabel": "2026-2027",
+    "publishedOn": "2026-06-12",
+    "nextSeasonExpectedBy": "2027-07-01",
+    "sourceUrl": "https://dnr.maryland.gov/huntersguide"
+  },
+  "seasons": [
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Archery",
+      "start_date": "2026-09-11",
+      "end_date": "2026-10-21",
+      "weapon": "Bow",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Archery segment. Archery is CLOSED during the early muzzleloader (Oct 22-24), firearms (Nov 28-Dec 12), late muzzleloader (Dec 19-Jan 2) and Region B January firearms (Jan 8-10) seasons. Antlerless: Region A 2 total for all seasons; Region B 15 for archery. Sundays open only per the DNR Sunday deer chart.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Archery",
+      "start_date": "2026-10-25",
+      "end_date": "2026-11-27",
+      "weapon": "Bow",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Archery segment. Archery is CLOSED during the early muzzleloader (Oct 22-24), firearms (Nov 28-Dec 12), late muzzleloader (Dec 19-Jan 2) and Region B January firearms (Jan 8-10) seasons. Antlerless: Region A 2 total for all seasons; Region B 15 for archery. Sundays open only per the DNR Sunday deer chart.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Archery",
+      "start_date": "2026-12-14",
+      "end_date": "2026-12-18",
+      "weapon": "Bow",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Archery segment. Archery is CLOSED during the early muzzleloader (Oct 22-24), firearms (Nov 28-Dec 12), late muzzleloader (Dec 19-Jan 2) and Region B January firearms (Jan 8-10) seasons. Antlerless: Region A 2 total for all seasons; Region B 15 for archery. Sundays open only per the DNR Sunday deer chart.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Archery",
+      "start_date": "2027-01-03",
+      "end_date": "2027-01-07",
+      "weapon": "Bow",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Archery segment. Archery is CLOSED during the early muzzleloader (Oct 22-24), firearms (Nov 28-Dec 12), late muzzleloader (Dec 19-Jan 2) and Region B January firearms (Jan 8-10) seasons. Antlerless: Region A 2 total for all seasons; Region B 15 for archery. Sundays open only per the DNR Sunday deer chart.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Archery",
+      "start_date": "2027-01-11",
+      "end_date": "2027-01-31",
+      "weapon": "Bow",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Archery segment. Archery is CLOSED during the early muzzleloader (Oct 22-24), firearms (Nov 28-Dec 12), late muzzleloader (Dec 19-Jan 2) and Region B January firearms (Jan 8-10) seasons. Antlerless: Region A 2 total for all seasons; Region B 15 for archery. Sundays open only per the DNR Sunday deer chart.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Archery (Region A only)",
+      "start_date": "2027-01-08",
+      "end_date": "2027-01-10",
+      "weapon": "Bow",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Archery open Jan 8-10 in Deer Management Region A only (Allegany, Garrett, and western Washington County west of the Rt. 494/57/40/56 line). Region B is in firearms season these days.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Firearms (Regular)",
+      "start_date": "2026-11-28",
+      "end_date": "2026-12-12",
+      "weapon": "Rifle or Shotgun",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Regular firearms season. Antlerless: Region A antlerless firearms is Dec 5-12 only (2 total for the year); Region B 10 antlerless for firearms. Any legal weapon may be used; harvest counts toward the firearms bag.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Firearms (Region B January)",
+      "start_date": "2027-01-08",
+      "end_date": "2027-01-10",
+      "weapon": "Rifle or Shotgun",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "January firearms segment open in Deer Management Region B only (all counties except Allegany, Garrett and western Washington). Region A is archery-only these days.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Muzzleloader (Early)",
+      "start_date": "2026-10-22",
+      "end_date": "2026-10-24",
+      "weapon": "Muzzleloader",
+      "bag_limit": "1 antlered per muzzleloader season; antlerless by region",
+      "notes": "Early muzzleloader segment, statewide. A Bonus Antlered Deer Stamp may NOT be used during Oct 22-24. Region A antlerless: 2 total for all seasons; Region B: 10 antlerless for muzzleloader.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Muzzleloader (Antlerless only, Region B)",
+      "start_date": "2026-10-26",
+      "end_date": "2026-10-31",
+      "weapon": "Muzzleloader",
+      "bag_limit": "Antlerless only",
+      "notes": "Antlerless-only muzzleloader segment in Deer Management Region B only. No antlered deer may be taken on these dates.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Muzzleloader (Late)",
+      "start_date": "2026-12-19",
+      "end_date": "2027-01-02",
+      "weapon": "Muzzleloader",
+      "bag_limit": "1 antlered per muzzleloader season; antlerless by region",
+      "notes": "Late muzzleloader segment. Region A antlerless muzzleloader is Dec 26-Jan 2 only. Combined antlered limit for both muzzleloader segments is 1.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Junior Deer Hunt Days",
+      "start_date": "2026-11-14",
+      "end_date": "2026-11-15",
+      "weapon": "Rifle or Shotgun",
+      "bag_limit": "Region A: 1 antlered or 1 antlerless; Region B: 3 deer, no more than 1 antlered",
+      "notes": "Junior hunters only (Nov 14 statewide; Sunday Nov 15 in counties open per the DNR Sunday deer chart). Junior hunters are exempt from the antler-point restriction.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "season_type": "Primitive Deer Hunt Days",
+      "start_date": "2027-02-01",
+      "end_date": "2027-02-03",
+      "weapon": "Longbow, Recurve, or Flintlock/Sidelock Muzzleloader",
+      "bag_limit": "2 antlered per year (no more than 1 per weapon season); antlerless by region",
+      "notes": "Primitive weapons only: long bows, recurve bows, or flintlock and sidelock percussion muzzleloading rifles or handguns. Compound bows, crossbows and inline muzzleloaders are NOT legal on these days.",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Archery",
+      "start_date": "2026-09-11",
+      "end_date": "2026-10-21",
+      "weapon": "Bow",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Sika archery segment; same closures as white-tailed archery. Sika Deer Stamp required. Sika may be hunted statewide where found (primarily Dorchester, Wicomico, Somerset, Worcester).",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Archery",
+      "start_date": "2026-10-25",
+      "end_date": "2026-11-27",
+      "weapon": "Bow",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Sika archery segment; same closures as white-tailed archery. Sika Deer Stamp required. Sika may be hunted statewide where found (primarily Dorchester, Wicomico, Somerset, Worcester).",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Archery",
+      "start_date": "2026-12-14",
+      "end_date": "2026-12-18",
+      "weapon": "Bow",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Sika archery segment; same closures as white-tailed archery. Sika Deer Stamp required. Sika may be hunted statewide where found (primarily Dorchester, Wicomico, Somerset, Worcester).",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Archery",
+      "start_date": "2027-01-03",
+      "end_date": "2027-01-07",
+      "weapon": "Bow",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Sika archery segment; same closures as white-tailed archery. Sika Deer Stamp required. Sika may be hunted statewide where found (primarily Dorchester, Wicomico, Somerset, Worcester).",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Archery",
+      "start_date": "2027-01-11",
+      "end_date": "2027-01-31",
+      "weapon": "Bow",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Sika archery segment; same closures as white-tailed archery. Sika Deer Stamp required. Sika may be hunted statewide where found (primarily Dorchester, Wicomico, Somerset, Worcester).",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Muzzleloader (Early)",
+      "start_date": "2026-10-22",
+      "end_date": "2026-10-24",
+      "weapon": "Muzzleloader",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Early muzzleloader segment, statewide. Sika Deer Stamp required.",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Muzzleloader (Antlerless only, Region B)",
+      "start_date": "2026-10-26",
+      "end_date": "2026-10-31",
+      "weapon": "Muzzleloader",
+      "bag_limit": "Antlerless only",
+      "notes": "Antlerless-only sika muzzleloader segment in Region B.",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Muzzleloader (Late)",
+      "start_date": "2026-12-19",
+      "end_date": "2027-01-02",
+      "weapon": "Muzzleloader",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Late muzzleloader segment. Sika Deer Stamp required.",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Firearms (Regular)",
+      "start_date": "2026-11-28",
+      "end_date": "2026-12-12",
+      "weapon": "Rifle or Shotgun",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "Regular firearms season. Sika Deer Stamp required.",
+      "counties": []
+    },
+    {
+      "species": "Sika Deer",
+      "season_type": "Firearms (January)",
+      "start_date": "2027-01-08",
+      "end_date": "2027-01-10",
+      "weapon": "Rifle or Shotgun",
+      "bag_limit": "3 sika per season, no more than 1 antlered",
+      "notes": "January firearms segment. Sika Deer Stamp required.",
+      "counties": []
+    },
+    {
+      "species": "Wild Turkey",
+      "season_type": "Spring",
+      "start_date": "2027-04-19",
+      "end_date": "2027-05-24",
+      "weapon": "Shotgun or Bow",
+      "bag_limit": "1 bearded turkey per day, 2 per season",
+      "notes": "Statewide. Bearded turkeys only. Shooting hours Apr 19-May 10: one-half hour before sunrise to noon; May 11-24: one-half hour before sunrise to sunset. Shotgun (#4 shot or smaller), crossbow, vertical bow or air gun. Sundays open in certain counties only.",
+      "counties": []
+    },
+    {
+      "species": "Wild Turkey",
+      "season_type": "Spring (Junior Hunt Days)",
+      "start_date": "2027-04-17",
+      "end_date": "2027-04-18",
+      "weapon": "Shotgun or Bow",
+      "bag_limit": "1 bearded turkey per day",
+      "notes": "Junior hunters (16 or younger) accompanied by an adult 21+. Saturday Apr 17 statewide; Sunday Apr 18 only in counties open to Sunday turkey hunting.",
+      "counties": []
+    },
+    {
+      "species": "Wild Turkey",
+      "season_type": "Fall",
+      "start_date": "2026-10-31",
+      "end_date": "2026-11-08",
+      "weapon": "Shotgun, Rifle, or Bow",
+      "bag_limit": "1 turkey of either sex (fall and winter combined)",
+      "notes": "Fall season is open in Allegany, Garrett and Washington counties ONLY. Legal: air guns, crossbows, handguns, shotguns, rifles or vertical bows. One turkey combined for fall + winter.",
+      "counties": []
+    },
+    {
+      "species": "Wild Turkey",
+      "season_type": "Winter",
+      "start_date": "2027-01-21",
+      "end_date": "2027-01-23",
+      "weapon": "Shotgun or Bow",
+      "bag_limit": "1 turkey of either sex (fall and winter combined)",
+      "notes": "Statewide winter season. Shotgun (#4 shot or smaller), crossbow, vertical bow or air gun. One turkey combined for fall + winter.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Teal)",
+      "season_type": "September Teal",
+      "start_date": "2026-09-17",
+      "end_date": "2026-09-26",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day, 18 in possession",
+      "notes": "Blue-winged and green-winged teal only, in the September Teal Hunt Zone: Calvert, Caroline, Cecil, Dorchester, Harford, Kent, Queen Anne's, St. Mary's, Somerset, Talbot, Wicomico, Worcester, and ONLY the parts of Anne Arundel east of I-895/I-97/Rt 3, Prince George's east of Rt 3/301, and Charles east of Rt 301. HIP registration, MD Migratory Game Bird Stamp and Federal Duck Stamp required.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Ducks)",
+      "season_type": "Regular, Eastern Zone (Split 1)",
+      "start_date": "2026-10-10",
+      "end_date": "2026-10-17",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day (species sub-limits apply), 18 in possession",
+      "notes": "Eastern Duck Zone: Anne Arundel, Calvert, Caroline, Cecil, Charles, Dorchester, Harford, Kent, Queen Anne's, St. Mary's, Somerset, Talbot, Wicomico, Worcester, plus ONLY the parts of Baltimore, Howard, Prince George's and Montgomery counties east of I-83/I-695/I-95/I-495. Within 6 ducks: 4 mallards (2 hens), 3 wood ducks, 2 black ducks, 2 canvasbacks, 3 pintails, 2 redheads, 1 scaup (2 from Jan 8-30), 1 mottled duck.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Ducks)",
+      "season_type": "Regular, Eastern Zone (Split 2)",
+      "start_date": "2026-11-14",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day (species sub-limits apply), 18 in possession",
+      "notes": "Eastern Duck Zone: Anne Arundel, Calvert, Caroline, Cecil, Charles, Dorchester, Harford, Kent, Queen Anne's, St. Mary's, Somerset, Talbot, Wicomico, Worcester, plus ONLY the parts of Baltimore, Howard, Prince George's and Montgomery counties east of I-83/I-695/I-95/I-495. Within 6 ducks: 4 mallards (2 hens), 3 wood ducks, 2 black ducks, 2 canvasbacks, 3 pintails, 2 redheads, 1 scaup (2 from Jan 8-30), 1 mottled duck. Black duck season opens Nov 14 in the Eastern Zone.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Ducks)",
+      "season_type": "Regular, Western Zone (Split 1)",
+      "start_date": "2026-10-03",
+      "end_date": "2026-10-17",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day (species sub-limits apply), 18 in possession",
+      "notes": "Western Duck Zone: Allegany, Carroll, Frederick, Garrett, Washington, plus the parts of Baltimore, Howard, Prince George's and Montgomery counties west of I-83/I-695/I-95/I-495. Same species sub-limits as the Eastern Zone. Black ducks are CLOSED during this split.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Ducks)",
+      "season_type": "Regular, Western Zone (Split 2)",
+      "start_date": "2026-11-21",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day (species sub-limits apply), 18 in possession",
+      "notes": "Western Duck Zone: Allegany, Carroll, Frederick, Garrett, Washington, plus the parts of Baltimore, Howard, Prince George's and Montgomery counties west of I-83/I-695/I-95/I-495. Same species sub-limits as the Eastern Zone.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Ducks)",
+      "season_type": "Regular (Split 3, both zones)",
+      "start_date": "2026-12-15",
+      "end_date": "2027-01-30",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day (species sub-limits apply), 18 in possession",
+      "notes": "Final duck split, identical in the Eastern and Western zones. Scaup limit rises to 2 per day Jan 8-30. Possession limit is three times the daily bag.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Early Resident Canada Goose, Eastern Zone",
+      "start_date": "2026-09-01",
+      "end_date": "2026-09-15",
+      "weapon": "Shotgun",
+      "bag_limit": "8 per day, 24 in possession",
+      "notes": "Resident Canada geese. Eastern Hunt Zone: Calvert, Caroline, Cecil, Dorchester, Harford, Kent, Queen Anne's, St. Mary's, Somerset, Talbot, Wicomico, Worcester, plus ONLY the parts of Anne Arundel east of I-895/I-97/Rt 3, Prince George's east of Rt 3/301, and Charles east of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Early Resident Canada Goose, Western Zone",
+      "start_date": "2026-09-01",
+      "end_date": "2026-09-25",
+      "weapon": "Shotgun",
+      "bag_limit": "8 per day, 24 in possession",
+      "notes": "Resident Canada geese. Western Hunt Zone: Allegany, Baltimore, Carroll, Frederick, Garrett, Howard, Montgomery, Washington, plus the parts of Anne Arundel, Prince George's and Charles counties WEST of the Eastern Zone line.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Canada Goose, AP Zone (Split 1)",
+      "start_date": "2026-11-24",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "2 per day, 6 in possession",
+      "notes": "Atlantic Population (migratory) Canada goose zone: Anne Arundel, Baltimore, Calvert, Caroline, Cecil, Dorchester, Harford, Howard, Kent, Queen Anne's, Somerset, St. Mary's, Talbot, Wicomico, Worcester, plus Carroll east of Rt 31/97, Prince George's east of Rt 3/301 and Charles east of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Canada Goose, AP Zone (Split 2)",
+      "start_date": "2026-12-15",
+      "end_date": "2027-01-30",
+      "weapon": "Shotgun",
+      "bag_limit": "2 per day, 6 in possession",
+      "notes": "Atlantic Population (migratory) Canada goose zone: Anne Arundel, Baltimore, Calvert, Caroline, Cecil, Dorchester, Harford, Howard, Kent, Queen Anne's, Somerset, St. Mary's, Talbot, Wicomico, Worcester, plus Carroll east of Rt 31/97, Prince George's east of Rt 3/301 and Charles east of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Late Resident Canada Goose, Western MD (Split 1)",
+      "start_date": "2026-11-21",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "5 per day, 15 in possession",
+      "notes": "Late Resident Western Maryland Canada Goose Zone: Allegany, Frederick, Garrett, Washington, and Carroll west of Rt 31/97.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Late Resident Canada Goose, Western MD (Split 2)",
+      "start_date": "2026-12-15",
+      "end_date": "2027-03-10",
+      "weapon": "Shotgun",
+      "bag_limit": "5 per day, 15 in possession",
+      "notes": "Late Resident Western Maryland Canada Goose Zone: Allegany, Frederick, Garrett, Washington, and Carroll west of Rt 31/97.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Late Resident Canada Goose, Southern MD (Split 1)",
+      "start_date": "2026-11-21",
+      "end_date": "2026-11-23",
+      "weapon": "Shotgun",
+      "bag_limit": "5 per day, 15 in possession",
+      "notes": "Late Resident Southern Maryland Canada Goose Zone: Montgomery County, Prince George's west of Rt 3/301, and Charles west of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Late Resident Canada Goose, Southern MD (Split 2)",
+      "start_date": "2026-11-24",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "2 per day, 6 in possession",
+      "notes": "Late Resident Southern Maryland Canada Goose Zone: Montgomery County, Prince George's west of Rt 3/301, and Charles west of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Late Resident Canada Goose, Southern MD (Split 3)",
+      "start_date": "2026-12-15",
+      "end_date": "2027-01-30",
+      "weapon": "Shotgun",
+      "bag_limit": "2 per day, 6 in possession",
+      "notes": "Late Resident Southern Maryland Canada Goose Zone: Montgomery County, Prince George's west of Rt 3/301, and Charles west of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Late Resident Canada Goose, Southern MD (Split 4)",
+      "start_date": "2027-02-01",
+      "end_date": "2027-03-10",
+      "weapon": "Shotgun",
+      "bag_limit": "5 per day, 15 in possession",
+      "notes": "Late Resident Southern Maryland Canada Goose Zone: Montgomery County, Prince George's west of Rt 3/301, and Charles west of Rt 301.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Light Geese (Snow/Blue/Ross's), Split 1",
+      "start_date": "2026-11-07",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "25 per day, no possession limit",
+      "notes": "Light geese statewide.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Light Geese (Snow/Blue/Ross's), Split 2",
+      "start_date": "2026-11-30",
+      "end_date": "2027-02-06",
+      "weapon": "Shotgun",
+      "bag_limit": "25 per day, no possession limit",
+      "notes": "Light geese statewide.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Geese)",
+      "season_type": "Light Geese, Eastern Region extension",
+      "start_date": "2027-02-08",
+      "end_date": "2027-03-10",
+      "weapon": "Shotgun",
+      "bag_limit": "25 per day, no possession limit",
+      "notes": "Light geese, Eastern Region only (AP goose zone counties). The separate Light Goose Conservation Order dates are listed as TBD by DNR.",
+      "counties": []
+    },
+    {
+      "species": "Waterfowl (Brant)",
+      "season_type": "Regular",
+      "start_date": "2026-12-28",
+      "end_date": "2027-01-30",
+      "weapon": "Shotgun",
+      "bag_limit": "1 per day, 3 in possession",
+      "notes": "Atlantic brant, statewide.",
+      "counties": []
+    },
+    {
+      "species": "Mourning Dove",
+      "season_type": "Regular (Split 1)",
+      "start_date": "2026-09-01",
+      "end_date": "2026-10-17",
+      "weapon": "Shotgun",
+      "bag_limit": "15 per day, 45 in possession",
+      "notes": "Mourning dove, statewide. HIP registration required.",
+      "counties": []
+    },
+    {
+      "species": "Mourning Dove",
+      "season_type": "Regular (Split 2)",
+      "start_date": "2026-10-24",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "15 per day, 45 in possession",
+      "notes": "Mourning dove, statewide. HIP registration required.",
+      "counties": []
+    },
+    {
+      "species": "Mourning Dove",
+      "season_type": "Regular (Split 3)",
+      "start_date": "2026-12-19",
+      "end_date": "2027-01-09",
+      "weapon": "Shotgun",
+      "bag_limit": "15 per day, 45 in possession",
+      "notes": "Mourning dove, statewide. HIP registration required.",
+      "counties": []
+    },
+    {
+      "species": "Woodcock",
+      "season_type": "Regular (Split 1)",
+      "start_date": "2026-10-24",
+      "end_date": "2026-11-27",
+      "weapon": "Shotgun",
+      "bag_limit": "3 per day, 9 in possession",
+      "notes": "American woodcock, statewide. HIP registration required.",
+      "counties": []
+    },
+    {
+      "species": "Woodcock",
+      "season_type": "Regular (Split 2)",
+      "start_date": "2027-01-11",
+      "end_date": "2027-01-27",
+      "weapon": "Shotgun",
+      "bag_limit": "3 per day, 9 in possession",
+      "notes": "American woodcock, statewide. HIP registration required.",
+      "counties": []
+    },
+    {
+      "species": "Rabbit",
+      "season_type": "Regular",
+      "start_date": "2026-11-07",
+      "end_date": "2027-02-28",
+      "weapon": "Shotgun or Rifle",
+      "bag_limit": "4 per day, 8 in possession",
+      "notes": "Eastern cottontail rabbit, all counties. Sunday hunting only in the counties listed on the DNR Sunday small game chart.",
+      "counties": []
+    },
+    {
+      "species": "Squirrel",
+      "season_type": "Regular",
+      "start_date": "2026-09-05",
+      "end_date": "2027-02-28",
+      "weapon": "Shotgun or Rifle",
+      "bag_limit": "6 per day, 12 in possession",
+      "notes": "Gray, red and eastern fox squirrel, all counties. Delmarva fox squirrel: closed season (protected).",
+      "counties": []
+    },
+    {
+      "species": "Pheasant",
+      "season_type": "Regular",
+      "start_date": "2026-11-07",
+      "end_date": "2027-02-28",
+      "weapon": "Shotgun",
+      "bag_limit": "2 per day (either sex), 4 in possession",
+      "notes": "Ring-necked pheasant, all counties.",
+      "counties": []
+    },
+    {
+      "species": "Ruffed Grouse",
+      "season_type": "Regular",
+      "start_date": "2026-10-03",
+      "end_date": "2026-12-31",
+      "weapon": "Shotgun",
+      "bag_limit": "2 per day, 4 in possession",
+      "notes": "Ruffed grouse. DNR lists the season for all counties; huntable populations are in western Maryland.",
+      "counties": []
+    },
+    {
+      "species": "Bobwhite Quail",
+      "season_type": "Regular",
+      "start_date": "2026-11-07",
+      "end_date": "2027-01-15",
+      "weapon": "Shotgun",
+      "bag_limit": "6 per day, 12 in possession",
+      "notes": "CLOSED in Allegany and Garrett counties and on DNR-owned/managed lands east of the Susquehanna River. Open on private lands east of the Susquehanna and all lands west of it (except Allegany/Garrett).",
+      "counties": []
+    },
+    {
+      "species": "Black Bear",
+      "season_type": "Regular",
+      "start_date": "2026-10-26",
+      "end_date": "2026-10-31",
+      "weapon": "Rifle, Shotgun, Handgun, Muzzleloader, Bow, Crossbow, or Air Gun",
+      "bag_limit": "1 per permittee/sub-permittee team per season",
+      "notes": "Permit-only lottery hunt (application July 15-Aug 31, $15 fee). Zone 1: Allegany, Frederick, Garrett, Washington; Zone 2: Frederick, Washington. Not a quota hunt. Legal weapons per the DNR Guide: rifle, shotgun (28 ga+ solid projectile), handgun, muzzleloader (.40+), vertical bow (30 lb+), crossbow (75 lb+), air gun (.40+).",
+      "counties": []
+    }
+  ],
+  "wmas": [
+    {
+      "name": "Dan's Mountain WMA",
+      "county": "Allegany",
+      "acres": 10246,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Grouse",
+        "Squirrel"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun",
+        "Muzzleloader"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/DansMountain.aspx",
+      "notes": "Mountainous terrain in western Maryland. Popular for deer archery. Scenic ridges."
+    },
+    {
+      "name": "Savage River WMA",
+      "county": "Garrett",
+      "acres": 6500,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Grouse",
+        "Squirrel"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun",
+        "Muzzleloader"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/SavageRiver.aspx",
+      "notes": "Western Maryland. No Sunday hunting. Pristine hardwood forests. Popular for whitetail."
+    },
+    {
+      "name": "Green Ridge WMA",
+      "county": "Allegany",
+      "acres": 9475,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Grouse",
+        "Small Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun",
+        "Muzzleloader"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/GreenRidge.aspx",
+      "notes": "Ridge habitat in Allegany County. Limited Sunday hunting. Excellent for deer."
+    },
+    {
+      "name": "Pocomoke WMA",
+      "county": "Somerset",
+      "acres": 9212,
+      "species": [
+        "Deer",
+        "Waterfowl",
+        "Turkey",
+        "Small Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/Pocomoke.aspx",
+      "notes": "Eastern Shore swamp habitat. Excellent waterfowl hunting. Deer and turkey also present."
+    },
+    {
+      "name": "LeCompte WMA",
+      "county": "Dorchester",
+      "acres": 4050,
+      "species": [
+        "Waterfowl",
+        "Deer",
+        "Turkey"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/LeCompte.aspx",
+      "notes": "Eastern Shore marsh and upland. Great waterfowl and deer habitat. Limited acreage."
+    },
+    {
+      "name": "Idylwild WMA",
+      "county": "Talbot",
+      "acres": 1627,
+      "species": [
+        "Waterfowl",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Shotgun"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/Idylwild.aspx",
+      "notes": "Eastern Shore. Waterfowl and small game. Shotgun only; no rifles."
+    },
+    {
+      "name": "Millington WMA",
+      "county": "Kent",
+      "acres": 6447,
+      "species": [
+        "Waterfowl",
+        "Turkey",
+        "Upland Game",
+        "Deer"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/Millington.aspx",
+      "notes": "Upper Eastern Shore. Mixed habitat with marshes and uplands. Good deer and waterfowl."
+    },
+    {
+      "name": "Stoney Creek WMA",
+      "county": "Cecil",
+      "acres": 5618,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Waterfowl",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/StoneyCreek.aspx",
+      "notes": "Upper Eastern Shore. Mixed hardwood and agricultural land. Excellent deer hunting."
+    },
+    {
+      "name": "Back River Neck WMA",
+      "county": "Anne Arundel",
+      "acres": 3800,
+      "species": [
+        "Waterfowl",
+        "Deer"
+      ],
+      "weapons": [
+        "Bow",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/BackRiverNeck.aspx",
+      "notes": "Central Maryland. Tidal marsh and upland. Waterfowl primary; deer secondary."
+    },
+    {
+      "name": "Morgan Run WMA",
+      "county": "Baltimore",
+      "acres": 2700,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/MorganRun.aspx",
+      "notes": "Central Maryland. No Sunday hunting. Hardwood forest and streams. Good deer."
+    },
+    {
+      "name": "Little Bennett Regional Park (Hunting)",
+      "county": "Montgomery",
+      "acres": 3700,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Shotgun"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/LittleBennett.aspx",
+      "notes": "Northern Maryland. No centerfire rifles. Excellent deer bowhunting."
+    },
+    {
+      "name": "Patapsco Valley State Park (Hunting)",
+      "county": "Baltimore",
+      "acres": 14000,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Shotgun"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/PatapscoValley.aspx",
+      "notes": "Large park with hunting sections. Bow and shotgun only. Excellent urban deer hunting."
+    },
+    {
+      "name": "Elk Ridge WMA",
+      "county": "Howard",
+      "acres": 2800,
+      "species": [
+        "Deer",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Shotgun"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/ElkRidge.aspx",
+      "notes": "Central Maryland. Shotgun and bow only. Small but productive for deer."
+    },
+    {
+      "name": "Washington Monument State Park (Hunting)",
+      "county": "Washington",
+      "acres": 2289,
+      "species": [
+        "Deer",
+        "Turkey"
+      ],
+      "weapons": [
+        "Bow"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/WashingtonMonument.aspx",
+      "notes": "Western Maryland. Bow only. Scenic ridgeline. Limited acreage but productive."
+    },
+    {
+      "name": "Soldiers Delight Natural Environment Area",
+      "county": "Baltimore",
+      "acres": 1860,
+      "species": [
+        "Deer",
+        "Turkey"
+      ],
+      "weapons": [
+        "Bow",
+        "Shotgun"
+      ],
+      "sunday": false,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/SoldiersDelight.aspx",
+      "notes": "Urban reserve. Shotgun and bow only. Important for urban deer management."
+    },
+    {
+      "name": "Cedarville State Forest",
+      "county": "Charles",
+      "acres": 3700,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Rifle",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/Cedarville.aspx",
+      "notes": "Southern Maryland. Mixed forest and fields. Good all-around hunting."
+    },
+    {
+      "name": "Newman WMA",
+      "county": "Montgomery",
+      "acres": 5200,
+      "species": [
+        "Deer",
+        "Turkey",
+        "Upland Game"
+      ],
+      "weapons": [
+        "Bow",
+        "Shotgun"
+      ],
+      "sunday": true,
+      "dnr_url": "https://dnr.maryland.gov/wildlife/Pages/WMA/Newman.aspx",
+      "notes": "Northwestern Maryland. No centerfire rifles. Agricultural land with deer."
+    }
+  ],
+  "counties": [
+    {
+      "name": "Allegany",
+      "region": "Region A",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region A (western). Restrictive antlerless limits — see bag limits. Mountain region. Grouse and bear hunting available."
+    },
+    {
+      "name": "Anne Arundel",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Part of the Urban/Suburban Deer Management Zone (unlimited antlerless archery). Around Annapolis. Waterfowl in tidewater."
+    },
+    {
+      "name": "Baltimore",
+      "region": "Region B",
+      "sunday": false,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. No Sunday deer hunting. Urban/Suburban Deer Management Zone (unlimited antlerless archery). Bow and shotgun emphasis."
+    },
+    {
+      "name": "Baltimore City",
+      "region": "Region B",
+      "sunday": false,
+      "antler": "No general hunting except dedicated programs/WMAs.",
+      "notes": "Urban area. Limited hunting except dedicated wildlife management programs."
+    },
+    {
+      "name": "Calvert",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Southern Maryland. Tidewater. Waterfowl and deer habitat."
+    },
+    {
+      "name": "Caroline",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Eastern Shore. Agricultural land. Good deer and upland game."
+    },
+    {
+      "name": "Carroll",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Northwestern Maryland. Rolling hills. Good deer hunting."
+    },
+    {
+      "name": "Cecil",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Upper Eastern Shore. Mixed habitat. Good all-around hunting."
+    },
+    {
+      "name": "Charles",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Southern Maryland. Potomac River area. Waterfowl and deer."
+    },
+    {
+      "name": "Dorchester",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Eastern Shore marshlands. Excellent waterfowl. Deer available."
+    },
+    {
+      "name": "Frederick",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. North-central Maryland. Appalachian foothills. One of four counties open to bear hunting."
+    },
+    {
+      "name": "Garrett",
+      "region": "Region A",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region A (western). Restrictive antlerless limits — see bag limits. Far western Maryland. Bear season. Grouse habitat."
+    },
+    {
+      "name": "Harford",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Northern Maryland. Rolling terrain. Good deer and turkey."
+    },
+    {
+      "name": "Howard",
+      "region": "Region B",
+      "sunday": false,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. No Sunday deer hunting. Urban/Suburban Deer Management Zone (unlimited antlerless archery). Limited hunting areas."
+    },
+    {
+      "name": "Kent",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Upper Eastern Shore. Chesapeake Bay tributaries. Mixed habitat."
+    },
+    {
+      "name": "Montgomery",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Urban/Suburban Deer Management Zone (unlimited antlerless archery). Multiple WMAs. Shotgun/bow emphasis."
+    },
+    {
+      "name": "Prince George's",
+      "region": "Region B",
+      "sunday": false,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. No Sunday deer hunting. Urban/Suburban Deer Management Zone (unlimited antlerless archery). D.C. suburbs; limited areas."
+    },
+    {
+      "name": "Queen Anne's",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Upper Eastern Shore. Chesapeake Bay area. Waterfowl and deer."
+    },
+    {
+      "name": "Somerset",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Lower Eastern Shore. Swamp habitat. Excellent waterfowl."
+    },
+    {
+      "name": "St. Mary's",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Southern Maryland. Potomac River. Waterfowl and deer."
+    },
+    {
+      "name": "Talbot",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Upper Eastern Shore. Chesapeake Bay area. Waterfowl habitat."
+    },
+    {
+      "name": "Washington",
+      "region": "Region A (west) / Region B (east)",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Split county: the western portion is Region A (restrictive antlerless limits), the eastern portion is Region B. One of four bear-hunting counties. Verify which region your specific area falls in."
+    },
+    {
+      "name": "Wicomico",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Lower Eastern Shore. Mixed habitat. Good hunting."
+    },
+    {
+      "name": "Worcester",
+      "region": "Region B",
+      "sunday": true,
+      "antler": "Statewide: your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "notes": "Region B. Lower Eastern Shore. Coastal area. Waterfowl emphasis."
+    }
+  ],
+  "bag_limits": [
+    {
+      "species": "White-tailed Deer",
+      "weapon": "Any",
+      "type": "season",
+      "qty": 2,
+      "period": "calendar year",
+      "notes": "Antlered deer: 2 per year on the regular bag (a Bonus Antlered Deer Stamp is required for additional antlered deer). Antler-point rule (statewide): your first antlered deer may be any buck; each additional antlered deer must have at least 3 points on one antler.",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "weapon": "Any",
+      "type": "season",
+      "qty": 2,
+      "period": "calendar year",
+      "notes": "Antlerless — REGION A (Allegany, Garrett, western Washington): up to 2 antlerless deer may be taken during a weapon season, but no more than 2 total for all seasons combined (archery, firearms, muzzleloader). Do not exceed 2.",
+      "counties": [
+        "Allegany",
+        "Garrett",
+        "Washington"
+      ]
+    },
+    {
+      "species": "White-tailed Deer",
+      "weapon": "Any",
+      "type": "season",
+      "qty": 15,
+      "period": "season",
+      "notes": "Antlerless — REGION B (rest of the state): archery 15 per season, firearms 10 per season, muzzleloader 10 per season. Unlimited antlerless archery in the Suburban Deer Management Zone (Anne Arundel, Baltimore, Howard, Montgomery, Prince George’s).",
+      "counties": []
+    },
+    {
+      "species": "White-tailed Deer",
+      "weapon": "Muzzleloader",
+      "type": "season",
+      "qty": 1,
+      "period": "calendar year",
+      "notes": "Antlered limit for muzzleloader hunters: 1 per calendar year combined (fall + winter seasons).",
+      "counties": []
+    },
+    {
+      "species": "Wild Turkey",
+      "weapon": "Shotgun or Bow",
+      "type": "season",
+      "qty": 2,
+      "period": "spring season",
+      "notes": "Spring season: 1 bearded turkey per day, 2 bearded turkeys per season. Bearded birds only in spring.",
+      "counties": []
+    },
+    {
+      "species": "Wild Turkey",
+      "weapon": "Any",
+      "type": "season",
+      "qty": 1,
+      "period": "fall and winter combined",
+      "notes": "Fall (Allegany, Garrett, Washington only) and winter (statewide) combined: 1 turkey of either sex.",
+      "counties": []
+    },
+    {
+      "species": "Ducks",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 6,
+      "period": "daily",
+      "notes": "Regular duck season: 6 per day, no more than 4 mallards (2 hens), 3 wood ducks, 2 black ducks, 2 canvasbacks, 3 pintails, 2 redheads, 1 scaup (2 per day Jan 8-30), 1 fulvous tree duck, 1 mottled duck, 4 sea ducks. Possession 3x daily. Plus 15 coots per day.",
+      "counties": []
+    },
+    {
+      "species": "Teal (Blue-winged, Green-winged)",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 6,
+      "period": "daily",
+      "notes": "September teal season: 6 per day, 18 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Canada Goose (Atlantic Population zone)",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 2,
+      "period": "daily",
+      "notes": "Migratory (AP) Canada goose zone — Eastern Shore, Bay counties and eastern Carroll/Prince George’s/Charles: 2 per day, 6 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Canada Goose (Resident zones)",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 8,
+      "period": "daily",
+      "notes": "Early resident season (Sept): 8 per day, 24 in possession. Late resident Western MD zone: 5 per day. Late resident Southern MD zone: 5 per day Nov 21-23 and Feb 1-Mar 10, otherwise 2 per day.",
+      "counties": []
+    },
+    {
+      "species": "Light Geese (Snow, Blue, Ross’s)",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 25,
+      "period": "daily",
+      "notes": "Regular light goose season: 25 per day, no possession limit.",
+      "counties": []
+    },
+    {
+      "species": "Brant",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 1,
+      "period": "daily",
+      "notes": "Atlantic brant: 1 per day, 3 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Mourning Dove",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 15,
+      "period": "daily",
+      "notes": "Mourning dove: 15 per day, 45 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Woodcock",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 3,
+      "period": "daily",
+      "notes": "American woodcock: 3 per day, 9 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Eastern Cottontail Rabbit",
+      "weapon": "Shotgun or Rifle",
+      "type": "daily",
+      "qty": 4,
+      "period": "daily",
+      "notes": "Eastern cottontail rabbit. 4 per day, 8 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Gray Squirrel",
+      "weapon": "Any",
+      "type": "daily",
+      "qty": 6,
+      "period": "daily",
+      "notes": "Gray and fox squirrel combined. 6 per day, 12 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Ruffed Grouse",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 2,
+      "period": "daily",
+      "notes": "Ruffed grouse. 2 per day, 4 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Ring-necked Pheasant",
+      "weapon": "Shotgun",
+      "type": "daily",
+      "qty": 2,
+      "period": "daily",
+      "notes": "Ring-necked pheasant only. 2 per day, 4 in possession.",
+      "counties": []
+    },
+    {
+      "species": "Black Bear",
+      "weapon": "Rifle, Shotgun, Handgun, Muzzleloader, Bow, Crossbow, or Air Gun",
+      "type": "season",
+      "qty": 1,
+      "period": "season",
+      "notes": "Bear: 1 per permittee/sub-permittee hunting team per season. Lottery-draw permit hunt in Allegany, Frederick, Garrett, and Washington counties.",
+      "counties": []
+    }
+  ]
+}
