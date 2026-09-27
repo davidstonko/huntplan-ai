@@ -493,6 +493,18 @@ export default function ATTripPlannerScreen() {
               keyExtractor={(id) => id}
               scrollEnabled={false}
               style={{ marginTop: 12 }}
+              ListFooterComponent={
+                // Every row above opens an Amazon link carrying our affiliate
+                // tag. CampGearScreen and StarterGearScreen both disclose that
+                // where their links are shown; this list did not, which is the
+                // one place in the app a user could tap a tagged link with no
+                // disclosure on screen. Required by the Amazon Associates
+                // Operating Agreement and the FTC endorsement guides.
+                <Text style={styles.affiliateDisclosure}>
+                  As an Amazon Associate, MDHuntFishOutdoors earns from qualifying
+                  purchases. Tapping a gear item opens Amazon; you pay nothing extra.
+                </Text>
+              }
             />
           )}
         </View>
@@ -588,6 +600,18 @@ const styles = StyleSheet.create({
   },
   gearRowBody: { flex: 1 },
   gearRowTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  // Matches CampGearScreen's footerText so the disclosure reads the same
+  // wherever it appears.
+  affiliateDisclosure: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    lineHeight: 16,
+    fontStyle: 'italic',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.mud,
+  },
   gearRowSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   gearRowChev: { fontSize: 22, color: Colors.textMuted, marginLeft: 8 },
   section: { marginBottom: 20 },
