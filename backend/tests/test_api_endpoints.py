@@ -68,11 +68,23 @@ def _post(path: str, data: dict, token: str = None, timeout: int = 90) -> dict:
 # ─── Health & Root ──────────────────────────────────────────────
 
 def test_health_check():
-    """GET /health returns status ok."""
+    """GET /health answers, and says truthfully whether the database is up.
+
+    "degraded" is a success for this test. Since the degraded-mode change,
+    /health deliberately returns 200 with status "degraded" when the database
+    is unreachable, so that Render's health check does not restart-loop an
+    instance whose only problem is a missing DATABASE_URL. Asserting == "ok"
+    here made a working API look broken whenever the database was down.
+    """
     data = _get("/health")
-    assert data.get("status") == "ok", f"Health check failed: {data}"
+    assert data.get("status") in ("ok", "degraded"), f"Health check failed: {data}"
     assert "version" in data
     assert "app" in data
+    if data.get("status") == "degraded":
+        # If it is degraded it has to say why, or the field is useless.
+        assert data.get("db") == "unavailable"
+        assert data.get("db_error")
+        print(f"  API up, database down: {data.get('db_error')}")
     print(f"  API version: {data.get('version')}")
 
 
@@ -240,8 +252,16 @@ def test_harvest_requires_auth():
     """GET /api/v1/harvest/list returns 401 without auth."""
     data = _get("/api/v1/harvest/list")
     if "_error" in data:
-        assert data.get("_status") in [401, 403, 404], f"Unexpected status: {data.get('_status')}"
-        print("  Harvest correctly requires auth")
+        # 503 is the degraded-mode answer from get_db when the database is
+        # unreachable. It arrives before the auth dependency can run, so it is
+        # not an auth regression and must not fail this test.
+        assert data.get("_status") in [401, 403, 404, 503], (
+            f"Unexpected status: {data.get('_status')}"
+        )
+        if data.get("_status") == 503:
+            print("  Database down; auth not exercised")
+        else:
+            print("  Harvest correctly requires auth")
     else:
         # If it returns data without auth, that's also OK (might be public endpoint)
         print("  Harvest returned data (public endpoint)")

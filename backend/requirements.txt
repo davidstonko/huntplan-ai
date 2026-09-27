@@ -1,47 +1,60 @@
-# HuntPlan AI — Backend Dependencies
+# HuntPlan AI — backend dependencies (the human-edited source of truth).
+#
+# THIS FILE IS NOT WHAT DOCKER INSTALLS. The image installs requirements.lock,
+# which pins exact versions. Read backend/DEPENDENCIES.md before changing
+# either one.
+#
+# 2026-09-27: two Render deploys failed because every requirement here was an
+# unbounded ">=". SQLAlchemy 2.0.x declared greenlet as a real dependency on
+# x86_64; 2.1.0 moved it behind the "asyncio" extra. The morning 2.1.0
+# published, a fresh build stopped installing greenlet and
+# app/db/database.py:7 raised ImportError at import time, so uvicorn never
+# started. Nothing in the repo changed. Hence: the [asyncio] extra is now
+# explicit, every direct dependency has an upper bound, and builds install a
+# lockfile so the deployed set is the set that was tested.
 
 # Web framework
-fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
-pydantic>=2.9.0
+fastapi>=0.115.0,<0.120
+uvicorn[standard]>=0.30.0,<1
+pydantic>=2.9.0,<3
 pydantic-settings>=2.5.0
 python-multipart>=0.0.9
 
 # Database
-sqlalchemy>=2.0.35
-alembic>=1.13.2
-asyncpg>=0.29.0
+sqlalchemy[asyncio]>=2.0.35,<2.1
+alembic>=1.13.2,<2
+asyncpg>=0.29.0,<0.31
 geoalchemy2>=0.15.2
 pgvector>=0.3.5
 
 # HTTP / Scraping
 httpx>=0.27.2
 beautifulsoup4>=4.12.3
-lxml>=5.3.0
+lxml>=5.3.0,<7
 
 # PDF parsing / OCR
 pdfplumber>=0.11.0
 
 # AI / LLM
-anthropic>=0.39.0
+anthropic>=0.39.0,<1
 google-generativeai>=0.8.0
 
 # Geospatial
-shapely>=2.0.6
+shapely>=2.0.6,<3
 pyproj>=3.7.0
 geojson>=3.1.0
 
 # Cloud storage (Cloudflare R2 / S3)
-boto3>=1.35.0
+boto3>=1.35.0,<2
 
 # Image processing (thumbnails, validation)
-Pillow>=11.0.0
+Pillow>=11.0.0,<13
 
 # Push notifications (APNS)
 apns2>=0.7.2
 
 # Background tasks
-celery[redis]>=5.4.0
+celery[redis]>=5.4.0,<6
 
 # WebSocket (included in FastAPI/Starlette, no extra dep needed)
 
@@ -52,5 +65,5 @@ passlib[bcrypt]>=1.7.4
 orjson>=3.10.7
 
 # Testing
-pytest>=8.3.3
-pytest-asyncio>=0.24.0
+pytest>=8.3.3,<9
+pytest-asyncio>=0.24.0,<1
