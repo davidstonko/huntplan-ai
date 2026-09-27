@@ -60,7 +60,7 @@ export default function ModeLogo({ mode, size = 'md', accent }: ModeLogoProps) {
       accessibilityLabel={`${mode} mode icon`}
     >
       {mode === 'hunt' && <HuntGlyph size={dims.glyph} />}
-      {mode === 'fish' && <FishGlyph size={dims.glyph} />}
+      {mode === 'fish' && <FishGlyph size={dims.glyph} accent={accent} />}
       {mode === 'camp' && <CampGlyph size={dims.glyph} />}
       {mode === 'hike' && <HikeGlyph size={dims.glyph} />}
     </View>
@@ -237,50 +237,150 @@ function HuntGlyph({ size }: { size: number }) {
 }
 
 /**
- * Fish glyph — elongated oval body with a triangular tail fin.
+ * Fish glyph — striped bass silhouette (Maryland's state fish).
+ *
+ * 2026-09-27: the previous glyph was a flat oval with a small triangle
+ * stuck on the back and a dot for an eye. It read as a cartoon blob, not
+ * a gamefish. What makes a fish read as a fish at icon size is its
+ * landmarks: a pointed snout, a deep body tapering to a narrow tail
+ * root, fins above and below, and above all a FORKED tail. A single
+ * triangle tail is what makes the old one look like a child's drawing.
+ *
+ * React Native has no polygon primitive, so the body is a stadium whose
+ * blunt ends are hidden behind a snout triangle and the tail, and every
+ * fin is the zero-size/border triangle trick. The fork is cut by drawing
+ * a chip-colored wedge over the white tail, which is why this glyph
+ * takes `accent` — it has to paint with the chip's own background.
  */
-function FishGlyph({ size }: { size: number }) {
-  const bodyW = Math.round(size * 0.7);
-  const bodyH = Math.round(size * 0.42);
-  const tail = Math.round(size * 0.22);
-  const eye = Math.max(2, Math.round(size * 0.08));
+
+/** A solid triangle pointing up. Rotate it to aim it elsewhere. */
+function Triangle({
+  width,
+  height,
+  color,
+  rotate,
+}: {
+  width: number;
+  height: number;
+  color: string;
+  rotate?: string;
+}) {
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      {/* Body */}
+    <View
+      style={{
+        width: 0,
+        height: 0,
+        borderLeftWidth: width / 2,
+        borderRightWidth: width / 2,
+        borderBottomWidth: height,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+        borderBottomColor: color,
+        backgroundColor: 'transparent',
+        transform: rotate ? [{ rotate }] : undefined,
+      }}
+    />
+  );
+}
+
+/**
+ * A triangle centred on (cx, cy) in normalized glyph space. Centring in
+ * a square box means the rotation pivots predictably, so aiming a fin is
+ * a matter of naming its centre and its angle.
+ */
+function Fin({
+  size,
+  cx,
+  cy,
+  base,
+  length,
+  color,
+  rotate,
+}: {
+  size: number;
+  cx: number;
+  cy: number;
+  /** Width of the triangle's base, as a fraction of the glyph. */
+  base: number;
+  /** Height from base to apex, as a fraction of the glyph. */
+  length: number;
+  color: string;
+  rotate?: string;
+}) {
+  // Square box so a rotated triangle is never clipped by its container.
+  const box = Math.max(base, length) * size;
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: cx * size - box / 2,
+        top: cy * size - box / 2,
+        width: box,
+        height: box,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Triangle
+        width={base * size}
+        height={length * size}
+        color={color}
+        rotate={rotate}
+      />
+    </View>
+  );
+}
+
+function FishGlyph({ size, accent }: { size: number; accent: string }) {
+  const S = size;
+  return (
+    <View style={{ width: S, height: S }}>
+      {/* Body. The stadium's blunt nose and tail root are covered by the
+          snout triangle and the caudal fin. */}
       <View
         style={{
-          width: bodyW,
-          height: bodyH,
-          borderRadius: bodyH / 2,
+          position: 'absolute',
+          left: 0.13 * S,
+          top: 0.375 * S,
+          width: 0.55 * S,
+          height: 0.25 * S,
+          borderRadius: 0.125 * S,
           backgroundColor: WHITE,
-          marginLeft: -tail * 0.3,
         }}
       />
-      {/* Tail (triangle pointing left) */}
+
+      {/* Every fin is seated a few percent INSIDE the body rather than
+          flush against its edge. Flush looked right on paper and left a
+          hairline seam on device, so the fins read as loose triangles
+          floating around a sausage. Overlap is what makes the silhouette
+          read as one animal. */}
+
+      {/* Snout. */}
+      <Fin size={S} cx={0.14} cy={0.5} base={0.24} length={0.13} color={WHITE} rotate="-90deg" />
+
+      {/* Spiny dorsal, then the softer rear dorsal. */}
+      <Fin size={S} cx={0.34} cy={0.33} base={0.18} length={0.15} color={WHITE} />
+      <Fin size={S} cx={0.53} cy={0.345} base={0.15} length={0.12} color={WHITE} />
+
+      {/* Anal fin below. The pectoral is deliberately left off: at 36px
+          it read as a stray spike rather than a fin. */}
+      <Fin size={S} cx={0.48} cy={0.65} base={0.13} length={0.1} color={WHITE} rotate="180deg" />
+
+      {/* Caudal fin overlapping the body's blunt end, then the
+          chip-coloured wedge that forks it. */}
+      <Fin size={S} cx={0.75} cy={0.5} base={0.3} length={0.2} color={WHITE} rotate="-90deg" />
+      <Fin size={S} cx={0.83} cy={0.5} base={0.19} length={0.1} color={accent} rotate="-90deg" />
+
+      {/* Eye, punched out of the body in the chip colour. */}
       <View
         style={{
           position: 'absolute',
-          right: size * 0.08,
-          width: 0,
-          height: 0,
-          borderTopWidth: tail * 0.55,
-          borderBottomWidth: tail * 0.55,
-          borderLeftWidth: tail,
-          borderTopColor: 'transparent',
-          borderBottomColor: 'transparent',
-          borderLeftColor: WHITE,
-        }}
-      />
-      {/* Eye */}
-      <View
-        style={{
-          position: 'absolute',
-          left: size * 0.22,
-          top: size * 0.36,
-          width: eye,
-          height: eye,
-          borderRadius: eye / 2,
-          backgroundColor: '#0D47A1',
+          left: 0.185 * S,
+          top: 0.452 * S,
+          width: 0.058 * S,
+          height: 0.058 * S,
+          borderRadius: 0.029 * S,
+          backgroundColor: accent,
         }}
       />
     </View>

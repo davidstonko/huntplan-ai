@@ -115,10 +115,14 @@ export function UserMarkupProvider({ children }: Props) {
     await storageSaveAll(next);
   }, []);
 
+  // Depends on the state array, not `latestRef.current`, on purpose. Consumers
+  // memoize on this function's identity (the Log tab's badge counts, the
+  // map layers, the list screens), so a stable useCallback(..., []) made
+  // every one of them stale: rows written after mount never reached the
+  // screen until it remounted. Identity must change when the data does.
   const markupsForMode = useCallback(
-    (mode: WaypointMode) =>
-      latestRef.current.filter((m) => m.mode === mode),
-    [],
+    (mode: WaypointMode) => allMarkups.filter((m) => m.mode === mode),
+    [allMarkups],
   );
 
   const getMarkup = useCallback((id: string) => {

@@ -172,10 +172,14 @@ export function UserWaypointProvider({ children }: Props) {
     await storageSaveAll(next);
   }, []);
 
+  // Depends on the state array, not `latestRef.current`, on purpose. Consumers
+  // memoize on this function's identity (the Log tab's badge counts, the
+  // map layers, the list screens), so a stable useCallback(..., []) made
+  // every one of them stale: rows written after mount never reached the
+  // screen until it remounted. Identity must change when the data does.
   const waypointsForMode = useCallback(
-    (mode: WaypointMode) =>
-      latestRef.current.filter((w) => w.mode === mode),
-    [],
+    (mode: WaypointMode) => allWaypoints.filter((w) => w.mode === mode),
+    [allWaypoints],
   );
 
   const getWaypoint = useCallback((id: string) => {

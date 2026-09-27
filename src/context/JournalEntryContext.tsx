@@ -136,9 +136,14 @@ export function JournalEntryProvider({ children }: Props) {
     await storageSaveAll(sorted);
   }, []);
 
+  // Depends on the state array, not `latestRef.current`, on purpose. Consumers
+  // memoize on this function's identity (the Log tab's badge counts, the
+  // map layers, the list screens), so a stable useCallback(..., []) made
+  // every one of them stale: rows written after mount never reached the
+  // screen until it remounted. Identity must change when the data does.
   const entriesForMode = useCallback(
-    (mode: WaypointMode) => latestRef.current.filter((e) => e.mode === mode),
-    [],
+    (mode: WaypointMode) => allEntries.filter((e) => e.mode === mode),
+    [allEntries],
   );
 
   const getEntry = useCallback((id: string) => {
