@@ -500,6 +500,12 @@ export default function RegulationsScreen() {
       </ScrollView>
 
       {/* ── Floating "Report Issue" button ── */}
+      {/* Hidden on the "Can I Hunt?" segment. That segment is a form, and
+          a floating pill parked over the Date and County selectors steals
+          taps meant for the pickers — the right half of the county field
+          opened this modal instead. The other two segments are read-only
+          lists, where a floating action sits over nothing interactive. */}
+      {activeTab !== 'canIHunt' && (
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.8}
@@ -508,6 +514,7 @@ export default function RegulationsScreen() {
         <Text style={styles.fabIcon}>{'\u26A0\uFE0E'}</Text>
         <Text style={styles.fabLabel}>Report</Text>
       </TouchableOpacity>
+      )}
 
       {/* ── Feedback Modal ── */}
       <Modal

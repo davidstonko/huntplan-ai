@@ -168,7 +168,13 @@ export default function ResourcesHubScreen() {
         2026-05-01: extracted to src/components/common/ContactFab.tsx
         so Fish/Camp/Hike Resources screens can use the same affordance.
       */}
-      <ContactFab bottom={96} />
+      {/* 2026-09-27: only on Links & Guides. The Regulations segment
+          embeds RegulationsScreen, whose "Can I Hunt?" tab is a form —
+          a floating pill parked over the Date and County selectors stole
+          taps meant for the pickers. Contact is a partnership/feedback
+          affordance, so it belongs with the links anyway. With Report
+          also hidden on that tab, the form is now clear of both. */}
+      {activeSegment === 'links' && <ContactFab bottom={96} />}
     </View>
   );
 }
