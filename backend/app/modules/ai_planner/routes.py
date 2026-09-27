@@ -161,7 +161,7 @@ async def trigger_ingestion():
     # Import the ingestion data
     from scripts.ingest_regulations import (
         build_season_chunks, build_wma_chunks, build_county_chunks,
-        build_bag_limit_chunks, build_general_chunks,
+        build_bag_limit_chunks, build_general_chunks, SEASON_LABEL,
     )
 
     try:
@@ -187,7 +187,7 @@ async def trigger_ingestion():
                     county=chunk_data["county"],
                     source=chunk_data["source"],
                     extra_data=chunk_data["extra_data"],
-                    regulation_year="2025-2026",
+                    regulation_year=SEASON_LABEL,  # generated data, never a literal
                 )
                 session.add(chunk)
             await session.commit()

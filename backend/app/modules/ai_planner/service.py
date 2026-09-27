@@ -98,6 +98,135 @@ async def _call_gemini(client, prompt: str) -> str:
     return await asyncio.get_event_loop().run_in_executor(None, _sync_call)
 
 
+# Species a hunter can name in a question, mapped to the value stored in
+# regulation_chunks.species. Keys are matched as whole words, longest first,
+# so "white-tailed deer" wins over "deer" and "snow goose" over "goose".
+_SPECIES_ALIASES = {
+    "white-tailed deer": "White-tailed Deer",
+    "whitetail": "White-tailed Deer",
+    "deer": "White-tailed Deer",
+    "doe": "White-tailed Deer",
+    "buck": "White-tailed Deer",
+    "antlerless": "White-tailed Deer",
+    "antlered": "White-tailed Deer",
+    "turkey": "Wild Turkey",
+    "gobbler": "Wild Turkey",
+    "black bear": "Black Bear",
+    "bear": "Black Bear",
+    "squirrel": "Squirrel",
+    "rabbit": "Rabbit",
+    "cottontail": "Rabbit",
+    "pheasant": "Pheasant",
+    "grouse": "Ruffed Grouse",
+    "quail": "Bobwhite Quail",
+    "bobwhite": "Bobwhite Quail",
+    "dove": "Mourning Dove",
+    "woodcock": "Woodcock",
+    "goose": "Waterfowl",
+    "geese": "Waterfowl",
+    "duck": "Waterfowl",
+    "ducks": "Waterfowl",
+    "teal": "Waterfowl",
+    "waterfowl": "Waterfowl",
+}
+
+
+def _species_in_query(query: str) -> Optional[str]:
+    """The species a question is about, or None."""
+    import re
+
+    q = query.lower()
+    for alias in sorted(_SPECIES_ALIASES, key=len, reverse=True):
+        if re.search(rf"\b{re.escape(alias)}\b", q):
+            return _SPECIES_ALIASES[alias]
+    return None
+
+
+async def _ensure_species_coverage(
+    db: AsyncSession,
+    query: str,
+    state: str,
+    chunks: list[dict],
+    species_filter: Optional[str],
+) -> list[dict]:
+    """Guarantee the named species' season and bag-limit rows are present.
+
+    Relevance ranking alone is not enough here. Asked "Can I hunt deer with a
+    bow in Frederick County today?", the ranker returned Frederick County
+    Hunting Rules, then WMAs in other counties — all plausibly relevant, none
+    stating a deer season date. The model then correctly reported that it had
+    no deer season information, which is a useless answer to the single most
+    common question this app gets.
+
+    Season dates and bag limits are the facts a hunting question almost always
+    turns on, so when the query names a species we fetch those rows directly
+    rather than hoping they rank. Appended, not prepended: whatever the ranker
+    judged most relevant stays first.
+    """
+    if species_filter:
+        return chunks
+
+    species = _species_in_query(query)
+    if not species:
+        return chunks
+
+    have = {c["id"] for c in chunks}
+    have_categories = {c.get("category") for c in chunks if c.get("species") == species}
+
+    added: list[dict] = []
+    for category, limit in (("season", 4), ("bag_limit", 2)):
+        if category in have_categories:
+            continue
+        # Rank within the species/category slice by the same OR query the
+        # main search uses, so "deer with a bow" surfaces the archery
+        # segments rather than whatever sorts first alphabetically. Falls
+        # back to chronological order when the question has no usable terms.
+        terms = _query_terms(query)
+        params = {
+            "state": state,
+            "category": category,
+            "species": f"%{species}%",
+            "limit": limit,
+        }
+        if terms:
+            params["orq"] = " | ".join(terms)
+            rank_expr = "ts_rank(search_vector, to_tsquery('english', :orq))"
+            order_by = f"{rank_expr} DESC, title"
+        else:
+            rank_expr = "0.5"
+            order_by = "title"
+        sql = text(
+            f"""
+            SELECT id, title, content, category, species, county, source, extra_data,
+                   GREATEST({rank_expr}, 0.5) AS rank
+            FROM regulation_chunks
+            WHERE state = :state AND category = :category AND species ILIKE :species
+            ORDER BY {order_by}
+            LIMIT :limit
+            """
+        )
+        result = await db.execute(sql, params)
+        for row in result.fetchall():
+            if row.id in have:
+                continue
+            have.add(row.id)
+            added.append(
+                {
+                    "id": row.id,
+                    "title": row.title,
+                    "content": row.content,
+                    "category": row.category,
+                    "species": row.species,
+                    "county": row.county,
+                    "source": row.source,
+                    "extra_data": row.extra_data if hasattr(row, "extra_data") else None,
+                    "rank": float(row.rank),
+                }
+            )
+
+    return chunks + added
+
+
 SYSTEM_PROMPT = """You are the MDHuntFishOutdoors AI assistant — an expert on Maryland hunting regulations, seasons, public lands, and outdoor recreation.
 
 Your role:
@@ -153,6 +282,16 @@ async def search_regulation_chunks(
     result = await db.execute(sql, params)
     rows = result.fetchall()
 
+    if not rows:
+        # plainto_tsquery ANDs every lexeme, so a natural-sounding question
+        # ("Can I hunt deer with a bow in Frederick County today?") demands
+        # deer AND bow AND frederick AND today in ONE chunk, which nothing
+        # satisfies. Before this tier existed the miss fell through to an
+        # unordered ILIKE scan and the planner answered a deer question with
+        # squirrel and grouse seasons. Retry as OR, ranked, so the chunk
+        # matching the most terms wins.
+        rows = await _or_search(db, query, state, category, species, limit)
+
     return [
         {
             "id": row.id,
@@ -169,6 +308,67 @@ async def search_regulation_chunks(
     ]
 
 
+# Words that carry no signal in a hunting question. Dropping them keeps the
+# OR tier from ranking on "can", "the" or "today".
+_NOISE_WORDS = frozenset("""
+a an and are as at be by can could do does for from had has have how i if in
+is it its may me my of on or should that the their there they this to too was
+what when where which who will with would you your today now
+""".split())
+
+
+def _query_terms(query: str) -> list[str]:
+    """Alphanumeric, meaningful terms from a natural-language question.
+
+    Sanitized to [a-z0-9] so the result is safe to hand to to_tsquery as a
+    bound parameter — tsquery has its own operator syntax and a stray '&',
+    '!' or ':' would be parsed rather than searched.
+    """
+    import re
+
+    terms = []
+    for raw in re.split(r"[^A-Za-z0-9]+", query.lower()):
+        if len(raw) > 1 and raw not in _NOISE_WORDS and raw not in terms:
+            terms.append(raw)
+    return terms
+
+
+async def _or_search(
+    db: AsyncSession,
+    query: str,
+    state: str,
+    category: Optional[str],
+    species: Optional[str],
+    limit: int,
+):
+    """Ranked OR search, used when the strict AND search matches nothing."""
+    terms = _query_terms(query)
+    if not terms:
+        return []
+
+    or_query = " | ".join(terms)
+    sql_parts = [
+        """
+        SELECT id, title, content, category, species, county, source, extra_data,
+               ts_rank(search_vector, to_tsquery('english', :orq)) AS rank
+        FROM regulation_chunks
+        WHERE search_vector @@ to_tsquery('english', :orq)
+          AND state = :state
+        """
+    ]
+    params = {"orq": or_query, "state": state, "limit": limit}
+    if category:
+        sql_parts.append("AND category = :category")
+        params["category"] = category
+    if species:
+        sql_parts.append("AND species ILIKE :species")
+        params["species"] = f"%{species}%"
+    sql_parts.append("ORDER BY rank DESC LIMIT :limit")
+
+    result = await db.execute(text("\n".join(sql_parts)), params)
+    return result.fetchall()
+
+
 async def fallback_search(
     db: AsyncSession,
     query: str,
@@ -177,17 +377,29 @@ async def fallback_search(
 ) -> list[dict]:
     """
     Fallback: ILIKE search when full-text search returns no results.
+
+    Ranked by how many of the query's terms a chunk actually contains. This
+    had no ORDER BY at all, so Postgres returned whatever rows it reached
+    first — which is how a question about deer archery came back answered
+    with squirrel and grouse seasons once the chunk set changed.
     """
-    words = query.lower().split()
-    conditions = " OR ".join([f"LOWER(content) LIKE :w{i}" for i in range(len(words))])
+    words = _query_terms(query) or query.lower().split()
+    conditions = " OR ".join([f"LOWER(title || ' ' || content) LIKE :w{i}" for i in range(len(words))])
+    # One point per matched term, so the most relevant chunk sorts first.
+    score = " + ".join(
+        [f"(CASE WHEN LOWER(title || ' ' || content) LIKE :w{i} THEN 1 ELSE 0 END)"
+         for i in range(len(words))]
+    )
     params = {f"w{i}": f"%{w}%" for i, w in enumerate(words)}
     params["state"] = state
     params["limit"] = limit
 
     sql = text(f"""
-        SELECT id, title, content, category, species, county, source, extra_data, 0.1 AS rank
+        SELECT id, title, content, category, species, county, source, extra_data,
+               ({score})::float / {len(words)} AS rank
         FROM regulation_chunks
         WHERE state = :state AND ({conditions})
+        ORDER BY rank DESC
         LIMIT :limit
     """)
 
@@ -247,6 +459,7 @@ async def generate_ai_response(
             chunks = await search_regulation_chunks(db, query, state, category, species)
             if not chunks:
                 chunks = await fallback_search(db, query, state)
+            chunks = await _ensure_species_coverage(db, query, state, chunks, species)
         except Exception as e:  # connection refused / table missing / etc.
             logger.warning("Regulation retrieval failed, degrading to LLM-only: %s", e)
             retrieval_unavailable = True
