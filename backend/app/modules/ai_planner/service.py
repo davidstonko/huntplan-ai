@@ -55,7 +55,7 @@ async def _call_claude(client, system_prompt: str, user_message: str) -> str:
 
     def _sync_call():
         response = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model=settings.claude_model,
             max_tokens=2048,
             system=system_prompt,
             messages=[

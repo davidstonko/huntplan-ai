@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = None  # Legacy — kept for optional fallback
     gemini_api_key: Optional[str] = None
     llm_model: str = "gemini-2.0-flash"  # Free tier: 15 RPM, 1M tokens/day
+    # Claude model, when anthropic_api_key is set. Overridable by env so
+    # changing model is a dashboard edit, not a deploy. Was hard-coded to
+    # claude-sonnet-4-20250514, a 2025 model that bills at $3/$15 per MTok;
+    # claude-sonnet-5 is $2/$10 and newer, so the old pin cost 50% more for
+    # a worse answer. claude-haiku-4-5-20251001 ($1/$5) is the cheap option
+    # and is likely indistinguishable for reading regulation chunks back as
+    # prose. Roughly 2,500 input + 400 output tokens per question:
+    #   sonnet-5  ~0.9c   haiku-4.5  ~0.45c   sonnet-4 (old)  ~1.4c
+    claude_model: str = "claude-sonnet-5"
 
     # Mapbox (for tile serving and geocoding)
     mapbox_access_token: Optional[str] = None
