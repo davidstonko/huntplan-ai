@@ -26,40 +26,52 @@ Verified against Render's pricing page, September 2026:
 | Web service | $0, 512 MB, **spins down after 15 min idle** (~31 s cold start, measured) | Starter **$7/mo**, 0.5 CPU / 512 MB, never spins down |
 | Postgres | $0, 256 MB, **suspended when the trial ends, then deleted** | Basic 256 MB **$6/mo** |
 
-Render's free Postgres is not a tier, it is a trial — that is what took
-production down in July, and it would do it again. The database therefore
-moved to **Neon**, whose free tier does not expire (it scales to zero after
-about 5 minutes of inactivity and wakes in roughly a second). So:
+Render's free Postgres is not a tier, it is a trial: suspended when the trial
+ends, deleted 14 days later. That is what took production down in July, and a
+free database would do it again. So the free Postgres was never an option; the
+only question was whether to pay Render or move the database to a provider
+whose free tier does not expire (Neon).
 
-- **$0** — Neon free + Render free web. Survivable now that the API boots in
-  degraded mode instead of exiting, but a first request after 15 idle minutes
-  waits ~31 s. An App Review reviewer would hit exactly that on the AI tab.
-- **$7/mo** — Neon free + Render Starter. **This is the recommendation**: the
-  only thing being bought is the elimination of the cold start, which is the
-  one failure a reviewer sees.
-- **$13/mo** — all Render (Starter web + Basic Postgres). Buys one vendor
-  instead of two. It does not buy reliability Neon's free tier lacks.
+**Decision, 2026-09-27: all Render, $13/mo** (Starter web + Basic 256 MB
+Postgres). Reasons, in the order that decided it:
 
-Nothing in the app's offline behaviour — maps, offline packs, GPS tracks, the
-regulations knowledge base, legal shooting hours, solunar — depends on the
-backend at all. The backend serves the AI planner's RAG answers, the forum,
-and camp sync. That is why $0 is a legitimate choice here and why the App
-Review walkthrough does not depend on this decision.
+- One vendor. One bill, one dashboard, one status page, one support contact,
+  one place to look at 11pm when something is down. For a solo developer that
+  is worth more than $6/mo.
+- The database is reachable over Render's **internal** network. No public
+  internet hop, no TLS parameters to get wrong, and `DATABASE_URL` is wired by
+  the blueprint rather than pasted by hand — one fewer thing to mis-copy.
+- Daily backups are included in the paid plan. The July incident destroyed
+  user accounts and camps; nothing had a backup.
+- No cold start. Starter does not spin down, so no reviewer or user waits
+  ~31 s for a first request.
+
+What was given up: Neon's free tier would have made the database $0 forever,
+and Neon's branching is genuinely nicer for testing against real Postgres
+(which this repo needs — see the test-suite note in `DEPENDENCIES.md`). If
+that becomes the priority, `app/config.py` already handles an external libpq
+connection string, so the move is an env-var change, not a code change.
+
+Worth knowing either way: nothing in the app's offline behaviour — maps,
+offline packs, GPS tracks, the regulations knowledge base, legal shooting
+hours, solunar — touches the backend. The backend serves the AI planner's RAG
+answers, the forum, and camp sync. The App Review walkthrough does not depend
+on it.
 
 ## Dashboard steps (one-time)
 
-1. **Create the database on Neon**: neon.tech → new project, Postgres 16,
-   region US East (Ohio) to sit near Render's Virginia region. Copy the
-   connection string it offers.
+0. **Add a payment method**: dashboard.render.com → Billing. Nothing paid can
+   be created until this exists.
+1. **Create the Postgres**: New → Postgres. Name `huntplan-db`, database
+   `huntplan`, Postgres **16**, region the **same as the web service** (the
+   internal network only works within a region), plan **Basic 256 MB**.
+   Not Free — Free is a trial and will be deleted again.
 2. **Point the API at it**: `huntplan-api` → Environment → `DATABASE_URL` →
-   paste the Neon string **verbatim**, including
-   `?sslmode=require&channel_binding=require`. `app/config.py` rewrites the
-   scheme to `postgresql+asyncpg://` and translates those two parameters
-   (asyncpg rejects both by name — it wants `ssl=require` — while Alembic's
-   sync URL keeps the libpq spelling). Save; Render redeploys.
-   Covered by `backend/tests/test_database_url_normalization.py`.
-3. **Instance type**: `huntplan-api` → Settings → Instance Type → **Starter**
-   for the $7 option, or leave it on Free for the $0 option.
+   paste the new database's **Internal** Database URL (not the External one).
+   `app/config.py` rewrites the scheme to `postgresql+asyncpg://` at startup.
+   Save; Render redeploys.
+3. **Instance type**: `huntplan-api` → Settings → Instance Type → **Starter**,
+   so the service stops spinning down after 15 minutes idle.
 4. **Build filter** (stops the noise): `huntplan-api` → Settings → Build
    Filters → Included Paths `backend/**` and `render.yaml`. Without this,
    every React Native commit rebuilds the API and mails a
@@ -67,9 +79,13 @@ Review walkthrough does not depend on this decision.
    contained — which is what the 2026-09-18 and 2026-09-27 emails were.
 
 If the services were created from the Blueprint, `render.yaml` already carries
-steps 3 and 4 and leaves `DATABASE_URL` as `sync: false` for step 2. If they
-were created by hand in the dashboard, `render.yaml` is documentation only and
-all four steps must be done there.
+steps 1, 3 and 4 and wires `DATABASE_URL` for step 2 — but a blueprint sync
+still cannot provision a paid database without step 0. If they were created by
+hand in the dashboard, `render.yaml` is documentation only and every step must
+be done there.
+
+Expect the first deploy after step 2 to seed the database automatically; see
+"Re-seeding a new database" below, and confirm `/health` reports `"db":"ok"`.
 
 ## Verify
 

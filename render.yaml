@@ -6,30 +6,24 @@
 # Postgres when the trial ends and then deletes it. The API failed init_db() on
 # boot and uvicorn exited with status 3. Two changes came out of that: the API
 # now boots in degraded mode instead of exiting when the database is
-# unreachable, and Postgres moved off Render entirely (see below).
+# unreachable, and the database moved to a paid plan (see below).
 #
 # If this service was created by hand in the dashboard rather than from this
 # blueprint, editing this file changes nothing on Render. The two settings that
 # matter — the build filter and DATABASE_URL — must then be set in the
 # dashboard as well. backend/RUNBOOK_RENDER.md has both paths.
 
-# Postgres lives OUTSIDE Render. The free Render Postgres that used to back
-# this service (huntplan-db) was suspended 2026-07-11 and then deleted, which
-# is what took production down: DATABASE_URL kept pointing at a hostname that
-# no longer resolves ("Name or service not known"). Render's free Postgres
-# always ends this way, so the replacement is a provider whose free tier does
-# not expire — Neon. Set DATABASE_URL manually in the Render dashboard to the
-# Neon connection string (see backend/RUNBOOK_RENDER.md).
-#
-# To go all-Render on a paid database instead, uncomment this block, change
-# DATABASE_URL below back to `fromDatabase`, and expect ~$6/mo:
-#
-# databases:
-#   - name: huntplan-db
-#     databaseName: huntplan
-#     plan: basic-256mb        # cheapest persistent tier; free is deleted
-#     postgresMajorVersion: "16"
-#     ipAllowList: []          # Render-internal access only
+# Postgres is a PAID Render database, on purpose (decision 2026-09-27: one
+# vendor, one bill, one dashboard). The database that went away on 2026-07-11
+# was on the `free` plan, which is a trial: Render suspends it when the trial
+# ends and deletes it 14 days later. A paid plan is not subject to that, and
+# includes daily backups. Never set this back to `free`.
+databases:
+  - name: huntplan-db
+    databaseName: huntplan
+    plan: basic-256mb        # cheapest persistent tier; includes daily backups
+    postgresMajorVersion: "16"
+    ipAllowList: []          # Render-internal access only
 
 services:
   - type: web
@@ -53,13 +47,16 @@ services:
         - render.yaml
     envVars:
       - key: DATABASE_URL
-        sync: false  # Paste the Neon connection string in the dashboard.
-        # Either scheme works: app/config.py rewrites postgres:// to
-        # postgresql+asyncpg:// at startup. Neon requires TLS, so keep the
-        # ?sslmode=require that Neon's string already carries.
-        # Until this is set the API still boots and serves 200s with
-        # "db":"unavailable" (degraded mode) — the app's offline features and
-        # the App Review walkthrough do not depend on it.
+        fromDatabase:
+          name: huntplan-db
+          property: connectionString
+        # Render hands over the INTERNAL connection string: no public
+        # internet hop, no TLS parameters to translate. app/config.py rewrites
+        # postgres:// to postgresql+asyncpg:// at startup, and also handles a
+        # libpq string from an external provider should this ever move
+        # (see backend/tests/test_database_url_normalization.py).
+        # While this is unset the API still boots and serves 200s with
+        # "db":"unavailable" — degraded mode, not a crash.
       - key: SECRET_KEY
         generateValue: true
       - key: ANTHROPIC_API_KEY
