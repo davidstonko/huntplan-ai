@@ -23,6 +23,11 @@ databases:
     databaseName: huntplan
     plan: basic-256mb        # cheapest persistent tier; includes daily backups
     postgresMajorVersion: "16"
+    # MUST match the web service's region. Two Render resources can only reach
+    # each other over the private network when they are in the same region; a
+    # mismatch silently falls back to the public internet or fails outright.
+    # huntplan-api has been in oregon since it was created.
+    region: oregon
     ipAllowList: []          # Render-internal access only
 
 services:
@@ -31,6 +36,7 @@ services:
     runtime: docker
     dockerfilePath: backend/Dockerfile
     dockerContext: backend
+    region: oregon  # where this service already lives; pinned so a sync cannot move it
     # Was `free`: free web services spin down after 15 min idle, so the first
     # request from the phone app waited ~30-60 s for a cold start (and every
     # cold start re-runs init_db). starter keeps the instance warm.
