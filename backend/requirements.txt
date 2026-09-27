@@ -37,7 +37,10 @@ pdfplumber>=0.11.0
 
 # AI / LLM
 anthropic>=0.39.0,<1
-google-generativeai>=0.8.0
+# google-generativeai is retired: its PyPI page is titled "[Deprecated]
+# Google AI Python SDK", it last shipped in Dec 2025, and it cannot reach the
+# Gemini 3.x models. google-genai is the supported replacement.
+google-genai>=1.0.0,<3
 
 # Geospatial
 shapely>=2.0.6,<3
@@ -50,8 +53,28 @@ boto3>=1.35.0,<2
 # Image processing (thumbnails, validation)
 Pillow>=11.0.0,<13
 
-# Push notifications (APNS)
-apns2>=0.7.2
+# Push notifications (APNS) — REMOVED 2026-09-27, see below.
+#
+# apns2 0.7.2 (last released 2018) depends on `hyper`, which pins
+# hyperframe>=3.2,<4.0 and h2>=2.4,<3.0. hyperframe 3.2 does
+# `class Flags(collections.MutableSet)`, and those ABCs were removed from
+# `collections` in Python 3.10. The image is python:3.12-slim.
+#
+# Two consequences, both of them silent:
+#   1. apns2 could never import here at all — `from apns2.client import
+#      APNsClient` dies inside hyper with ImportError on collections.Iterable.
+#      Push notifications have therefore never worked in any deployed build.
+#   2. Worse, its pins held hyperframe at 3.2 for the WHOLE image, so
+#      `import httpcore` blew up with AttributeError on collections.MutableSet
+#      as soon as anything constructed an httpx client. That poisons every
+#      outbound HTTP call the app makes: weather_service, integrations,
+#      gis_loader, the regulations scraper, and the Gemini SDK.
+#
+# Removing it lets hyperframe/h2 resolve to current versions and makes httpx
+# work again. apns_service.py already imports apns2 lazily and logs a warning
+# when it is absent, so nothing crashes. To actually ship push notifications,
+# port app/modules/notifications/apns_service.py to `aioapns`, which is
+# maintained and async-native.
 
 # Background tasks
 celery[redis]>=5.4.0,<6

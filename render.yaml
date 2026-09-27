@@ -65,8 +65,15 @@ services:
         # "db":"unavailable" — degraded mode, not a crash.
       - key: SECRET_KEY
         generateValue: true
+      # The AI planner tries Claude FIRST and only falls back to Gemini when
+      # ANTHROPIC_API_KEY is unset (see ai_planner/service.py). Decision
+      # 2026-09-27: use Gemini, whose free tier costs nothing, so leave
+      # ANTHROPIC_API_KEY EMPTY. Setting it silently moves every question
+      # onto a metered API.
+      - key: GEMINI_API_KEY
+        sync: false  # Set manually: aistudio.google.com/apikey
       - key: ANTHROPIC_API_KEY
-        sync: false  # Set manually in Render dashboard
+        sync: false  # Leave blank unless deliberately switching to Claude
       - key: MAPBOX_ACCESS_TOKEN
         sync: false  # Set manually in Render dashboard
       - key: DEBUG

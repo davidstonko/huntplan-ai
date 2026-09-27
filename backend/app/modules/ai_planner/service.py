@@ -35,14 +35,21 @@ def get_anthropic_client():
 
 
 def get_gemini_model():
-    """Lazy-init Google Gemini client."""
+    """Lazy-init Google Gemini client.
+
+    Uses google-genai, the current SDK. The previous google-generativeai
+    package is formally deprecated (its own PyPI page is titled
+    "[Deprecated] Google AI Python SDK"), was last released in December 2025,
+    and does not reach the Gemini 3.x models. Returns a client rather than a
+    model object; the model name is passed per call instead of bound at
+    construction, so llm_model can change by environment variable.
+    """
     global _gemini_model
     if _gemini_model is None:
         if not settings.gemini_api_key:
             return None
-        import google.generativeai as genai
-        genai.configure(api_key=settings.gemini_api_key)
-        _gemini_model = genai.GenerativeModel(settings.llm_model)
+        from google import genai
+        _gemini_model = genai.Client(api_key=settings.gemini_api_key)
     return _gemini_model
 
 
@@ -69,16 +76,24 @@ async def _call_claude(client, system_prompt: str, user_message: str) -> str:
     return await asyncio.get_event_loop().run_in_executor(None, _sync_call)
 
 
-async def _call_gemini(model, prompt: str) -> str:
+async def _call_gemini(client, prompt: str) -> str:
     """
-    Call Gemini API. google-generativeai's generate_content is synchronous,
-    so we run it in a thread to avoid blocking the async event loop.
+    Call Gemini API. google-genai's generate_content is synchronous, so we run
+    it in a thread to avoid blocking the async event loop.
     """
     import asyncio
 
     def _sync_call():
-        response = model.generate_content(prompt)
-        return response.text
+        response = client.models.generate_content(
+            model=settings.llm_model,
+            contents=prompt,
+        )
+        text = response.text
+        if not text:
+            # A blocked or empty candidate returns None rather than raising,
+            # which would otherwise surface as a blank answer in the app.
+            raise ValueError("Empty response from Gemini API")
+        return text
 
     return await asyncio.get_event_loop().run_in_executor(None, _sync_call)
 

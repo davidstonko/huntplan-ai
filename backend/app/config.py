@@ -26,7 +26,12 @@ class Settings(BaseSettings):
     # AI / LLM
     anthropic_api_key: Optional[str] = None  # Legacy — kept for optional fallback
     gemini_api_key: Optional[str] = None
-    llm_model: str = "gemini-2.0-flash"  # Free tier: 15 RPM, 1M tokens/day
+    # Gemini model. Was gemini-2.0-flash, which Google SHUT DOWN on
+    # 2026-06-01 — so any Gemini call would have failed with a model-not-found
+    # regardless of the key. gemini-3.5-flash-lite is current, is free of
+    # charge on the free tier, and is what Google recommends for new projects
+    # alongside gemini-3.8-flash. Overridable by environment variable.
+    llm_model: str = "gemini-3.5-flash-lite"
     # Claude model, when anthropic_api_key is set. Overridable by env so
     # changing model is a dashboard edit, not a deploy. Was hard-coded to
     # claude-sonnet-4-20250514, a 2025 model that bills at $3/$15 per MTok;
